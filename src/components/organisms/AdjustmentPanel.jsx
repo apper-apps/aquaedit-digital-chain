@@ -1,913 +1,412 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
-import { cn } from "@/utils/cn";
-import ApperIcon from "@/components/ApperIcon";
-import CurveEditor from "@/components/molecules/CurveEditor";
-import SliderControl from "@/components/molecules/SliderControl";
 import Button from "@/components/atoms/Button";
-const AdjustmentPanel = ({ adjustments, onAdjustmentChange, onResetAll, className }) => {
-  const [activeTab, setActiveTab] = useState("basic");
+import ApperIcon from "@/components/ApperIcon";
+import SliderControl from "@/components/molecules/SliderControl";
+import CurveEditor from "@/components/molecules/CurveEditor";
+import { cn } from "@/utils/cn";
 
-  const basicControls = [
-    { key: "exposure", label: "Exposure", min: -200, max: 200, step: 10, defaultValue: 0 },
-    { key: "contrast", label: "Contrast", min: -100, max: 100, step: 5, defaultValue: 0 },
-{ key: "highlights", label: "Highlights", min: -100, max: 100, step: 5, defaultValue: 0 },
-    { key: "shadows", label: "Shadows", min: -100, max: 100, step: 5, defaultValue: 0 },
-    { key: "whites", label: "Whites", min: -100, max: 100, step: 5, defaultValue: 0 },
-    { key: "blacks", label: "Blacks", min: -100, max: 100, step: 5, defaultValue: 0 },
-    { key: "saturation", label: "Saturation", min: -100, max: 100, step: 5, defaultValue: 0 },
-    { key: "vibrance", label: "Vibrance", min: -100, max: 100, step: 5, defaultValue: 0 },
-    { key: "warmth", label: "Warmth", min: -100, max: 100, step: 5, defaultValue: 0 },
-    { key: "clarity", label: "Clarity", min: -100, max: 100, step: 5, defaultValue: 0 },
-    { key: "texture", label: "Texture", min: -100, max: 100, step: 5, defaultValue: 0 },
-    { key: "dehaze", label: "Dehaze", min: -100, max: 100, step: 5, defaultValue: 0 }
-  ];
+const AdjustmentPanel = ({ 
+  adjustments = {}, 
+  onAdjustmentChange, 
+  onReset, 
+  curves = {}, 
+  onCurveChange,
+  histogram = null,
+  className 
+}) => {
+  const [activeTab, setActiveTab] = useState('basic');
+  const [activeCurveChannel, setActiveCurveChannel] = useState('rgb');
+  const [expandedSections, setExpandedSections] = useState({
+    basic: true,
+    color: false,
+    underwater: false,
+    curves: false
+  });
 
-  const hslColors = [
-{ key: "hslReds", label: "Reds", color: "#ef4444", range: [345, 15] },
-    { key: "hslOranges", label: "Oranges", color: "#f97316", range: [15, 45] },
-    { key: "hslYellows", label: "Yellows", color: "#eab308", range: [45, 75] },
-    { key: "hslGreens", label: "Greens", color: "#22c55e", range: [75, 150] },
-    { key: "hslCyans", label: "Cyans", color: "#06b6d4", range: [150, 210] },
-    { key: "hslBlues", label: "Blues", color: "#3b82f6", range: [210, 270] },
-    { key: "hslPurples", label: "Purples", color: "#a855f7", range: [270, 315] },
-    { key: "hslMagentas", label: "Magentas", color: "#ec4899", range: [315, 345] }
-  ];
+  // Default adjustment values
+  const defaultAdjustments = useMemo(() => ({
+    exposure: 0,
+    highlights: 0,
+    shadows: 0,
+    whites: 0,
+    blacks: 0,
+    contrast: 0,
+    brightness: 0,
+    vibrance: 0,
+    saturation: 0,
+    clarity: 0,
+    dehaze: 0,
+    temperature: 0,
+    tint: 0,
+    waterClarity: 0,
+    blueRemoval: 0,
+    greenRemoval: 0,
+    depthCompensation: 0,
+    coralEnhancement: 0
+  }), []);
 
-const underwaterPresets = [
-    { name: "Surface", temp: 0, desc: "5600K" },
-    { name: "10ft", temp: -20, desc: "4800K" },
-    { name: "30ft", temp: -35, desc: "4200K" },
-    { name: "60ft+", temp: -50, desc: "3800K" }
-  ];
+  // Merge with defaults
+  const currentAdjustments = useMemo(() => ({
+    ...defaultAdjustments,
+    ...adjustments
+  }), [defaultAdjustments, adjustments]);
 
-  const underwaterEnhancementModes = [
+  // Underwater presets
+  const underwaterPresets = useMemo(() => [
     {
-      name: "Coral Enhancement",
-      key: "coralEnhancementMode",
-      description: "Boost red/orange coral colors",
-      icon: "Flower2"
+      name: "Shallow Water",
+      description: "For 0-10m depth photos",
+      adjustments: {
+        exposure: 0.3,
+        highlights: -20,
+        shadows: 15,
+        contrast: 10,
+        vibrance: 20,
+        temperature: 200,
+        tint: -10,
+        waterClarity: 15,
+        blueRemoval: 10
+      }
     },
     {
-      name: "Fish Color Isolation",
-      key: "fishColorIsolation", 
-      description: "Selective tropical fish enhancement",
-      icon: "Fish"
-    }
-  ];
-
-  // Handle curve changes
-  const handleCurveChange = (channel, curve) => {
-    onAdjustmentChange(`${channel}Curve`, curve);
-  };
-
-  // Handle eyedropper color sampling
-  const handleEyedropperSample = (color) => {
-    onAdjustmentChange('eyedropperColor', color);
-    onAdjustmentChange('selectedColorRange', getColorRangeFromRGB(color));
-  };
-
-  // Convert RGB to HSV and determine color range
-  const getColorRangeFromRGB = (rgb) => {
-    const [r, g, b] = [rgb.r / 255, rgb.g / 255, rgb.b / 255];
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    const diff = max - min;
-    
-    let h = 0;
-    if (diff !== 0) {
-      if (max === r) {
-        h = ((g - b) / diff + 6) % 6;
-      } else if (max === g) {
-        h = (b - r) / diff + 2;
-      } else {
-        h = (r - g) / diff + 4;
+      name: "Deep Blue",
+      description: "For 10-30m depth photos", 
+      adjustments: {
+        exposure: 0.5,
+        highlights: -30,
+        shadows: 25,
+        contrast: 15,
+        vibrance: 30,
+        temperature: 400,
+        tint: -15,
+        waterClarity: 25,
+        blueRemoval: 20,
+        depthCompensation: 15
+      }
+    },
+    {
+      name: "Cave/Wreck",
+      description: "High contrast for caves",
+      adjustments: {
+        exposure: 0.7,
+        highlights: -40,
+        shadows: 35,
+        contrast: 25,
+        clarity: 20,
+        vibrance: 25,
+        temperature: 300,
+        waterClarity: 30,
+        blueRemoval: 15
+      }
+    },
+    {
+      name: "Coral Garden",
+      description: "Enhance coral colors",
+      adjustments: {
+        exposure: 0.2,
+        highlights: -15,
+        shadows: 10,
+        vibrance: 40,
+        saturation: 10,
+        temperature: 150,
+        coralEnhancement: 25,
+        waterClarity: 10
       }
     }
-    
-    const hue = h * 60;
-    
-    // Find matching color range
-    for (const color of hslColors) {
-      const [start, end] = color.range;
-      if (start > end) { // Wraps around (like red)
-        if (hue >= start || hue < end) return color.key;
-      } else {
-        if (hue >= start && hue < end) return color.key;
-      }
-    }
-    
-    return 'hslReds'; // Default
-  };
+  ], []);
 
-  // Handle underwater enhancement modes
-  const handleEnhancementToggle = (mode) => {
-    const currentValue = adjustments[mode];
-    onAdjustmentChange(mode, !currentValue);
-    
-    if (mode === 'coralEnhancementMode' && !currentValue) {
-      // Auto-boost coral colors when enabled
-      onAdjustmentChange('coralBoost', 25);
+  const handleAdjustmentChange = useCallback((key, value) => {
+    onAdjustmentChange?.(key, value);
+  }, [onAdjustmentChange]);
+
+  const handleSectionToggle = useCallback((section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  }, []);
+
+  const applyPreset = useCallback((preset) => {
+    if (preset.adjustments) {
+      Object.entries(preset.adjustments).forEach(([key, value]) => {
+        handleAdjustmentChange(key, value);
+      });
     }
-    
-    if (mode === 'fishColorIsolation' && !currentValue) {
-      // Auto-enhance fish colors when enabled
-      onAdjustmentChange('fishEnhancement', 20);
-    }
-  };
+  }, [handleAdjustmentChange]);
+
+  const resetAllAdjustments = useCallback(() => {
+    onReset?.();
+  }, [onReset]);
 
   const tabs = [
-    { id: "basic", label: "Basic", icon: "Sliders" },
-    { id: "color", label: "Color", icon: "Palette" },
-{ id: "tone", label: "Tone", icon: "TrendingUp" },
-    { id: "local", label: "Local", icon: "Target" },
-    { id: "lens", label: "Lens", icon: "Camera" },
-    { id: "detail", label: "Detail", icon: "Focus" }
+    { id: 'basic', name: 'Basic', icon: 'Settings' },
+    { id: 'color', name: 'Color', icon: 'Palette' },
+    { id: 'underwater', name: 'Underwater', icon: 'Waves' },
+    { id: 'curves', name: 'Curves', icon: 'TrendingUp' }
   ];
 
-  const handleHSLChange = (colorKey, component, value) => {
-    const newHSL = { ...adjustments[colorKey], [component]: value };
-    onAdjustmentChange(colorKey, newHSL);
-  };
-
-  const renderBasicTab = () => (
-    <div className="space-y-6">
-      {basicControls.map((control) => (
-        <SliderControl
-          key={control.key}
-          label={control.label}
-          value={adjustments[control.key]}
-          onChange={(value) => onAdjustmentChange(control.key, value)}
-          min={control.min}
-          max={control.max}
-          step={control.step}
-          defaultValue={control.defaultValue}
-        />
-      ))}
+  const renderBasicAdjustments = () => (
+    <div className="space-y-4">
+      <SliderControl
+        label="Exposure"
+        value={currentAdjustments.exposure}
+        onChange={(value) => handleAdjustmentChange('exposure', value)}
+        min={-2}
+        max={2}
+        step={0.1}
+        defaultValue={0}
+      />
       
-      <div className="pt-4 border-t border-slate-dark">
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-300">Underwater Enhancements</h4>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="secondary" size="small" className="text-xs">
-              <ApperIcon name="Droplets" className="w-3 h-3 mr-1" />
-              Remove Cast
-            </Button>
-            <Button variant="secondary" size="small" className="text-xs">
-              <ApperIcon name="Sparkles" className="w-3 h-3 mr-1" />
-              Reduce Scatter
-            </Button>
-            <Button variant="secondary" size="small" className="text-xs">
-              <ApperIcon name="Sun" className="w-3 h-3 mr-1" />
-              Auto Depth
-            </Button>
-            <Button variant="secondary" size="small" className="text-xs">
-              <ApperIcon name="Palette" className="w-3 h-3 mr-1" />
-              Coral Boost
-            </Button>
-          </div>
-        </div>
-      </div>
+      <SliderControl
+        label="Highlights"
+        value={currentAdjustments.highlights}
+        onChange={(value) => handleAdjustmentChange('highlights', value)}
+        min={-100}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Shadows"
+        value={currentAdjustments.shadows}
+        onChange={(value) => handleAdjustmentChange('shadows', value)}
+        min={-100}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Whites"
+        value={currentAdjustments.whites}
+        onChange={(value) => handleAdjustmentChange('whites', value)}
+        min={-100}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Blacks"
+        value={currentAdjustments.blacks}
+        onChange={(value) => handleAdjustmentChange('blacks', value)}
+        min={-100}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Contrast"
+        value={currentAdjustments.contrast}
+        onChange={(value) => handleAdjustmentChange('contrast', value)}
+        min={-100}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Brightness"
+        value={currentAdjustments.brightness}
+        onChange={(value) => handleAdjustmentChange('brightness', value)}
+        min={-100}
+        max={100}
+        defaultValue={0}
+      />
     </div>
   );
 
-  const renderColorTab = () => (
-<div className="space-y-6">
-      {/* Underwater Enhancement Modes */}
-      <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Underwater Enhancement</h4>
-        <div className="space-y-2">
-          {underwaterEnhancementModes.map((mode) => (
-            <div key={mode.key} className="flex items-center justify-between p-2 bg-slate-darker rounded">
-              <div className="flex items-center space-x-2">
-                <ApperIcon name={mode.icon} className="w-4 h-4 text-ocean-teal" />
-                <div>
-                  <div className="text-sm text-gray-300">{mode.name}</div>
-                  <div className="text-xs text-gray-400">{mode.description}</div>
-                </div>
-              </div>
-              <Button
-                variant={adjustments[mode.key] ? "secondary" : "ghost"}
-                size="small"
-                className="text-xs"
-                onClick={() => handleEnhancementToggle(mode.key)}
-              >
-                {adjustments[mode.key] ? 'ON' : 'OFF'}
-              </Button>
-            </div>
-          ))}
-        </div>
-        
-        {/* Enhancement Controls */}
-        {adjustments.coralEnhancementMode && (
-          <div className="mt-4 p-3 bg-slate-darker rounded-lg">
-            <h5 className="text-sm font-medium text-gray-300 mb-2">Coral Enhancement</h5>
-            <SliderControl
-              label="Coral Boost"
-              value={adjustments.coralBoost || 0}
-              onChange={(value) => onAdjustmentChange("coralBoost", value)}
-              min={0}
-              max={100}
-              step={1}
-              defaultValue={0}
-              className="text-xs"
-              suffix="%"
-            />
-          </div>
-        )}
-
-        {adjustments.fishColorIsolation && (
-          <div className="mt-4 p-3 bg-slate-darker rounded-lg">
-            <h5 className="text-sm font-medium text-gray-300 mb-2">Fish Enhancement</h5>
-            <SliderControl
-              label="Fish Colors"
-              value={adjustments.fishEnhancement || 0}
-              onChange={(value) => onAdjustmentChange("fishEnhancement", value)}
-              min={0}
-              max={100}
-              step={1}
-              defaultValue={0}
-              className="text-xs"
-              suffix="%"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Enhanced HSL Color Targeting */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-medium text-gray-300">HSL Precision Tools</h4>
-          <Button
-            variant="ghost"
-            size="small"
-            className="text-xs"
-            onClick={() => handleEyedropperSample({ r: 255, g: 0, b: 0 })}
-          >
-            <ApperIcon name="Pipette" className="w-3 h-3 mr-1" />
-            Eyedropper
-          </Button>
-        </div>
-        
-        {/* Color Targeting Controls */}
-        <div className="mb-4 p-3 bg-slate-darker rounded-lg">
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            <SliderControl
-              label="Tolerance"
-              value={adjustments.colorTolerance || 15}
-              onChange={(value) => onAdjustmentChange("colorTolerance", value)}
-              min={1}
-              max={50}
-              step={1}
-              defaultValue={15}
-              className="text-xs"
-            />
-            <SliderControl
-              label="Feather"
-              value={adjustments.colorFeather || 10}
-              onChange={(value) => onAdjustmentChange("colorFeather", value)}
-              min={0}
-              max={50}
-              step={1}
-              defaultValue={10}
-              className="text-xs"
-            />
-          </div>
-          
-          <SliderControl
-            label="Water Cast Correction"
-            value={adjustments.waterCastCorrection || 0}
-            onChange={(value) => onAdjustmentChange("waterCastCorrection", value)}
-            min={-100}
-            max={100}
-            step={1}
-            defaultValue={0}
-            className="text-xs"
-            suffix="%"
-          />
-        </div>
-
-        {/* 8-Channel HSL Color Wheel */}
-        {hslColors.map((color) => (
-          <div key={color.key} className="mb-4 p-3 bg-slate-darker rounded-lg">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 rounded-full border border-gray-600" style={{ backgroundColor: color.color }}></div>
-                <span className="text-sm font-medium text-gray-300">{color.label}</span>
-                <span className="text-xs text-gray-400">({color.range[0]}°-{color.range[1]}°)</span>
-              </div>
-              {adjustments.selectedColorRange === color.key && (
-                <div className="w-2 h-2 bg-ocean-teal rounded-full"></div>
-              )}
-            </div>
-            <div className="space-y-2">
-              <SliderControl
-                label="Hue Rotation"
-                value={adjustments[color.key]?.hue || 0}
-                onChange={(value) => handleHSLChange(color.key, "hue", value)}
-                min={-180}
-                max={180}
-                step={1}
-                defaultValue={0}
-                className="text-xs"
-                suffix="°"
-              />
-              <SliderControl
-                label="Saturation"
-                value={adjustments[color.key]?.saturation || 0}
-                onChange={(value) => handleHSLChange(color.key, "saturation", value)}
-                min={-100}
-                max={200}
-                step={1}
-                defaultValue={0}
-                className="text-xs"
-                suffix="%"
-              />
-              <SliderControl
-                label="Luminance"
-                value={adjustments[color.key]?.luminance || 0}
-                onChange={(value) => handleHSLChange(color.key, "luminance", value)}
-                min={-100}
-                max={100}
-                step={1}
-                defaultValue={0}
-                className="text-xs"
-                suffix="%"
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="pt-4 border-t border-slate-dark">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">White Balance Correction</h4>
-        <div className="space-y-4">
-          <SliderControl
-            label="Temperature"
-            value={adjustments.temperature || 0}
-            onChange={(value) => onAdjustmentChange("temperature", value)}
-            min={-100}
-            max={100}
-            step={1}
-            defaultValue={0}
-            suffix="K"
-          />
-          <SliderControl
-            label="Tint"
-            value={adjustments.tint || 0}
-            onChange={(value) => onAdjustmentChange("tint", value)}
-            min={-100}
-            max={100}
-            step={1}
-            defaultValue={0}
-          />
-          
-          <div>
-            <span className="text-xs text-gray-400 mb-2 block">Underwater Presets</span>
-            <div className="grid grid-cols-2 gap-2">
-              {underwaterPresets.map((preset) => (
-                <Button
-                  key={preset.name}
-                  variant="secondary"
-                  size="small"
-                  className="text-xs flex-col h-auto py-2"
-                  onClick={() => onAdjustmentChange("temperature", preset.temp)}
-                >
-                  <span>{preset.name}</span>
-                  <span className="text-gray-400">{preset.desc}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+  const renderColorAdjustments = () => (
+    <div className="space-y-4">
+      <SliderControl
+        label="Temperature"
+        value={currentAdjustments.temperature}
+        onChange={(value) => handleAdjustmentChange('temperature', value)}
+        min={-1000}
+        max={1000}
+        step={10}
+        defaultValue={0}
+        suffix="K"
+      />
+      
+      <SliderControl
+        label="Tint"
+        value={currentAdjustments.tint}
+        onChange={(value) => handleAdjustmentChange('tint', value)}
+        min={-100}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Vibrance"
+        value={currentAdjustments.vibrance}
+        onChange={(value) => handleAdjustmentChange('vibrance', value)}
+        min={-100}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Saturation"
+        value={currentAdjustments.saturation}
+        onChange={(value) => handleAdjustmentChange('saturation', value)}
+        min={-100}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Clarity"
+        value={currentAdjustments.clarity}
+        onChange={(value) => handleAdjustmentChange('clarity', value)}
+        min={-100}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Dehaze"
+        value={currentAdjustments.dehaze}
+        onChange={(value) => handleAdjustmentChange('dehaze', value)}
+        min={-100}
+        max={100}
+        defaultValue={0}
+      />
     </div>
   );
 
-const renderToneTab = () => (
-    <div className="space-y-6">
-      <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Advanced Curve Editor</h4>
-        
-        {/* Interactive Curve Editor */}
-        <CurveEditor
-          curves={{
-            master: adjustments.masterCurve,
-            rgb: adjustments.rgbCurve,
-            red: adjustments.redCurve,
-            green: adjustments.greenCurve,
-            blue: adjustments.blueCurve
-          }}
-          onCurveChange={handleCurveChange}
-          activeChannel={adjustments.activeCurveChannel || 'rgb'}
-          onChannelChange={(channel) => onAdjustmentChange('activeCurveChannel', channel)}
-          showHistogram={adjustments.showHistogram}
-          histogram={null} // TODO: Generate from current image
-        />
-        
-        {/* Advanced Curve Controls */}
-        <div className="mt-4 space-y-4">
-          <div className="p-3 bg-slate-darker rounded-lg">
-            <h5 className="text-sm font-medium text-gray-300 mb-3">Tone Mapping Controls</h5>
-            <div className="grid grid-cols-2 gap-3">
-              <SliderControl
-                label="Shadow Clipping"
-                value={adjustments.shadowClipping || 0}
-                onChange={(value) => onAdjustmentChange("shadowClipping", value)}
-                min={0}
-                max={100}
-                step={1}
-                defaultValue={0}
-                className="text-xs"
-              />
-              <SliderControl
-                label="Highlight Clipping"
-                value={adjustments.highlightClipping || 0}
-                onChange={(value) => onAdjustmentChange("highlightClipping", value)}
-                min={0}
-                max={100}
-                step={1}
-                defaultValue={0}
-                className="text-xs"
-              />
-            </div>
-            
-            <SliderControl
-              label="Midtone Contrast"
-              value={adjustments.midtoneContrast || 0}
-              onChange={(value) => onAdjustmentChange("midtoneContrast", value)}
-              min={-100}
-              max={100}
-              step={1}
-              defaultValue={0}
-              className="text-xs mt-3"
-            />
-          </div>
-
-          {/* Curve Options */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant={adjustments.showHistogram ? "secondary" : "ghost"}
-                size="small"
-                className="text-xs"
-                onClick={() => onAdjustmentChange('showHistogram', !adjustments.showHistogram)}
-              >
-                <ApperIcon name="BarChart3" className="w-3 h-3 mr-1" />
-                Histogram
-              </Button>
-              <Button
-                variant={adjustments.showBeforeAfter ? "secondary" : "ghost"}
-                size="small"
-                className="text-xs"
-                onClick={() => onAdjustmentChange('showBeforeAfter', !adjustments.showBeforeAfter)}
-              >
-                <ApperIcon name="Eye" className="w-3 h-3 mr-1" />
-                Compare
-              </Button>
-            </div>
+  const renderUnderwaterAdjustments = () => (
+    <div className="space-y-4">
+      <SliderControl
+        label="Water Clarity"
+        value={currentAdjustments.waterClarity}
+        onChange={(value) => handleAdjustmentChange('waterClarity', value)}
+        min={-50}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Blue Cast Removal"
+        value={currentAdjustments.blueRemoval}
+        onChange={(value) => handleAdjustmentChange('blueRemoval', value)}
+        min={0}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Green Cast Removal"
+        value={currentAdjustments.greenRemoval}
+        onChange={(value) => handleAdjustmentChange('greenRemoval', value)}
+        min={0}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Depth Compensation"
+        value={currentAdjustments.depthCompensation}
+        onChange={(value) => handleAdjustmentChange('depthCompensation', value)}
+        min={0}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <SliderControl
+        label="Coral Enhancement"
+        value={currentAdjustments.coralEnhancement}
+        onChange={(value) => handleAdjustmentChange('coralEnhancement', value)}
+        min={0}
+        max={100}
+        defaultValue={0}
+      />
+      
+      <div className="pt-4">
+        <h5 className="text-sm font-medium text-gray-300 mb-3">Underwater Presets</h5>
+        <div className="grid grid-cols-2 gap-2">
+          {underwaterPresets.map((preset) => (
             <Button
+              key={preset.name}
               variant="ghost"
               size="small"
-              className="text-xs"
-              onClick={() => onAdjustmentChange('curveSmoothingEnabled', !adjustments.curveSmoothingEnabled)}
+              className="text-xs p-3 h-auto flex-col items-start"
+              onClick={() => applyPreset(preset)}
             >
-              <ApperIcon name="Zap" className="w-3 h-3 mr-1" />
-              {adjustments.curveSmoothingEnabled ? 'Disable' : 'Enable'} Smoothing
+              <span className="font-medium text-left">{preset.name}</span>
+              <span className="text-gray-400 text-[10px] text-left mt-1">
+                {preset.description}
+              </span>
             </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="pt-4 border-t border-slate-dark">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Noise Reduction & Sharpening</h4>
-        <div className="space-y-4">
-          <SliderControl
-            label="Luminance Noise"
-            value={adjustments.luminanceNoise || 0}
-            onChange={(value) => onAdjustmentChange("luminanceNoise", value)}
-            min={0}
-            max={100}
-            step={1}
-            defaultValue={0}
-          />
-          <SliderControl
-            label="Color Noise"
-            value={adjustments.colorNoise || 0}
-            onChange={(value) => onAdjustmentChange("colorNoise", value)}
-            min={0}
-            max={100}
-            step={1}
-            defaultValue={0}
-          />
-          <SliderControl
-            label="Sharpening"
-            value={adjustments.sharpening || 0}
-            onChange={(value) => onAdjustmentChange("sharpening", value)}
-            min={0}
-            max={100}
-            step={1}
-            defaultValue={0}
-          />
-          <SliderControl
-            label="Sharpen Radius"
-            value={adjustments.sharpenRadius || 1}
-            onChange={(value) => onAdjustmentChange("sharpenRadius", value)}
-            min={0.5}
-            max={3}
-            step={0.1}
-            defaultValue={1}
-          />
-        </div>
-      </div>
-    </div>
-  );
-const renderLocalTab = () => (
-    <div className="space-y-6">
-      <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Local Adjustment Tools</h4>
-        <div className="grid grid-cols-1 gap-3">
-          <Button variant="secondary" className="text-sm justify-start">
-            <ApperIcon name="Circle" className="w-4 h-4 mr-2" />
-            Radial Adjustment Tool
-          </Button>
-          <Button variant="secondary" className="text-sm justify-start">
-            <ApperIcon name="Move" className="w-4 h-4 mr-2" />
-            Linear Gradient Tool
-          </Button>
-          <Button variant="secondary" className="text-sm justify-start">
-            <ApperIcon name="PaintBucket" className="w-4 h-4 mr-2" />
-            Brush Tool
-          </Button>
-        </div>
-      </div>
-      
-      <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Lightroom Import Status</h4>
-        <div className="text-xs text-gray-400 space-y-1">
-          <div>• Local adjustments imported from XMP/DNG files</div>
-          <div>• Graduated filters and radial masks supported</div>
-          <div>• Brush adjustments preserved in metadata</div>
-        </div>
-        
-        {adjustments.localAdjustments?.length > 0 && (
-          <div className="mt-3 p-2 bg-ocean-teal/10 border border-ocean-teal/30 rounded">
-            <div className="text-xs text-ocean-teal">
-              {adjustments.localAdjustments.length} imported local adjustment(s)
-            </div>
-          </div>
-)}
-      </div>
-
-      <div className="pt-4 border-t border-slate-dark">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Color Range Masking</h4>
-        <div className="space-y-4">
-          <Button variant="secondary" className="w-full text-sm">
-            <ApperIcon name="Eyedropper" className="w-4 h-4 mr-2" />
-            Select Color Range
-          </Button>
-          
-          <SliderControl
-            label="Tolerance"
-            value={adjustments.maskTolerance || 20}
-            onChange={(value) => onAdjustmentChange("maskTolerance", value)}
-            min={0}
-            max={100}
-            step={1}
-            defaultValue={20}
-          />
-          <SliderControl
-            label="Feather"
-            value={adjustments.maskFeather || 10}
-            onChange={(value) => onAdjustmentChange("maskFeather", value)}
-            min={0}
-            max={50}
-            step={1}
-            defaultValue={10}
-          />
-          
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="secondary" size="small" className="text-xs">
-              <ApperIcon name="Eye" className="w-3 h-3 mr-1" />
-              Show Mask
-            </Button>
-            <Button variant="secondary" size="small" className="text-xs">
-              <ApperIcon name="Trash2" className="w-3 h-3 mr-1" />
-              Clear Mask
-            </Button>
-          </div>
+          ))}
         </div>
       </div>
     </div>
   );
 
-  const renderLensTab = () => (
-    <div className="space-y-6">
-      <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Lens Correction Tools</h4>
-        <div className="space-y-4">
-          <div>
-            <h4 className="text-sm font-medium text-gray-300 mb-3">Lens Profile Corrections</h4>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox" 
-                  id="lensProfile" 
-                  checked={adjustments.lensProfileEnabled || false}
-                  onChange={(e) => onAdjustmentChange("lensProfileEnabled", e.target.checked)}
-                  className="w-4 h-4 text-ocean-teal rounded"
-                />
-                <label htmlFor="lensProfile" className="text-sm text-gray-300">
-                  Enable Lens Profile Corrections
-                </label>
-              </div>
-              
-              {adjustments.metadata?.lens && (
-                <div className="text-xs text-gray-500">
-                  Detected Lens: {adjustments.metadata.lens}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <SliderControl
-            label="Lens Distortion"
-            value={adjustments.distortion || 0}
-            onChange={(value) => onAdjustmentChange("distortion", value)}
-            min={-100}
-            max={100}
-            step={1}
-            defaultValue={0}
-          />
-          
-          <SliderControl
-            label="Chromatic Aberration"
-            value={adjustments.chromaticAberration || 0}
-            onChange={(value) => onAdjustmentChange("chromaticAberration", value)}
-            min={0}
-            max={100}
-            step={1}
-            defaultValue={0}
-          />
-          
-          <SliderControl
-            label="Vignette"
-            value={adjustments.vignette || 0}
-            onChange={(value) => onAdjustmentChange("vignette", value)}
-            min={-100}
-            max={100}
-            step={1}
-            defaultValue={0}
-          />
-        </div>
-      </div>
-  const renderDetailTab = () => (
+  const renderCurveAdjustments = () => (
     <div className="space-y-4">
-      <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Noise Reduction</h4>
-        <div className="space-y-3">
-          <SliderControl
-            label="Luminance Noise"
-            value={adjustments.luminanceNoise || 0}
-            onChange={(value) => onAdjustmentChange("luminanceNoise", value)}
-            min={0}
-            max={100}
-            step={5}
-            defaultValue={0}
-          />
-          <SliderControl
-            label="Color Noise"
-            value={adjustments.colorNoise || 0}
-            onChange={(value) => onAdjustmentChange("colorNoise", value)}
-            min={0}
-            max={100}
-            step={5}
-            defaultValue={0}
-          />
-        </div>
-      </div>
-
-      <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Sharpening</h4>
-        <div className="space-y-3">
-          <SliderControl
-            label="Amount"
-            value={adjustments.sharpening || 0}
-            onChange={(value) => onAdjustmentChange("sharpening", value)}
-            min={0}
-            max={150}
-            step={5}
-            defaultValue={0}
-          />
-          <SliderControl
-            label="Radius"
-            value={adjustments.sharpenRadius || 1.0}
-            onChange={(value) => onAdjustmentChange("sharpenRadius", value)}
-            min={0.5}
-            max={3.0}
-            step={0.1}
-            defaultValue={1.0}
-          />
-        </div>
-      </div>
-</div>
-      </div>
-
-      <div className="pt-4 border-t border-slate-dark">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Perspective Correction</h4>
-        <div className="space-y-4">
-          <SliderControl
-            label="Horizontal"
-            value={adjustments.perspective?.horizontal || 0}
-            onChange={(value) => onAdjustmentChange("perspective", { 
-              ...adjustments.perspective, 
-              horizontal: value 
-            })}
-            min={-50}
-            max={50}
-            step={1}
-            defaultValue={0}
-          />
-          <SliderControl
-            label="Vertical"
-            value={adjustments.perspective?.vertical || 0}
-            onChange={(value) => onAdjustmentChange("perspective", { 
-              ...adjustments.perspective, 
-              vertical: value 
-            })}
-            min={-50}
-            max={50}
-            step={1}
-            defaultValue={0}
-          />
-        </div>
-      </div>
-
-      <div className="pt-4 border-t border-slate-dark">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Housing Presets</h4>
-        <div className="grid grid-cols-1 gap-2">
-          <Button variant="secondary" size="small" className="text-xs justify-start">
-            Canon Housing + Wide Dome
-          </Button>
-          <Button variant="secondary" size="small" className="text-xs justify-start">
-            Nikon Housing + Macro Port
-          </Button>
-          <Button variant="secondary" size="small" className="text-xs justify-start">
-            Generic Flat Port
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderDetailTab = () => (
-    <div className="space-y-4">
-      <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Noise Reduction</h4>
-        <div className="space-y-3">
-          <SliderControl
-            label="Luminance Noise"
-            value={adjustments.luminanceNoise || 0}
-            onChange={(value) => onAdjustmentChange("luminanceNoise", value)}
-            min={0}
-            max={100}
-            step={5}
-            defaultValue={0}
-          />
-          <SliderControl
-            label="Color Noise"
-            value={adjustments.colorNoise || 0}
-            onChange={(value) => onAdjustmentChange("colorNoise", value)}
-            min={0}
-            max={100}
-            step={5}
-            defaultValue={0}
-          />
-        </div>
-      </div>
-
-      <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Sharpening</h4>
-        <div className="space-y-3">
-          <SliderControl
-            label="Amount"
-            value={adjustments.sharpening || 0}
-            onChange={(value) => onAdjustmentChange("sharpening", value)}
-            min={0}
-            max={150}
-            step={5}
-            defaultValue={0}
-          />
-          <SliderControl
-            label="Radius"
-            value={adjustments.sharpenRadius || 1.0}
-            onChange={(value) => onAdjustmentChange("sharpenRadius", value)}
-            min={0.5}
-            max={3.0}
-            step={0.1}
-            defaultValue={1.0}
-          />
-        </div>
-      </div>
-    </div>
-      <div className="pt-4 border-t border-slate-dark">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Perspective Correction</h4>
-        <div className="space-y-4">
-          <SliderControl
-            label="Horizontal"
-            value={adjustments.perspective?.horizontal || 0}
-            onChange={(value) => onAdjustmentChange("perspective", { 
-              ...adjustments.perspective, 
-              horizontal: value 
-            })}
-            min={-50}
-            max={50}
-            step={1}
-            defaultValue={0}
-          />
-          <SliderControl
-            label="Vertical"
-            value={adjustments.perspective?.vertical || 0}
-            onChange={(value) => onAdjustmentChange("perspective", { 
-              ...adjustments.perspective, 
-              vertical: value 
-            })}
-            min={-50}
-            max={50}
-            step={1}
-            defaultValue={0}
-          />
-        </div>
-      </div>
-
-      <div className="pt-4 border-t border-slate-dark">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Housing Presets</h4>
-        <div className="grid grid-cols-1 gap-2">
-          <Button variant="secondary" size="small" className="text-xs justify-start">
-            Canon Housing + Wide Dome
-          </Button>
-          <Button variant="secondary" size="small" className="text-xs justify-start">
-            Nikon Housing + Macro Port
-          </Button>
-          <Button variant="secondary" size="small" className="text-xs justify-start">
-            Generic Flat Port
-          </Button>
-        </div>
-      </div>
+      <CurveEditor
+        curves={curves}
+        onCurveChange={onCurveChange}
+        activeChannel={activeCurveChannel}
+        onChannelChange={setActiveCurveChannel}
+        histogram={histogram}
+        showHistogram={true}
+      />
     </div>
   );
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "basic": return renderBasicTab();
-      case "color": return renderColorTab();
-      case "tone": return renderToneTab();
-      case "local": return renderLocalTab();
-case "lens": return renderLensTab();
-      case "detail": return renderDetailTab();
-      default: return renderBasicTab();
+      case 'basic':
+        return renderBasicAdjustments();
+      case 'color':
+        return renderColorAdjustments();
+      case 'underwater':
+        return renderUnderwaterAdjustments();
+      case 'curves':
+        return renderCurveAdjustments();
+      default:
+        return renderBasicAdjustments();
     }
   };
 
   return (
-    <Card className={cn("w-full lg:w-80 h-fit", className)}>
-      <CardHeader className="pb-4">
+    <Card className={cn("w-full max-w-sm", className)}>
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center space-x-2 text-lg">
-            <ApperIcon name="Sliders" className="w-5 h-5 text-ocean-teal" />
-            <span>Advanced Tools</span>
-          </CardTitle>
+          <CardTitle className="text-lg">Adjustments</CardTitle>
           <Button
             variant="ghost"
             size="small"
-            onClick={onResetAll}
+            onClick={resetAllAdjustments}
+            className="text-xs"
             title="Reset all adjustments"
           >
-            <ApperIcon name="RotateCcw" className="w-4 h-4" />
+            <ApperIcon name="RotateCcw" className="w-3 h-3 mr-1" />
+            Reset
           </Button>
+        </div>
+        
+        {/* Tab Navigation */}
+        <div className="grid grid-cols-4 gap-1 mt-4">
+          {tabs.map((tab) => (
+            <Button
+              key={tab.id}
+              variant={activeTab === tab.id ? "secondary" : "ghost"}
+              size="small"
+              className="text-xs p-2 h-auto flex-col"
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <ApperIcon name={tab.icon} className="w-3 h-3 mb-1" />
+              <span>{tab.name}</span>
+            </Button>
+          ))}
         </div>
       </CardHeader>
       
-      <CardContent>
-        <div className="flex space-x-1 mb-6 bg-slate-darker rounded-lg p-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-md text-xs transition-colors",
-                activeTab === tab.id
-                  ? "bg-ocean-teal text-white"
-                  : "text-gray-400 hover:text-gray-300"
-              )}
-            >
-              <ApperIcon name={tab.icon} className="w-3 h-3" />
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-        
-        <div className="max-h-[600px] overflow-y-auto pr-2">
+      <CardContent className="pt-0">
+        <div className="max-h-96 overflow-y-auto pr-2">
           {renderTabContent()}
         </div>
       </CardContent>
