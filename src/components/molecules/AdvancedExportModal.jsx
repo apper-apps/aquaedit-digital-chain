@@ -714,7 +714,7 @@ id: "print-portfolio",
               </div>
             )}
 
-            {activeTab === "metadata" && (
+{activeTab === "metadata" && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
@@ -766,7 +766,7 @@ id: "print-portfolio",
                           <option value="CC BY-SA 4.0">Creative Commons BY-SA 4.0</option>
                           <option value="CC BY-NC 4.0">Creative Commons BY-NC 4.0</option>
                           <option value="Royalty Free">Royalty Free</option>
-</select>
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -774,88 +774,87 @@ id: "print-portfolio",
                   <div className="space-y-4">
                     <Label className="text-base font-medium">Underwater Photography Metadata</Label>
                     <div className="space-y-3">
+                      <Input
+                        placeholder="Dive site location"
+                        value={customMetadata.diveSite}
+                        onChange={(e) => setCustomMetadata(prev => ({ ...prev, diveSite: e.target.value }))}
+                      />
+                      <div className="grid grid-cols-3 gap-2">
                         <Input
-                          placeholder="Dive site location"
-                          value={customMetadata.diveSite}
-                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, diveSite: e.target.value }))}
+                          placeholder="Depth (m/ft)"
+                          value={customMetadata.depth}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, depth: e.target.value }))}
                         />
-                        <div className="grid grid-cols-3 gap-2">
-                          <Input
-                            placeholder="Depth (m/ft)"
-                            value={customMetadata.depth}
-                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, depth: e.target.value }))}
-                          />
-                          <Input
-                            placeholder="Water temp (°C/°F)"
-                            value={customMetadata.waterTemp}
-                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, waterTemp: e.target.value }))}
-                          />
-                          <Input
-                            placeholder="Visibility (m/ft)"
-                            value={customMetadata.visibility}
-                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, visibility: e.target.value }))}
-                          />
-                        </div>
-                        
-                        <div className="space-y-3 pt-3 border-t border-slate-dark">
-                          <Label className="text-sm font-medium">Marine Life Identification</Label>
-                          <Input
-                            placeholder="Primary subject (common name)"
-                            value={customMetadata.marineLife}
-                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, marineLife: e.target.value }))}
-                          />
-                          <Input
-                            placeholder="Scientific name"
-                            value={customMetadata.scientificName}
-                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, scientificName: e.target.value }))}
-                          />
-                          <div className="grid grid-cols-2 gap-2">
-                            <select
-                              value={customMetadata.conservationStatus}
-                              onChange={(e) => setCustomMetadata(prev => ({ ...prev, conservationStatus: e.target.value }))}
-                              className="w-full bg-slate-darker text-white px-3 py-2 rounded-lg border border-slate-dark focus:border-ocean-teal outline-none"
-                            >
-                              <option value="">Conservation Status</option>
-                              <option value="LC">Least Concern (LC)</option>
-                              <option value="NT">Near Threatened (NT)</option>
-                              <option value="VU">Vulnerable (VU)</option>
-                              <option value="EN">Endangered (EN)</option>
-                              <option value="CR">Critically Endangered (CR)</option>
-                              <option value="EW">Extinct in Wild (EW)</option>
-                              <option value="EX">Extinct (EX)</option>
-                              <option value="DD">Data Deficient (DD)</option>
-                            </select>
-                            <Input
-                              placeholder="Behavior observed"
-                              value={customMetadata.behaviorObserved}
-                              onChange={(e) => setCustomMetadata(prev => ({ ...prev, behaviorObserved: e.target.value }))}
-                            />
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 gap-2">
-                          <Input
-                            placeholder="Dive number"
-                            value={customMetadata.diveNumber}
-                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, diveNumber: e.target.value }))}
-                          />
-                          <Input
-                            placeholder="Dive buddy"
-                            value={customMetadata.buddy}
-                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, buddy: e.target.value }))}
-                          />
-                          <Input
-                            placeholder="Dive master"
-                            value={customMetadata.diveMaster}
-                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, diveMaster: e.target.value }))}
-                          />
-                        </div>
                         <Input
-                          placeholder="Certification level"
-                          value={customMetadata.certification}
-                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, certification: e.target.value }))}
+                          placeholder="Water temp (°C/°F)"
+                          value={customMetadata.waterTemp}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, waterTemp: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="Visibility (m/ft)"
+                          value={customMetadata.visibility}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, visibility: e.target.value }))}
                         />
                       </div>
+                      
+                      <div className="space-y-3 pt-3 border-t border-slate-dark">
+                        <Label className="text-sm font-medium">Marine Life Identification</Label>
+                        <Input
+                          placeholder="Primary subject (common name)"
+                          value={customMetadata.marineLife}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, marineLife: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="Scientific name"
+                          value={customMetadata.scientificName}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, scientificName: e.target.value }))}
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <select
+                            value={customMetadata.conservationStatus}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, conservationStatus: e.target.value }))}
+                            className="w-full bg-slate-darker text-white px-3 py-2 rounded-lg border border-slate-dark focus:border-ocean-teal outline-none"
+                          >
+                            <option value="">Conservation Status</option>
+                            <option value="LC">Least Concern (LC)</option>
+                            <option value="NT">Near Threatened (NT)</option>
+                            <option value="VU">Vulnerable (VU)</option>
+                            <option value="EN">Endangered (EN)</option>
+                            <option value="CR">Critically Endangered (CR)</option>
+                            <option value="EW">Extinct in Wild (EW)</option>
+                            <option value="EX">Extinct (EX)</option>
+                            <option value="DD">Data Deficient (DD)</option>
+                          </select>
+                          <Input
+                            placeholder="Behavior observed"
+                            value={customMetadata.behaviorObserved}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, behaviorObserved: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-2">
+                        <Input
+                          placeholder="Dive number"
+                          value={customMetadata.diveNumber}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, diveNumber: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="Dive buddy"
+                          value={customMetadata.buddy}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, buddy: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="Dive master"
+                          value={customMetadata.diveMaster}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, diveMaster: e.target.value }))}
+                        />
+                      </div>
+                      <Input
+                        placeholder="Certification level"
+                        value={customMetadata.certification}
+                        onChange={(e) => setCustomMetadata(prev => ({ ...prev, certification: e.target.value }))}
+                      />
                       
                       <div className="space-y-3 pt-3 border-t border-slate-dark">
                         <Label className="text-sm font-medium">Equipment Tracking</Label>
@@ -928,6 +927,7 @@ id: "print-portfolio",
                   </p>
                 </div>
               </div>
+            )}
             )}
 
             {activeTab === "batch" && (
