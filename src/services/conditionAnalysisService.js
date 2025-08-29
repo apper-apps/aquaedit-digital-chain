@@ -23,13 +23,17 @@ export class ConditionAnalysisService {
     const analysis = {
       waterClarity: this.analyzeWaterClarity(image),
       estimatedDepth: this.estimateDepth(image),
-      lightingCondition: this.analyzeLighting(image),
+lightingCondition: this.analyzeLighting(image),
       subjectType: this.identifySubject(image),
       colorCastSeverity: this.analyzeColorCast(image),
       backscatterDensity: this.measureBackscatter(image),
       recommendedPresetStrength: this.calculatePresetStrength(image),
       confidence: this.calculateConfidence(image),
-      processingRecommendations: this.generateRecommendations(image)
+      processingRecommendations: this.generateRecommendations(image),
+      aiSubjectDetection: this.detectUnderwaterSubjects(image),
+      maskingRecommendations: this.generateMaskingRecommendations(image),
+      colorSpaceAnalysis: this.analyzeColorSpace(image),
+      bitDepthOptimal: this.recommendBitDepth(image)
     };
 
     this.analysisCache.set(cacheKey, analysis);
@@ -236,12 +240,14 @@ export class ConditionAnalysisService {
    * Generate processing recommendations
    */
   generateRecommendations(image) {
-    const analysis = {
+const analysis = {
       waterClarity: this.analyzeWaterClarity(image),
       estimatedDepth: this.estimateDepth(image),
       lightingCondition: this.analyzeLighting(image),
       colorCast: this.analyzeColorCast(image),
-      backscatter: this.measureBackscatter(image)
+      backscatter: this.measureBackscatter(image),
+      subjectMasks: this.generateSubjectMasks(image),
+      professionalMetrics: this.calculateProfessionalMetrics(image)
     };
     
     const recommendations = [];
@@ -288,18 +294,212 @@ export class ConditionAnalysisService {
     
     return recommendations;
   }
+/**
+   * AI-powered underwater subject detection
+   */
+  detectUnderwaterSubjects(image) {
+    // Simulated AI detection for different underwater subjects
+    const detectedSubjects = [];
+    
+    // Fish detection based on color patterns and shapes
+    const fishConfidence = this.detectFishPatterns(image);
+    if (fishConfidence > 0.7) {
+      detectedSubjects.push({
+        type: 'fish',
+        confidence: fishConfidence,
+        boundingBoxes: this.generateBoundingBoxes(image, 'fish'),
+        species: this.identifyFishSpecies(image)
+      });
+    }
+    
+    // Coral detection based on texture and color
+    const coralConfidence = this.detectCoralStructures(image);
+    if (coralConfidence > 0.8) {
+      detectedSubjects.push({
+        type: 'coral',
+        confidence: coralConfidence,
+        boundingBoxes: this.generateBoundingBoxes(image, 'coral'),
+        coralType: this.classifyCoralType(image)
+      });
+    }
+    
+    // Diver detection based on equipment and human forms
+    const diverConfidence = this.detectDivers(image);
+    if (diverConfidence > 0.85) {
+      detectedSubjects.push({
+        type: 'diver',
+        confidence: diverConfidence,
+        boundingBoxes: this.generateBoundingBoxes(image, 'diver'),
+        equipment: this.identifyDivingEquipment(image)
+      });
+    }
+    
+    return detectedSubjects;
+  }
 
   /**
-   * Batch analyze multiple images
+   * Generate masking recommendations based on analysis
+   */
+  generateMaskingRecommendations(image) {
+    const recommendations = [];
+    
+    const subjects = this.detectUnderwaterSubjects(image);
+    subjects.forEach(subject => {
+      if (subject.confidence > 0.8) {
+        recommendations.push({
+          type: 'ai_subject_mask',
+          subject: subject.type,
+          confidence: subject.confidence,
+          suggested: true,
+          reason: `High confidence ${subject.type} detection`
+        });
+      }
+    });
+    
+    // Luminosity masking recommendations
+    const histogram = this.calculateHistogram(image);
+    if (histogram.shadows > 0.3) {
+      recommendations.push({
+        type: 'luminosity_mask',
+        target: 'shadows',
+        strength: Math.round(histogram.shadows * 100),
+        reason: 'Significant shadow detail to recover'
+      });
+    }
+    
+    if (histogram.highlights > 0.25) {
+      recommendations.push({
+        type: 'luminosity_mask',
+        target: 'highlights',
+        strength: Math.round(histogram.highlights * 100),
+        reason: 'Highlight recovery recommended'
+      });
+    }
+    
+    // Color range masking for underwater scenes
+    const dominantColors = this.analyzeDominantColors(image);
+    if (dominantColors.blue > 0.6) {
+      recommendations.push({
+        type: 'color_range_mask',
+        target: 'blue_water',
+        hueRange: [200, 240],
+        reason: 'Strong blue cast suitable for color masking'
+      });
+    }
+    
+    return recommendations;
+  }
+
+  /**
+   * Analyze color space characteristics
+   */
+  analyzeColorSpace(image) {
+    const colorAnalysis = this.analyzeColorGamut(image);
+    const recommendations = [];
+    
+    if (colorAnalysis.outOfSRGBGamut > 0.15) {
+      recommendations.push({
+        colorSpace: 'Adobe RGB',
+        reason: 'Significant colors outside sRGB gamut',
+        percentage: Math.round(colorAnalysis.outOfSRGBGamut * 100)
+      });
+    }
+    
+    if (colorAnalysis.wideGamutColors > 0.05) {
+      recommendations.push({
+        colorSpace: 'ProPhoto RGB',
+        reason: 'Wide gamut colors detected',
+        percentage: Math.round(colorAnalysis.wideGamutColors * 100)
+      });
+    }
+    
+    return {
+      currentGamut: colorAnalysis.currentGamut,
+      recommendations,
+      outOfGamutAreas: colorAnalysis.outOfGamutPixels
+    };
+  }
+
+  /**
+   * Recommend optimal bit depth
+   */
+  recommendBitDepth(image) {
+    const toneGradient = this.analyzeToneGradients(image);
+    const colorDepth = this.analyzeColorDepth(image);
+    
+    if (toneGradient.smoothGradients > 0.3 || colorDepth.subtleVariations > 0.25) {
+      return {
+        recommended: 16,
+        reason: 'Smooth gradients and subtle color variations benefit from 16-bit processing',
+        confidence: Math.max(toneGradient.smoothGradients, colorDepth.subtleVariations)
+      };
+    }
+    
+    return {
+      recommended: 8,
+      reason: 'Image characteristics suitable for 8-bit processing',
+      confidence: 0.8
+    };
+  }
+
+  /**
+   * Generate subject masks using AI detection
+   */
+  generateSubjectMasks(image) {
+    const subjects = this.detectUnderwaterSubjects(image);
+    const masks = [];
+    
+    subjects.forEach(subject => {
+      if (subject.confidence > 0.75) {
+        masks.push({
+          type: subject.type,
+          mask: this.createSubjectMask(image, subject),
+          confidence: subject.confidence,
+          refinementSuggestions: this.suggestMaskRefinements(subject)
+        });
+      }
+    });
+    
+    return masks;
+  }
+
+  /**
+   * Calculate professional quality metrics
+   */
+  calculateProfessionalMetrics(image) {
+    return {
+      technicalQuality: this.assessTechnicalQuality(image),
+      colorAccuracy: this.assessColorAccuracy(image),
+      sharpnessMetrics: this.analyzeSharpness(image),
+      noiseCharacteristics: this.analyzeNoise(image),
+      exposureAccuracy: this.assessExposure(image),
+      printReadiness: this.assessPrintReadiness(image)
+    };
+  }
+
+  /**
+   * Batch analyze multiple images with professional features
    */
   async batchAnalyze(images, onProgress = null) {
     const results = [];
+    const batchMetrics = {
+      totalImages: images.length,
+      processed: 0,
+      averageProcessingTime: 0,
+      professionalGrade: 0,
+      consistencyScore: 0
+    };
     
     for (let i = 0; i < images.length; i++) {
+      const startTime = Date.now();
       const analysis = await this.analyzeImage(images[i]);
+      const processingTime = Date.now() - startTime;
+      
       results.push({
         imageId: images[i].Id,
-        analysis
+        analysis,
+        processingTime,
+        professionalScore: this.calculateProfessionalScore(analysis)
       });
       
       if (onProgress) {

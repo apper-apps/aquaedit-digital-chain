@@ -20,8 +20,9 @@ const AdjustmentPanel = ({
   const [expandedSections, setExpandedSections] = useState({
     basic: true,
     color: false,
-    underwater: false,
-    curves: false
+underwater: false,
+    curves: false,
+    masking: false
   });
 
   // Default adjustment values
@@ -139,14 +140,15 @@ const AdjustmentPanel = ({
     onReset?.();
   }, [onReset]);
 
-  const tabs = [
+const tabs = [
     { id: 'basic', name: 'Basic', icon: 'Settings' },
     { id: 'color', name: 'Color', icon: 'Palette' },
     { id: 'underwater', name: 'Underwater', icon: 'Waves' },
-    { id: 'curves', name: 'Curves', icon: 'TrendingUp' }
+    { id: 'curves', name: 'Curves', icon: 'TrendingUp' },
+    { id: 'masking', name: 'Masking', icon: 'Layers' }
   ];
 
-  const renderBasicAdjustments = () => (
+const renderBasicAdjustments = () => (
     <div className="space-y-4">
       <SliderControl
         label="Exposure"
@@ -343,6 +345,167 @@ const AdjustmentPanel = ({
     </div>
   );
 
+  const renderMaskingAdjustments = () => (
+    <div className="space-y-6">
+      {/* Luminosity Masking */}
+      <div>
+        <h5 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
+          <ApperIcon name="Sun" className="w-4 h-4 mr-2" />
+          Luminosity Masking (16-bit)
+        </h5>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {['Highlights', 'Midtones', 'Shadows', 'Brights', 'Darks', 'Ultra Brights'].map((maskType) => (
+            <Button
+              key={maskType}
+              variant="ghost"
+              size="small"
+              className="text-xs h-8"
+              onClick={() => handleAdjustmentChange('activeLuminosityMask', maskType)}
+            >
+              {maskType}
+            </Button>
+          ))}
+        </div>
+        <SliderControl
+          label="Mask Precision"
+          value={currentAdjustments.luminosityPrecision || 8}
+          onChange={(value) => handleAdjustmentChange('luminosityPrecision', value)}
+          min={1}
+          max={16}
+          step={1}
+          defaultValue={8}
+        />
+      </div>
+
+      {/* AI Subject Detection */}
+      <div>
+        <h5 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
+          <ApperIcon name="Brain" className="w-4 h-4 mr-2" />
+          AI Subject Detection
+        </h5>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {['Fish', 'Coral', 'Divers', 'Equipment', 'Background'].map((subject) => (
+            <Button
+              key={subject}
+              variant={currentAdjustments.aiSubjectMask === subject ? "secondary" : "ghost"}
+              size="small"
+              className="text-xs h-8"
+              onClick={() => handleAdjustmentChange('aiSubjectMask', subject)}
+            >
+              {subject}
+            </Button>
+          ))}
+        </div>
+        <SliderControl
+          label="Detection Confidence"
+          value={currentAdjustments.aiConfidence || 75}
+          onChange={(value) => handleAdjustmentChange('aiConfidence', value)}
+          min={50}
+          max={95}
+          step={5}
+          defaultValue={75}
+          suffix="%"
+        />
+      </div>
+
+      {/* Edge-Aware Masking */}
+      <div>
+        <h5 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
+          <ApperIcon name="Scissors" className="w-4 h-4 mr-2" />
+          Edge-Aware Masking
+        </h5>
+        <SliderControl
+          label="Edge Detection"
+          value={currentAdjustments.edgeDetection || 50}
+          onChange={(value) => handleAdjustmentChange('edgeDetection', value)}
+          min={0}
+          max={100}
+          defaultValue={50}
+        />
+        <SliderControl
+          label="Feathering"
+          value={currentAdjustments.maskFeathering || 10}
+          onChange={(value) => handleAdjustmentChange('maskFeathering', value)}
+          min={0}
+          max={50}
+          defaultValue={10}
+          suffix="px"
+        />
+        <SliderControl
+          label="Refinement"
+          value={currentAdjustments.maskRefinement || 0}
+          onChange={(value) => handleAdjustmentChange('maskRefinement', value)}
+          min={-50}
+          max={50}
+          defaultValue={0}
+        />
+      </div>
+
+      {/* Color Range Masking */}
+      <div>
+        <h5 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
+          <ApperIcon name="Pipette" className="w-4 h-4 mr-2" />
+          Color Range Masking (HSV)
+        </h5>
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          <SliderControl
+            label="Hue Range"
+            value={currentAdjustments.hueRange || 15}
+            onChange={(value) => handleAdjustmentChange('hueRange', value)}
+            min={0}
+            max={180}
+            defaultValue={15}
+          />
+          <SliderControl
+            label="Saturation"
+            value={currentAdjustments.satRange || 20}
+            onChange={(value) => handleAdjustmentChange('satRange', value)}
+            min={0}
+            max={100}
+            defaultValue={20}
+          />
+          <SliderControl
+            label="Brightness"
+            value={currentAdjustments.valRange || 20}
+            onChange={(value) => handleAdjustmentChange('valRange', value)}
+            min={0}
+            max={100}
+            defaultValue={20}
+          />
+        </div>
+        <div className="flex space-x-2">
+          <Button variant="ghost" size="small" className="text-xs">
+            Expand
+          </Button>
+          <Button variant="ghost" size="small" className="text-xs">
+            Contract
+          </Button>
+          <Button variant="ghost" size="small" className="text-xs">
+            Smooth
+          </Button>
+        </div>
+      </div>
+
+      {/* Mask Groups */}
+      <div>
+        <h5 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
+          <ApperIcon name="Layers" className="w-4 h-4 mr-2" />
+          Mask Groups & Boolean Operations
+        </h5>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between p-2 bg-slate-darker rounded">
+            <span className="text-xs">Mask Group 1</span>
+            <div className="flex space-x-1">
+              <Button variant="ghost" size="small" className="text-xs h-6 px-2">Add</Button>
+              <Button variant="ghost" size="small" className="text-xs h-6 px-2">Subtract</Button>
+              <Button variant="ghost" size="small" className="text-xs h-6 px-2">Intersect</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderCurveAdjustments = () => (
     <div className="space-y-4">
       <CurveEditor
@@ -357,7 +520,7 @@ const AdjustmentPanel = ({
   );
 
   const renderTabContent = () => {
-    switch (activeTab) {
+switch (activeTab) {
       case 'basic':
         return renderBasicAdjustments();
       case 'color':
@@ -366,6 +529,8 @@ const AdjustmentPanel = ({
         return renderUnderwaterAdjustments();
       case 'curves':
         return renderCurveAdjustments();
+      case 'masking':
+        return renderMaskingAdjustments();
       default:
         return renderBasicAdjustments();
     }
@@ -388,8 +553,8 @@ const AdjustmentPanel = ({
           </Button>
         </div>
         
-        {/* Tab Navigation */}
-        <div className="grid grid-cols-4 gap-1 mt-4">
+{/* Tab Navigation */}
+        <div className="grid grid-cols-5 gap-1 mt-4">
           {tabs.map((tab) => (
             <Button
               key={tab.id}

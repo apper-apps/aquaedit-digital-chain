@@ -18,16 +18,20 @@ import { toast } from "react-toastify";
 const EditorPage = () => {
   const location = useLocation();
 const [currentImage, setCurrentImage] = useState(null);
-const [adjustments, setAdjustments] = useState({
+  const [adjustments, setAdjustments] = useState({
     // Basic adjustments
     exposure: 0,
     contrast: 0,
     highlights: 0,
     shadows: 0,
+    whites: 0,
+    blacks: 0,
     saturation: 0,
     vibrance: 0,
     warmth: 0,
     clarity: 0,
+    texture: 0,
+    dehaze: 0,
     
     // Enhanced HSL Selective adjustments (8-channel)
     hslReds: { hue: 0, saturation: 0, luminance: 0 },
@@ -52,6 +56,10 @@ const [adjustments, setAdjustments] = useState({
     fishEnhancement: 0,
     waterCastCorrection: 0,
     depthCompensation: 0,
+    waterClarity: 0,
+    blueRemoval: 0,
+    greenRemoval: 0,
+    coralEnhancement: 0,
     
     // White Balance
     temperature: 0,
@@ -79,28 +87,62 @@ const [adjustments, setAdjustments] = useState({
     highlightClipping: 0,
     midtoneContrast: 0,
     
-    // Color Range Masking
+    // Professional Masking System
+    luminosityMasks: [],
+    aiSubjectMasks: [],
+    colorRangeMasks: [],
+    edgeAwareMasks: [],
+    maskGroups: [],
+    activeMask: null,
+    maskHistory: [],
+    maskPrecision: 16, // 16-bit precision
+    
+    // Color Range Masking with HSV
     colorMask: null,
     maskTolerance: 20,
     maskFeather: 10,
+    hueRange: 15,
+    satRange: 20,
+    valRange: 20,
     
     // Local Adjustments
     radialMask: null,
     linearMask: null,
     brushMask: null,
+    gradientMasks: [],
+    
+    // AI Subject Detection
+    aiSubjectMask: null,
+    aiConfidence: 75,
+    detectedSubjects: [],
+    
+    // Edge-Aware Masking
+    edgeDetection: 50,
+    maskFeathering: 10,
+    maskRefinement: 0,
     
     // Noise Reduction & Sharpening
     luminanceNoise: 0,
     colorNoise: 0,
     sharpening: 0,
     sharpenRadius: 1,
+    sharpenDetail: 0,
+    sharpenMasking: 0,
     sharpenThreshold: 0,
     
     // Lens Correction
     distortion: 0,
     chromaticAberration: 0,
     vignette: 0,
-    perspective: { horizontal: 0, vertical: 0 }
+    perspective: { horizontal: 0, vertical: 0 },
+    lensProfileEnabled: false,
+    
+    // Professional Color Science
+    colorSpace: 'sRGB',
+    bitDepth: 8,
+    colorProfile: 'sRGB IEC61966-2.1',
+    underwaterProfile: 'Underwater Standard',
+    gamutMapping: 'perceptual'
   });
 const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -221,16 +263,20 @@ const applyPreset = (preset) => {
   };
 
 const handleResetAll = () => {
-    const resetAdjustments = {
+const resetAdjustments = {
       // Basic adjustments
       exposure: 0,
       contrast: 0,
       highlights: 0,
       shadows: 0,
+      whites: 0,
+      blacks: 0,
       saturation: 0,
       vibrance: 0,
       warmth: 0,
       clarity: 0,
+      texture: 0,
+      dehaze: 0,
       
       // Enhanced HSL Selective adjustments (8-channel)
       hslReds: { hue: 0, saturation: 0, luminance: 0 },
@@ -255,6 +301,10 @@ const handleResetAll = () => {
       fishEnhancement: 0,
       waterCastCorrection: 0,
       depthCompensation: 0,
+      waterClarity: 0,
+      blueRemoval: 0,
+      greenRemoval: 0,
+      coralEnhancement: 0,
       
       // White Balance
       temperature: 0,
@@ -282,28 +332,62 @@ const handleResetAll = () => {
       highlightClipping: 0,
       midtoneContrast: 0,
       
+      // Professional Masking System
+      luminosityMasks: [],
+      aiSubjectMasks: [],
+      colorRangeMasks: [],
+      edgeAwareMasks: [],
+      maskGroups: [],
+      activeMask: null,
+      maskHistory: [],
+      maskPrecision: 16,
+      
       // Color Range Masking
       colorMask: null,
       maskTolerance: 20,
       maskFeather: 10,
+      hueRange: 15,
+      satRange: 20,
+      valRange: 20,
       
       // Local Adjustments
       radialMask: null,
       linearMask: null,
       brushMask: null,
+      gradientMasks: [],
+      
+      // AI Subject Detection
+      aiSubjectMask: null,
+      aiConfidence: 75,
+      detectedSubjects: [],
+      
+      // Edge-Aware Masking
+      edgeDetection: 50,
+      maskFeathering: 10,
+      maskRefinement: 0,
       
       // Noise Reduction & Sharpening
       luminanceNoise: 0,
       colorNoise: 0,
       sharpening: 0,
       sharpenRadius: 1,
+      sharpenDetail: 0,
+      sharpenMasking: 0,
       sharpenThreshold: 0,
       
       // Lens Correction
       distortion: 0,
       chromaticAberration: 0,
       vignette: 0,
-      perspective: { horizontal: 0, vertical: 0 }
+      perspective: { horizontal: 0, vertical: 0 },
+      lensProfileEnabled: false,
+      
+      // Professional Color Science
+      colorSpace: 'sRGB',
+      bitDepth: 8,
+      colorProfile: 'sRGB IEC61966-2.1',
+      underwaterProfile: 'Underwater Standard',
+      gamutMapping: 'perceptual'
     };
     setAdjustments(resetAdjustments);
     addToHistory(resetAdjustments);

@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/Card";
-import Button from "@/components/atoms/Button";
-import Label from "@/components/atoms/Label";
-import Input from "@/components/atoms/Input";
-import Slider from "@/components/atoms/Slider";
-import ApperIcon from "@/components/ApperIcon";
-import { cn } from "@/utils/cn";
+import React, { useCallback, useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
 import { toast } from "react-toastify";
+import { cn } from "@/utils/cn";
+import ApperIcon from "@/components/ApperIcon";
+import Label from "@/components/atoms/Label";
+import Slider from "@/components/atoms/Slider";
+import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
 
 const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) => {
   // Export Settings State
@@ -16,8 +16,9 @@ const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) =>
   const [width, setWidth] = useState(image?.dimensions?.width || 1920);
   const [height, setHeight] = useState(image?.dimensions?.height || 1080);
   const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
-  const [colorSpace, setColorSpace] = useState("sRGB");
-  
+const [colorSpace, setColorSpace] = useState("sRGB");
+  const [bitDepth, setBitDepth] = useState(8);
+  const [colorProfile, setColorProfile] = useState("sRGB");
   // Batch Export State
   const [batchMode, setBatchMode] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
@@ -35,16 +36,32 @@ const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) =>
   // Metadata State
   const [preserveExif, setPreserveExif] = useState(true);
   const [removeGPS, setRemoveGPS] = useState(false);
-  const [customMetadata, setCustomMetadata] = useState({
+const [customMetadata, setCustomMetadata] = useState({
     diveSite: "",
     depth: "",
     waterTemp: "",
+    visibility: "",
     marineLife: "",
+    scientificName: "",
+    conservationStatus: "",
+    behaviorObserved: "",
     diveNumber: "",
     buddy: "",
+    diveMaster: "",
     certification: "",
+    equipment: {
+      housing: "",
+      strobes: "",
+      filters: ""
+    },
+    research: {
+      studyId: "",
+      institution: "",
+      specimenId: ""
+    },
     copyright: "",
     photographer: "",
+    license: "",
     keywords: ""
   });
   
@@ -83,9 +100,11 @@ const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) =>
       description: "High-resolution TIFF for professional printing",
       format: "tiff",
       quality: 100,
-      width: image?.dimensions?.width || 4000,
+width: image?.dimensions?.width || 4000,
       height: image?.dimensions?.height || 3000,
       colorSpace: "Adobe RGB",
+      bitDepth: 16,
+      profile: "Adobe RGB (1998)",
       icon: "Printer"
     },
     {
@@ -348,16 +367,47 @@ const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) =>
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Color Space</Label>
+<Label>Color Space & Profile</Label>
                       <select
                         value={colorSpace}
-                        onChange={(e) => setColorSpace(e.target.value)}
+                        onChange={(e) => {
+                          setColorSpace(e.target.value);
+                          setColorProfile(e.target.value === 'sRGB' ? 'sRGB IEC61966-2.1' : 
+                                          e.target.value === 'Adobe RGB' ? 'Adobe RGB (1998)' : 
+                                          'ProPhoto RGB');
+                        }}
                         className="w-full bg-slate-darker text-white px-3 py-2 rounded-lg border border-slate-dark focus:border-ocean-teal outline-none"
                       >
-                        <option value="sRGB">sRGB - Web standard</option>
-                        <option value="Adobe RGB">Adobe RGB - Professional print</option>
-                        <option value="ProPhoto RGB">ProPhoto RGB - Maximum gamut</option>
+                        <option value="sRGB">sRGB - Web standard (8-bit)</option>
+                        <option value="Adobe RGB">Adobe RGB - Professional print (16-bit)</option>
+                        <option value="ProPhoto RGB">ProPhoto RGB - Maximum gamut (16-bit)</option>
                       </select>
+                      
+                      <Label className="mt-3">Bit Depth</Label>
+                      <select
+                        value={bitDepth}
+                        onChange={(e) => setBitDepth(parseInt(e.target.value))}
+                        className="w-full bg-slate-darker text-white px-3 py-2 rounded-lg border border-slate-dark focus:border-ocean-teal outline-none"
+                      >
+                        <option value={8}>8-bit (256 levels per channel)</option>
+                        <option value={16}>16-bit (65,536 levels per channel)</option>
+                      </select>
+                      
+                      <div className="mt-3 p-3 bg-slate-darker rounded-lg">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <ApperIcon name="Info" className="w-4 h-4 text-ocean-teal" />
+                          <span className="text-sm font-medium">Color Profile Info</span>
+                        </div>
+                        <p className="text-xs text-gray-400">
+                          Active Profile: {colorProfile}<br/>
+                          Gamut: {colorSpace === 'sRGB' ? '~35% of visible colors' : 
+                                  colorSpace === 'Adobe RGB' ? '~50% of visible colors' : 
+                                  '~90% of visible colors'}<br/>
+                          Recommended for: {colorSpace === 'sRGB' ? 'Web display' : 
+                                           colorSpace === 'Adobe RGB' ? 'Professional printing' : 
+                                           'High-end photo editing'}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -664,10 +714,10 @@ const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) =>
             )}
 
             {activeTab === "metadata" && (
-              <div className="space-y-6">
+<div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <Label className="text-base font-medium">EXIF Data Options</Label>
+                    <Label className="text-base font-medium">EXIF & Technical Data</Label>
                     <div className="space-y-3">
                       <div className="flex items-center space-x-2">
                         <input
@@ -690,66 +740,176 @@ const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) =>
                         <Label htmlFor="removeGPS">Remove GPS coordinates (privacy)</Label>
                       </div>
                     </div>
-
-                    <div className="pt-4 border-t border-slate-dark">
-                      <Label className="text-base font-medium mb-3 block">Copyright & Attribution</Label>
-                      <div className="space-y-3">
-                        <Input
-                          placeholder="Photographer name"
-                          value={customMetadata.photographer}
-                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, photographer: e.target.value }))}
-                        />
-                        <Input
-                          placeholder="Copyright notice"
-                          value={customMetadata.copyright}
-                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, copyright: e.target.value }))}
-                        />
+<div className="pt-4 border-t border-slate-dark">
+                        <Label className="text-base font-medium mb-3 block">Copyright & Attribution</Label>
+                        <div className="space-y-3">
+                          <Input
+                            placeholder="Photographer name"
+                            value={customMetadata.photographer}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, photographer: e.target.value }))}
+                          />
+                          <Input
+                            placeholder="Copyright notice"
+                            value={customMetadata.copyright}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, copyright: e.target.value }))}
+                          />
+                          <select
+                            value={customMetadata.license}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, license: e.target.value }))}
+                            className="w-full bg-slate-darker text-white px-3 py-2 rounded-lg border border-slate-dark focus:border-ocean-teal outline-none"
+                          >
+                            <option value="">Select License</option>
+                            <option value="All Rights Reserved">All Rights Reserved</option>
+                            <option value="CC BY 4.0">Creative Commons BY 4.0</option>
+                            <option value="CC BY-SA 4.0">Creative Commons BY-SA 4.0</option>
+                            <option value="CC BY-NC 4.0">Creative Commons BY-NC 4.0</option>
+                            <option value="Royalty Free">Royalty Free</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-4">
-                    <Label className="text-base font-medium">Dive-Specific Metadata</Label>
-                    <div className="space-y-3">
-                      <Input
-                        placeholder="Dive site location"
-                        value={customMetadata.diveSite}
-                        onChange={(e) => setCustomMetadata(prev => ({ ...prev, diveSite: e.target.value }))}
-                      />
-                      <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-4">
+                      <Label className="text-base font-medium">Comprehensive Dive Metadata</Label>
+                      <div className="space-y-3">
                         <Input
-                          placeholder="Depth (m/ft)"
-                          value={customMetadata.depth}
-                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, depth: e.target.value }))}
+                          placeholder="Dive site location"
+                          value={customMetadata.diveSite}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, diveSite: e.target.value }))}
                         />
+                        <div className="grid grid-cols-3 gap-2">
+                          <Input
+                            placeholder="Depth (m/ft)"
+                            value={customMetadata.depth}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, depth: e.target.value }))}
+                          />
+                          <Input
+                            placeholder="Water temp (°C/°F)"
+                            value={customMetadata.waterTemp}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, waterTemp: e.target.value }))}
+                          />
+                          <Input
+                            placeholder="Visibility (m/ft)"
+                            value={customMetadata.visibility}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, visibility: e.target.value }))}
+                          />
+                        </div>
+                        
+                        <div className="space-y-3 pt-3 border-t border-slate-dark">
+                          <Label className="text-sm font-medium">Marine Life Identification</Label>
+                          <Input
+                            placeholder="Primary subject (common name)"
+                            value={customMetadata.marineLife}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, marineLife: e.target.value }))}
+                          />
+                          <Input
+                            placeholder="Scientific name"
+                            value={customMetadata.scientificName}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, scientificName: e.target.value }))}
+                          />
+                          <div className="grid grid-cols-2 gap-2">
+                            <select
+                              value={customMetadata.conservationStatus}
+                              onChange={(e) => setCustomMetadata(prev => ({ ...prev, conservationStatus: e.target.value }))}
+                              className="w-full bg-slate-darker text-white px-3 py-2 rounded-lg border border-slate-dark focus:border-ocean-teal outline-none"
+                            >
+                              <option value="">Conservation Status</option>
+                              <option value="LC">Least Concern (LC)</option>
+                              <option value="NT">Near Threatened (NT)</option>
+                              <option value="VU">Vulnerable (VU)</option>
+                              <option value="EN">Endangered (EN)</option>
+                              <option value="CR">Critically Endangered (CR)</option>
+                              <option value="EW">Extinct in Wild (EW)</option>
+                              <option value="EX">Extinct (EX)</option>
+                              <option value="DD">Data Deficient (DD)</option>
+                            </select>
+                            <Input
+                              placeholder="Behavior observed"
+                              value={customMetadata.behaviorObserved}
+                              onChange={(e) => setCustomMetadata(prev => ({ ...prev, behaviorObserved: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-2">
+                          <Input
+                            placeholder="Dive number"
+                            value={customMetadata.diveNumber}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, diveNumber: e.target.value }))}
+                          />
+                          <Input
+                            placeholder="Dive buddy"
+                            value={customMetadata.buddy}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, buddy: e.target.value }))}
+                          />
+                          <Input
+                            placeholder="Dive master"
+                            value={customMetadata.diveMaster}
+                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, diveMaster: e.target.value }))}
+                          />
+                        </div>
                         <Input
-                          placeholder="Water temp (°C/°F)"
-                          value={customMetadata.waterTemp}
-                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, waterTemp: e.target.value }))}
+                          placeholder="Certification level"
+                          value={customMetadata.certification}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, certification: e.target.value }))}
                         />
                       </div>
-                      <Input
-                        placeholder="Marine life spotted"
-                        value={customMetadata.marineLife}
-                        onChange={(e) => setCustomMetadata(prev => ({ ...prev, marineLife: e.target.value }))}
-                      />
-                      <div className="grid grid-cols-2 gap-2">
+                      
+                      <div className="space-y-3 pt-3 border-t border-slate-dark">
+                        <Label className="text-sm font-medium">Equipment Tracking</Label>
                         <Input
-                          placeholder="Dive number"
-                          value={customMetadata.diveNumber}
-                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, diveNumber: e.target.value }))}
+                          placeholder="Housing make/model"
+                          value={customMetadata.equipment.housing}
+                          onChange={(e) => setCustomMetadata(prev => ({ 
+                            ...prev, 
+                            equipment: { ...prev.equipment, housing: e.target.value }
+                          }))}
                         />
                         <Input
-                          placeholder="Dive buddy"
-                          value={customMetadata.buddy}
-                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, buddy: e.target.value }))}
+                          placeholder="Strobe configuration"
+                          value={customMetadata.equipment.strobes}
+                          onChange={(e) => setCustomMetadata(prev => ({ 
+                            ...prev, 
+                            equipment: { ...prev.equipment, strobes: e.target.value }
+                          }))}
+                        />
+                        <Input
+                          placeholder="Filters used"
+                          value={customMetadata.equipment.filters}
+                          onChange={(e) => setCustomMetadata(prev => ({ 
+                            ...prev, 
+                            equipment: { ...prev.equipment, filters: e.target.value }
+                          }))}
                         />
                       </div>
-                      <Input
-                        placeholder="Certification level"
-                        value={customMetadata.certification}
-                        onChange={(e) => setCustomMetadata(prev => ({ ...prev, certification: e.target.value }))}
-                      />
+                      
+                      <div className="space-y-3 pt-3 border-t border-slate-dark">
+                        <Label className="text-sm font-medium">Research Integration</Label>
+                        <Input
+                          placeholder="Study ID"
+                          value={customMetadata.research.studyId}
+                          onChange={(e) => setCustomMetadata(prev => ({ 
+                            ...prev, 
+                            research: { ...prev.research, studyId: e.target.value }
+                          }))}
+                        />
+                        <Input
+                          placeholder="Research institution"
+                          value={customMetadata.research.institution}
+                          onChange={(e) => setCustomMetadata(prev => ({ 
+                            ...prev, 
+                            research: { ...prev.research, institution: e.target.value }
+                          }))}
+                        />
+                        <Input
+                          placeholder="Specimen ID"
+                          value={customMetadata.research.specimenId}
+                          onChange={(e) => setCustomMetadata(prev => ({ 
+                            ...prev, 
+                            research: { ...prev.research, specimenId: e.target.value }
+                          }))}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
