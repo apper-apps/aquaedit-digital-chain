@@ -8,8 +8,19 @@ const Error = ({
   className, 
   title = "Something went wrong", 
   message = "We encountered an error while processing your image. Please try again.",
-  onRetry
+  onRetry,
+  error
 }) => {
+  // Detect context limit errors and provide specific guidance
+  const isContextLimitError = error?.message?.includes('context limit') || 
+                              error?.message?.includes('too much data') ||
+                              message?.includes('context limit');
+  
+  const contextLimitTitle = "Processing Limit Reached";
+  const contextLimitMessage = "Too much data was processed at once. Try reducing the number of files, using smaller images, or processing in smaller batches.";
+  
+  const displayTitle = isContextLimitError ? contextLimitTitle : title;
+  const displayMessage = isContextLimitError ? contextLimitMessage : message;
   return (
     <Card className={cn("max-w-md mx-auto", className)}>
       <CardContent className="p-8 text-center space-y-6">

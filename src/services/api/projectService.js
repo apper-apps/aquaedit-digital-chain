@@ -2,34 +2,100 @@ import projectsData from "@/services/mockData/projects.json";
 import imagesData from "@/services/mockData/images.json";
 import presetsData from "@/services/mockData/presets.json";
 
-// Mock API delay
+// Mock API delay with context-aware throttling
 export const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// In-memory data stores (simulating database)
+// Memory-efficient data stores with chunking support
 let projects = [...projectsData];
 let images = [...imagesData];
 let presets = [...presetsData];
 
-// Project service methods
-export const getProjects = async () => {
-  await delay(300);
-  return [...projects];
+// Pagination configuration
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_BATCH_SIZE = 10;
+
+// Memory cleanup utility
+const cleanupLargeObjects = (data) => {
+  return data.map(item => ({
+    ...item,
+    // Remove large fields for list operations
+    ...(item.adjustments && Object.keys(item.adjustments).length > 10 ? 
+      { adjustments: { summary: 'Full adjustments available on detail view' } } : {}),
+    ...(item.editHistory && item.editHistory.length > 5 ? 
+      { editHistory: item.editHistory.slice(-3) } : {})
+  }));
 };
 
-export const getRecentProjects = async () => {
-  await delay(200);
-  return projects
-    .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified))
-    .slice(0, 5);
+// Enhanced project service methods with pagination
+export const getProjects = async (page = 1, pageSize = DEFAULT_PAGE_SIZE, filters = {}) => {
+  await delay(200); // Reduced delay for better UX
+  
+  try {
+    let filteredProjects = [...projects];
+    
+    // Apply filters if provided
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      filteredProjects = filteredProjects.filter(p => 
+        p.name.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    if (filters.imageId) {
+      filteredProjects = filteredProjects.filter(p => p.imageId === filters.imageId);
+    }
+    
+    // Calculate pagination
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const totalItems = filteredProjects.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    
+    // Return paginated results with metadata
+    const paginatedProjects = cleanupLargeObjects(
+      filteredProjects.slice(startIndex, endIndex)
+    );
+    
+    return {
+      data: paginatedProjects,
+      pagination: {
+        currentPage: page,
+        pageSize,
+        totalItems,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    };
+  } catch (error) {
+    throw new Error(`Failed to fetch projects: ${error.message}`);
+  }
+};
+
+export const getRecentProjects = async (limit = 5) => {
+  await delay(150);
+  try {
+    const recent = projects
+      .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified))
+      .slice(0, Math.min(limit, 10)); // Cap at 10 for memory efficiency
+    
+    return cleanupLargeObjects(recent);
+  } catch (error) {
+    throw new Error(`Failed to fetch recent projects: ${error.message}`);
+  }
 };
 
 export const getProjectById = async (id) => {
-  await delay(250);
-  const project = projects.find(p => p.Id === parseInt(id));
-  if (!project) {
-    throw new Error(`Project with Id ${id} not found`);
+  await delay(100); // Faster for individual items
+  try {
+    const project = projects.find(p => p.Id === parseInt(id));
+    if (!project) {
+      throw new Error(`Project with Id ${id} not found`);
+    }
+    return { ...project }; // Full object for detail view
+  } catch (error) {
+    throw new Error(`Failed to fetch project ${id}: ${error.message}`);
   }
-  return { ...project };
 };
 
 export const createProject = async (projectData) => {
@@ -84,19 +150,69 @@ export const saveProject = async (projectData) => {
   }
 };
 
-// Image service methods
-export const getImages = async () => {
-  await delay(300);
-  return [...images];
+// Enhanced image service methods with chunking
+export const getImages = async (page = 1, pageSize = DEFAULT_PAGE_SIZE, filters = {}) => {
+  await delay(200);
+  
+  try {
+    let filteredImages = [...images];
+    
+    // Apply filters
+    if (filters.format) {
+      filteredImages = filteredImages.filter(img => img.format === filters.format);
+    }
+    
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      filteredImages = filteredImages.filter(img => 
+        img.filename.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    // Pagination
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const totalItems = filteredImages.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    
+    // Clean up metadata for list view
+    const cleanImages = filteredImages.slice(startIndex, endIndex).map(img => ({
+      ...img,
+      metadata: {
+        size: img.metadata.size,
+        camera: img.metadata.camera,
+        // Remove extensive metadata for list view
+        ...(Object.keys(img.metadata).length > 5 ? { hasMore: true } : img.metadata)
+      }
+    }));
+    
+    return {
+      data: cleanImages,
+      pagination: {
+        currentPage: page,
+        pageSize,
+        totalItems,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    };
+  } catch (error) {
+    throw new Error(`Failed to fetch images: ${error.message}`);
+  }
 };
 
 export const getImageById = async (id) => {
-  await delay(200);
-  const image = images.find(img => img.Id === parseInt(id));
-  if (!image) {
-    throw new Error(`Image with Id ${id} not found`);
+  await delay(100);
+  try {
+    const image = images.find(img => img.Id === parseInt(id));
+    if (!image) {
+      throw new Error(`Image with Id ${id} not found`);
+    }
+    return { ...image }; // Full metadata for detail view
+  } catch (error) {
+    throw new Error(`Failed to fetch image ${id}: ${error.message}`);
   }
-  return { ...image };
 };
 
 export const uploadImage = async (imageData) => {
@@ -112,19 +228,72 @@ export const uploadImage = async (imageData) => {
   return { ...newImage };
 };
 
-// Preset service methods
-export const getPresets = async () => {
-  await delay(200);
-  return [...presets];
+// Enhanced preset service methods with efficient loading
+export const getPresets = async (page = 1, pageSize = DEFAULT_PAGE_SIZE, filters = {}) => {
+  await delay(150);
+  
+  try {
+    let filteredPresets = [...presets];
+    
+    // Apply category filter
+    if (filters.category && filters.category !== 'all') {
+      filteredPresets = filteredPresets.filter(p => p.category === filters.category);
+    }
+    
+    // Apply search filter
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      filteredPresets = filteredPresets.filter(p => 
+        p.name.toLowerCase().includes(searchTerm) ||
+        p.description.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    // Pagination
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const totalItems = filteredPresets.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    
+    // Optimize for list view - reduce adjustment data
+    const optimizedPresets = filteredPresets.slice(startIndex, endIndex).map(preset => ({
+      ...preset,
+      adjustments: preset.adjustments ? {
+        // Keep only key adjustments for preview
+        exposure: preset.adjustments.exposure,
+        contrast: preset.adjustments.contrast,
+        saturation: preset.adjustments.saturation,
+        adjustmentCount: Object.keys(preset.adjustments).length
+      } : {}
+    }));
+    
+    return {
+      data: optimizedPresets,
+      pagination: {
+        currentPage: page,
+        pageSize,
+        totalItems,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    };
+  } catch (error) {
+    throw new Error(`Failed to fetch presets: ${error.message}`);
+  }
 };
 
 export const getPresetById = async (id) => {
-  await delay(150);
-const preset = presets.find(p => p.Id === parseInt(id));
-  if (!preset) {
-    throw new Error("Preset not found");
+  await delay(100);
+  try {
+    const preset = presets.find(p => p.Id === parseInt(id));
+    if (!preset) {
+      throw new Error(`Preset with Id ${id} not found`);
+    }
+    return { ...preset }; // Full adjustments for detail/application
+  } catch (error) {
+    throw new Error(`Failed to fetch preset ${id}: ${error.message}`);
   }
-  return { ...preset };
 };
 
 export const createPreset = async (presetData) => {
@@ -150,30 +319,67 @@ export const updatePreset = async (id, presetData) => {
   return { ...presets[index] };
 };
 
-// Enhanced preset import/export functions
-export const importPresets = async (importedPresets) => {
-  await delay(500);
-  const savedPresets = [];
+// Context-aware preset import with batching
+export const importPresets = async (importedPresets, options = {}) => {
+  const { batchSize = MAX_BATCH_SIZE, onProgress } = options;
   
-  for (const preset of importedPresets) {
-const currentHighestId = Math.max(...presets.map(p => p.Id), 0);
-    const newPreset = {
-      Id: currentHighestId + savedPresets.length + 1,
-      category: preset.category || "imported",
-      source: preset.source || "import",
-      thumbnail: preset.source === "dng" ? "dng_preset.jpg" : "imported_preset.jpg",
-      createdAt: new Date().toISOString(),
-      usageCount: 0,
-      tags: preset.tags || [],
-      processVersion: preset.metadata?.processVersion || "1.0",
-      hasLocalAdjustments: !!(preset.localAdjustments?.length),
-      ...preset
-    };
-    presets.push(newPreset);
-    savedPresets.push({ ...newPreset });
+  if (importedPresets.length === 0) {
+    throw new Error("No presets to import");
   }
   
-  return savedPresets;
+  if (importedPresets.length > 100) {
+    throw new Error("Too many presets to import at once. Maximum 100 presets allowed.");
+  }
+  
+  const savedPresets = [];
+  const batches = [];
+  
+  // Split into manageable batches
+  for (let i = 0; i < importedPresets.length; i += batchSize) {
+    batches.push(importedPresets.slice(i, i + batchSize));
+  }
+  
+  try {
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      await delay(300); // Prevent context overload
+      
+      const batch = batches[batchIndex];
+      const currentHighestId = Math.max(...presets.map(p => p.Id), 0);
+      
+      for (let i = 0; i < batch.length; i++) {
+        const preset = batch[i];
+        const newPreset = {
+          Id: currentHighestId + savedPresets.length + 1,
+          category: preset.category || "imported",
+          source: preset.source || "import",
+          thumbnail: preset.source === "dng" ? "dng_preset.jpg" : "imported_preset.jpg",
+          createdAt: new Date().toISOString(),
+          usageCount: 0,
+          tags: preset.tags || [],
+          processVersion: preset.metadata?.processVersion || "1.0",
+          hasLocalAdjustments: !!(preset.localAdjustments?.length),
+          ...preset
+        };
+        
+        presets.push(newPreset);
+        savedPresets.push({ ...newPreset });
+      }
+      
+      // Report progress
+      if (onProgress) {
+        onProgress({
+          completed: savedPresets.length,
+          total: importedPresets.length,
+          currentBatch: batchIndex + 1,
+          totalBatches: batches.length
+        });
+      }
+    }
+    
+    return savedPresets;
+  } catch (error) {
+    throw new Error(`Import failed: ${error.message}`);
+  }
 };
 
 export const exportPresets = async (presetsToExport) => {

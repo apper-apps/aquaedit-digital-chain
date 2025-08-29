@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
-import Button from "@/components/atoms/Button";
-import ApperIcon from "@/components/ApperIcon";
-import { cn } from "@/utils/cn";
 import { toast } from "react-toastify";
+import { cn } from "@/utils/cn";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
 
 const BatchUploadModal = ({ isOpen, onClose, onUpload, maxFiles = 100 }) => {
   const [isDragActive, setIsDragActive] = useState(false);
@@ -45,7 +45,7 @@ const BatchUploadModal = ({ isOpen, onClose, onUpload, maxFiles = 100 }) => {
     handleFiles(files);
   }, []);
 
-  const handleFiles = (files) => {
+const handleFiles = (files) => {
     // Filter for supported image formats
     const imageFiles = files.filter(file => 
       file.type.startsWith("image/") || 
@@ -57,31 +57,93 @@ const BatchUploadModal = ({ isOpen, onClose, onUpload, maxFiles = 100 }) => {
       return;
     }
 
-    if (imageFiles.length > maxFiles) {
-      toast.warning(`Maximum ${maxFiles} files allowed. First ${maxFiles} files will be selected.`);
+    // Check for context-friendly limits
+    const contextSafeMax = Math.min(maxFiles, 50); // Prevent context overflow
+    const totalSize = imageFiles.reduce((sum, file) => sum + file.size, 0);
+    const maxTotalSize = 50 * 1024 * 1024; // 50MB total limit
+    
+    if (totalSize > maxTotalSize) {
+      toast.error("Total file size too large. Please select smaller files or fewer images.");
+      return;
     }
 
-    const validFiles = imageFiles.slice(0, maxFiles);
+    if (imageFiles.length > contextSafeMax) {
+      toast.warning(`For optimal performance, maximum ${contextSafeMax} files allowed. First ${contextSafeMax} files will be selected.`);
+    }
+
+    const validFiles = imageFiles.slice(0, contextSafeMax);
     setSelectedFiles(validFiles);
     
-    // Show file summary
-    toast.info(`Selected ${validFiles.length} images for upload`);
+    // Show detailed file summary
+    const sizeInMB = (totalSize / 1024 / 1024).toFixed(2);
+    toast.info(`Selected ${validFiles.length} images (${sizeInMB}MB total) for upload`);
   };
 
-  const handleUpload = async () => {
+const handleUpload = async () => {
     if (selectedFiles.length === 0) {
       toast.error("No files selected");
       return;
     }
 
     setIsUploading(true);
+    setUploadProgress({});
     
     try {
-      await onUpload(selectedFiles);
+      // Process files in chunks to prevent context overflow
+      const chunkSize = 5; // Process 5 files at a time
+      const chunks = [];
+      
+      for (let i = 0; i < selectedFiles.length; i += chunkSize) {
+        chunks.push(selectedFiles.slice(i, i + chunkSize));
+      }
+      
+      let processedCount = 0;
+      
+      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+        const chunk = chunks[chunkIndex];
+        
+        // Update progress for current chunk
+        chunk.forEach((file, index) => {
+          const fileIndex = chunkIndex * chunkSize + index;
+          setUploadProgress(prev => ({
+            ...prev,
+            [fileIndex]: { status: 'uploading', progress: 0 }
+          }));
+        });
+        
+        // Process chunk with progress updates
+        await onUpload(chunk, (progress) => {
+          progress.forEach((fileProgress, index) => {
+            const fileIndex = chunkIndex * chunkSize + index;
+            setUploadProgress(prev => ({
+              ...prev,
+              [fileIndex]: fileProgress
+            }));
+          });
+        });
+        
+        processedCount += chunk.length;
+        
+        // Show progress toast
+        toast.info(`Processed ${processedCount}/${selectedFiles.length} images`);
+        
+        // Small delay between chunks
+        if (chunkIndex < chunks.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+      
+      toast.success(`Successfully uploaded ${selectedFiles.length} images!`);
       setSelectedFiles([]);
+      setUploadProgress({});
       onClose();
+      
     } catch (error) {
-      toast.error("Upload failed");
+      console.error("Upload error:", error);
+      const errorMessage = error.message?.includes('context limit') 
+        ? "Upload failed: Too much data processed at once. Try uploading fewer files."
+        : `Upload failed: ${error.message || "Unknown error"}`;
+      toast.error(errorMessage);
     } finally {
       setIsUploading(false);
     }
@@ -235,27 +297,30 @@ const BatchUploadModal = ({ isOpen, onClose, onUpload, maxFiles = 100 }) => {
                 >
                   Clear All
                 </Button>
-                <Button
+<Button
                   onClick={handleUpload}
-                  disabled={isUploading}
+                  disabled={isUploading || selectedFiles.length === 0}
                   className="flex-1"
                 >
                   {isUploading ? (
                     <>
                       <ApperIcon name="Loader2" className="w-4 h-4 mr-2 animate-spin" />
-                      Uploading...
+                      Processing {Object.keys(uploadProgress).length}/{selectedFiles.length}...
                     </>
                   ) : (
                     <>
                       <ApperIcon name="Upload" className="w-4 h-4 mr-2" />
                       Start Upload ({selectedFiles.length} files)
+                      {selectedFiles.length > 20 && (
+                        <span className="ml-1 text-xs opacity-70">- Chunked Processing</span>
+                      )}
                     </>
+</>
                   )}
                 </Button>
               </div>
             </div>
           )}
-
           {/* Upload Tips */}
           <Card>
             <CardContent className="p-4">

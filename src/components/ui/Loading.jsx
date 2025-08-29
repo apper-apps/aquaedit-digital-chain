@@ -2,7 +2,7 @@ import React from "react";
 import ApperIcon from "@/components/ApperIcon";
 import { cn } from "@/utils/cn";
 
-const Loading = ({ className, message = "Processing your underwater masterpiece..." }) => {
+const Loading = ({ className, message = "Processing your underwater masterpiece...", showProgress = false, progress = 0 }) => {
   return (
     <div className={cn("flex flex-col items-center justify-center space-y-6 p-8", className)}>
       <div className="relative">
