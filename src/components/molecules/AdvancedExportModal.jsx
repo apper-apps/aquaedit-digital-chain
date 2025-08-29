@@ -711,8 +711,9 @@ id: "print-portfolio",
                 )}
               </div>
             )}
+)}
 
-{activeTab === "metadata" && (
+            {activeTab === "metadata" && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
@@ -1044,10 +1045,10 @@ id: "print-portfolio",
               ) : (
                 <>
                   <ApperIcon name="Download" className="w-4 h-4 mr-2" />
-                  Export {batchMode && selectedImages.length > 0 ? `(${selectedImages.length})` : ""}
+Export {batchMode && selectedImages.length > 0 ? `(${selectedImages.length})` : ""}
                 </>
               )}
-</Button>
+            </Button>
           </div>
         </CardContent>
       </Card>
