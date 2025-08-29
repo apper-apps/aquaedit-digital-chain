@@ -7,6 +7,7 @@ import Label from "@/components/atoms/Label";
 import Slider from "@/components/atoms/Slider";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
+import Header from "@/components/organisms/Header";
 const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) => {
   // Export Settings State
   const [format, setFormat] = useState("jpeg");
@@ -924,9 +925,9 @@ id: "print-portfolio",
                     Keywords help organize and search your images in photo management software
                   </p>
                 </div>
+</div>
               </div>
             )}
-          </div>
 
             {activeTab === "batch" && (
               <div className="space-y-6">
