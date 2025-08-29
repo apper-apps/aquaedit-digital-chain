@@ -26,18 +26,18 @@ const PresetsPage = () => {
   const [selectedCreator, setSelectedCreator] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [viewMode, setViewMode] = useState("grid");
-  const [showImportModal, setShowImportModal] = useState(isImportMode);
   const [favorites, setFavorites] = useState([]);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [presetStrength, setPresetStrength] = useState(100);
-  const [previewImage, setPreviewImage] = useState('reef');
+  const [previewImage, setPreviewImage] = useState("reef");
 
   const categories = [
-    { id: "all", name: "All Presets", icon: "Grid3X3" },
-    { id: "shallow", name: "Shallow Water", icon: "Sun" },
-    { id: "deep", name: "Deep Water", icon: "Waves" },
+    { id: "all", name: "All Presets", icon: "Grid" },
+    { id: "reef", name: "Coral Reef", icon: "Flower" },
+    { id: "open", name: "Open Water", icon: "Waves" },
     { id: "cave", name: "Cave Diving", icon: "Mountain" },
     { id: "tropical", name: "Tropical", icon: "Palmtree" },
-{ id: "murky", name: "Murky Water", icon: "Cloud" },
+    { id: "murky", name: "Murky Water", icon: "Cloud" },
     { id: "macro", name: "Macro", icon: "Zap" },
     { id: "wreck", name: "Wreck", icon: "Anchor" },
     { id: "night", name: "Night Dive", icon: "Moon" },
@@ -67,16 +67,20 @@ const PresetsPage = () => {
     { id: 'cave', name: 'Cave Dive', icon: 'Mountain' }
   ];
 
-  const loadPresets = async () => {
+const loadPresets = async () => {
     try {
       setLoading(true);
       setError("");
       const data = await getPresets();
-      setPresets(data);
-      setFilteredPresets(data);
+      const validPresets = Array.isArray(data) ? data : [];
+      setPresets(validPresets);
+      setFilteredPresets(validPresets);
     } catch (err) {
       setError("Failed to load presets");
       console.error(err);
+      // Ensure states are reset to empty arrays on error
+      setPresets([]);
+      setFilteredPresets([]);
     } finally {
       setLoading(false);
     }
@@ -115,23 +119,22 @@ filtered = filtered.filter(preset => {
     }
 
     // Filter by search query
-    if (searchQuery) {
+if (searchQuery) {
       filtered = filtered.filter(preset =>
-        preset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        preset.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (preset.tags && preset.tags.some(tag => 
-          tag.toLowerCase().includes(searchQuery.toLowerCase())
+        (preset.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (preset.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (Array.isArray(preset.tags) && preset.tags.some(tag => 
+          (tag || '').toLowerCase().includes(searchQuery.toLowerCase())
         ))
       );
     }
-
-    // Sort presets
+// Sort presets
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return a.name.localeCompare(b.name);
+          return (a.name || '').localeCompare(b.name || '');
         case "category":
-          return a.category.localeCompare(b.category);
+          return (a.category || '').localeCompare(b.category || '');
         case "created":
           return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         case "popular":
@@ -395,27 +398,27 @@ onClick={() => setShowImportModal(true)}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredPresets.map((preset) => (
-<div key={preset.Id} className="relative">
+            <div key={preset.id || preset.Id} className="relative">
               <PresetCard
                 preset={preset}
                 onApply={handleApplyPreset}
                 strength={presetStrength}
-previewImage={previewImage}
+                previewImage={previewImage}
               />
               <Button
                 variant="ghost"
                 size="small"
                 className="absolute top-2 right-2 w-8 h-8 p-0"
-                onClick={() => toggleFavorite(preset.Id)}
+                onClick={() => toggleFavorite(preset.id || preset.Id)}
               >
                 <ApperIcon 
-                  name={favorites.includes(preset.Id) ? "Star" : "StarOff"} 
-                  className={`w-4 h-4 ${favorites.includes(preset.Id) ? 'text-coral' : 'text-gray-400'}`} 
+                  name={favorites.includes(preset.id || preset.Id) ? "Star" : "StarOff"} 
+                  className={`w-4 h-4 ${favorites.includes(preset.id || preset.Id) ? 'text-coral' : 'text-gray-400'}`} 
                 />
               </Button>
             </div>
-          ))}
         </div>
       )}
 

@@ -26,7 +26,7 @@ const PresetCard = ({ preset, onApply, className, strength = 100, previewImage =
           <div className="space-y-2">
             <div className="flex items-start justify-between">
               <h3 className="font-semibold text-white">{preset.name}</h3>
-              {preset.tags && (
+{preset.tags && Array.isArray(preset.tags) && preset.tags.length > 0 && (
                 <div className="flex space-x-1">
                   {preset.tags.slice(0, 2).map((tag, i) => (
                     <span key={i} className="text-xs bg-ocean-teal/20 text-ocean-teal px-1 rounded">

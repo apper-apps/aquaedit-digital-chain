@@ -17,7 +17,7 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadDashboardData = async () => {
+const loadDashboardData = async () => {
     try {
       setLoading(true);
       setError("");
@@ -27,11 +27,14 @@ const DashboardPage = () => {
         getPresets()
       ]);
       
-      setRecentProjects(projectsData);
-      setPresets(presetsData);
+      setRecentProjects(Array.isArray(projectsData) ? projectsData : []);
+      setPresets(Array.isArray(presetsData) ? presetsData : []);
     } catch (err) {
       setError("Failed to load dashboard data");
       console.error(err);
+      // Ensure states are reset to empty arrays on error
+      setRecentProjects([]);
+      setPresets([]);
     } finally {
       setLoading(false);
     }
@@ -236,9 +239,9 @@ return (
                 </Button>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+<CardContent>
               <div className="grid grid-cols-2 gap-3">
-                {presets.slice(0, 4).map((preset) => (
+                {(presets || []).slice(0, 4).map((preset) => (
                   <div
                     key={preset.Id}
                     className="p-3 bg-slate-darker rounded-lg hover:bg-slate-dark transition-all cursor-pointer group"
