@@ -7,6 +7,7 @@ import Label from "@/components/atoms/Label";
 import Slider from "@/components/atoms/Slider";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
+
 const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) => {
   // Export Settings State
   const [format, setFormat] = useState("jpeg");
@@ -590,123 +591,124 @@ id: "print-portfolio",
                   <Label htmlFor="enableWatermark" className="text-base font-medium">Enable Watermark</Label>
                 </div>
 
-                {enableWatermark && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label>Watermark Type</Label>
-                          <select
-                            value={watermarkType}
-                            onChange={(e) => setWatermarkType(e.target.value)}
-                            className="w-full bg-slate-darker text-white px-3 py-2 rounded-lg border border-slate-dark focus:border-ocean-teal outline-none"
-                          >
-                            <option value="text">Text Watermark</option>
-                            <option value="logo">Logo/Image</option>
-                          </select>
-                        </div>
-
-                        {watermarkType === "text" && (
+{enableWatermark && (
+                  <>
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
                           <div className="space-y-2">
-                            <Label>Watermark Text</Label>
-                            <Input
-                              value={watermarkText}
-                              onChange={(e) => setWatermarkText(e.target.value)}
-                              placeholder="© Your Name"
+                            <Label>Watermark Type</Label>
+                            <select
+                              value={watermarkType}
+                              onChange={(e) => setWatermarkType(e.target.value)}
+                              className="w-full bg-slate-darker text-white px-3 py-2 rounded-lg border border-slate-dark focus:border-ocean-teal outline-none"
+                            >
+                              <option value="text">Text Watermark</option>
+                              <option value="logo">Logo/Image</option>
+                            </select>
+                          </div>
+
+                          {watermarkType === "text" && (
+                            <div className="space-y-2">
+                              <Label>Watermark Text</Label>
+                              <Input
+                                value={watermarkText}
+                                onChange={(e) => setWatermarkText(e.target.value)}
+                                placeholder="© Your Name"
+                              />
+                            </div>
+                          )}
+
+                          <div className="space-y-2">
+                            <Label>Font Size: {watermarkSize}px</Label>
+                            <Slider
+                              value={watermarkSize}
+                              onChange={(e) => setWatermarkSize(parseInt(e.target.value))}
+                              min={8}
+                              max={72}
+                              step={1}
                             />
                           </div>
-                        )}
 
-                        <div className="space-y-2">
-                          <Label>Font Size: {watermarkSize}px</Label>
-                          <Slider
-                            value={watermarkSize}
-                            onChange={(e) => setWatermarkSize(parseInt(e.target.value))}
-                            min={8}
-                            max={72}
-                            step={1}
-                          />
+                          <div className="space-y-2">
+                            <Label>Opacity: {watermarkOpacity}%</Label>
+                            <Slider
+                              value={watermarkOpacity}
+                              onChange={(e) => setWatermarkOpacity(parseInt(e.target.value))}
+                              min={10}
+                              max={100}
+                              step={5}
+                            />
+                          </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label>Opacity: {watermarkOpacity}%</Label>
-                          <Slider
-                            value={watermarkOpacity}
-                            onChange={(e) => setWatermarkOpacity(parseInt(e.target.value))}
-                            min={10}
-                            max={100}
-                            step={5}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <Label>Position</Label>
-                        <div className="grid grid-cols-3 gap-2">
-                          {[
-                            { pos: "top-left", label: "↖" },
-                            { pos: "top-center", label: "↑" },
-                            { pos: "top-right", label: "↗" },
-                            { pos: "center-left", label: "←" },
-                            { pos: "center", label: "●" },
-                            { pos: "center-right", label: "→" },
-                            { pos: "bottom-left", label: "↙" },
-                            { pos: "bottom-center", label: "↓" },
-                            { pos: "bottom-right", label: "↘" }
-                          ].map(({ pos, label }) => (
-                            <button
-                              key={pos}
-                              onClick={() => setWatermarkPosition(pos)}
-                              className={cn(
-                                "p-3 rounded-lg border text-center transition-colors",
-                                watermarkPosition === pos
-                                  ? "border-ocean-teal bg-ocean-teal/20 text-ocean-teal"
-                                  : "border-slate-dark bg-slate-darker text-gray-400 hover:text-gray-300"
-                              )}
-                            >
-                              {label}
-                            </button>
-                          ))}
+                        <div className="space-y-4">
+                          <Label>Position</Label>
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { pos: "top-left", label: "↖" },
+                              { pos: "top-center", label: "↑" },
+                              { pos: "top-right", label: "↗" },
+                              { pos: "center-left", label: "←" },
+                              { pos: "center", label: "●" },
+                              { pos: "center-right", label: "→" },
+                              { pos: "bottom-left", label: "↙" },
+                              { pos: "bottom-center", label: "↓" },
+                              { pos: "bottom-right", label: "↘" }
+                            ].map(({ pos, label }) => (
+                              <button
+                                key={pos}
+                                onClick={() => setWatermarkPosition(pos)}
+                                className={cn(
+                                  "p-3 rounded-lg border text-center transition-colors",
+                                  watermarkPosition === pos
+                                    ? "border-ocean-teal bg-ocean-teal/20 text-ocean-teal"
+                                    : "border-slate-dark bg-slate-darker text-gray-400 hover:text-gray-300"
+                                )}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {watermarkType === "logo" && (
+                      {watermarkType === "logo" && (
+                        <div className="pt-4 border-t border-slate-dark">
+                          <Label className="text-base font-medium mb-3 block">Logo Upload</Label>
+                          <div className="border-2 border-dashed border-slate-dark rounded-lg p-6 text-center hover:border-ocean-teal/50 transition-colors cursor-pointer">
+                            <ApperIcon name="Upload" className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                            <p className="text-gray-400">Click to upload logo or drag & drop</p>
+                            <p className="text-xs text-gray-500 mt-1">PNG or SVG recommended for transparency</p>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="pt-4 border-t border-slate-dark">
-                        <Label className="text-base font-medium mb-3 block">Logo Upload</Label>
-                        <div className="border-2 border-dashed border-slate-dark rounded-lg p-6 text-center hover:border-ocean-teal/50 transition-colors cursor-pointer">
-                          <ApperIcon name="Upload" className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                          <p className="text-gray-400">Click to upload logo or drag & drop</p>
-                          <p className="text-xs text-gray-500 mt-1">PNG or SVG recommended for transparency</p>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="pt-4 border-t border-slate-dark">
-                      <Label className="text-base font-medium mb-3 block">Preview</Label>
-                      <div className="bg-slate-darker rounded-lg p-4 text-center relative min-h-[120px] flex items-center justify-center border border-slate-dark">
-                        <div className="text-gray-500">Image Preview</div>
-                        <div
-                          className={cn(
-                            "absolute text-white text-xs px-2 py-1 bg-black/50 rounded",
-                            watermarkPosition.includes("top") && "top-2",
-                            watermarkPosition.includes("center") && !watermarkPosition.includes("top") && !watermarkPosition.includes("bottom") && "top-1/2 -translate-y-1/2",
-                            watermarkPosition.includes("bottom") && "bottom-2",
-                            watermarkPosition.includes("left") && "left-2",
-                            watermarkPosition.includes("center") && !watermarkPosition.includes("left") && !watermarkPosition.includes("right") && "left-1/2 -translate-x-1/2",
-                            watermarkPosition.includes("right") && "right-2"
-                          )}
-                          style={{ 
-                            opacity: watermarkOpacity / 100,
-                            fontSize: `${watermarkSize / 4}px`
-                          }}
-                        >
-                          {watermarkText}
+                        <Label className="text-base font-medium mb-3 block">Preview</Label>
+                        <div className="bg-slate-darker rounded-lg p-4 text-center relative min-h-[120px] flex items-center justify-center border border-slate-dark">
+                          <div className="text-gray-500">Image Preview</div>
+                          <div
+                            className={cn(
+                              "absolute text-white text-xs px-2 py-1 bg-black/50 rounded",
+                              watermarkPosition.includes("top") && "top-2",
+                              watermarkPosition.includes("center") && !watermarkPosition.includes("top") && !watermarkPosition.includes("bottom") && "top-1/2 -translate-y-1/2",
+                              watermarkPosition.includes("bottom") && "bottom-2",
+                              watermarkPosition.includes("left") && "left-2",
+                              watermarkPosition.includes("center") && !watermarkPosition.includes("left") && !watermarkPosition.includes("right") && "left-1/2 -translate-x-1/2",
+                              watermarkPosition.includes("right") && "right-2"
+                            )}
+                            style={{ 
+                              opacity: watermarkOpacity / 100,
+                              fontSize: `${watermarkSize / 4}px`
+                            }}
+                          >
+                            {watermarkText}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-</div>
+                  </>
                 )}
               </div>
             )}
