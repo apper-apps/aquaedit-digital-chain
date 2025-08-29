@@ -7,15 +7,14 @@ import Label from "@/components/atoms/Label";
 import Slider from "@/components/atoms/Slider";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
-
 const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) => {
   // Export Settings State
   const [format, setFormat] = useState("jpeg");
   const [quality, setQuality] = useState(90);
   const [compression, setCompression] = useState(6);
-  const [width, setWidth] = useState(image?.dimensions?.width || 1920);
+const [width, setWidth] = useState(image?.dimensions?.width || 1920);
   const [height, setHeight] = useState(image?.dimensions?.height || 1080);
-const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
+  const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
   const [colorSpace, setColorSpace] = useState("sRGB");
   const [bitDepth, setBitDepth] = useState(8);
   const [colorProfile, setColorProfile] = useState("sRGB");
@@ -33,9 +32,9 @@ const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
   const [watermarkOpacity, setWatermarkOpacity] = useState(70);
   const [watermarkSize, setWatermarkSize] = useState(12);
   
-  // Metadata State
+// Metadata State
   const [preserveExif, setPreserveExif] = useState(true);
-const [removeGPS, setRemoveGPS] = useState(false);
+  const [removeGPS, setRemoveGPS] = useState(false);
   const [customMetadata, setCustomMetadata] = useState({
     diveSite: "",
     depth: "",
@@ -95,11 +94,10 @@ const [removeGPS, setRemoveGPS] = useState(false);
       icon: "Facebook"
     },
     {
-      id: "print-portfolio",
+id: "print-portfolio",
       name: "Print Portfolio",
       description: "High-resolution TIFF for professional printing",
       format: "tiff",
-format: "tiff",
       width: image?.dimensions?.width || 4000,
       height: image?.dimensions?.height || 3000,
       colorSpace: "Adobe RGB",
@@ -361,12 +359,10 @@ format: "tiff",
                       >
                         <option value="jpeg">JPEG - Standard web format</option>
                         <option value="png">PNG - Lossless with transparency</option>
-                        <option value="webp">WebP - Modern web format</option>
+<option value="webp">WebP - Modern web format</option>
                         <option value="tiff">TIFF - Professional print quality</option>
                       </select>
                     </div>
-</div>
-
                     <div className="space-y-2">
                         <Label>Color Space & Profile</Label>
                         <select
@@ -710,14 +706,13 @@ format: "tiff",
                       </div>
                     </div>
                   </div>
+</div>
                 )}
               </div>
             )}
 
-)}
-
             {activeTab === "metadata" && (
-<div className="space-y-6">
+              <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <Label className="text-base font-medium">EXIF & Technical Data</Label>
@@ -768,14 +763,14 @@ format: "tiff",
                           <option value="CC BY-SA 4.0">Creative Commons BY-SA 4.0</option>
                           <option value="CC BY-NC 4.0">Creative Commons BY-NC 4.0</option>
                           <option value="Royalty Free">Royalty Free</option>
-                        </select>
+</select>
                       </div>
                     </div>
                   </div>
-</div>
 
                   <div className="space-y-4">
-                      <div className="space-y-3">
+                    <Label className="text-base font-medium">Underwater Photography Metadata</Label>
+                    <div className="space-y-3">
                         <Input
                           placeholder="Dive site location"
                           value={customMetadata.diveSite}
