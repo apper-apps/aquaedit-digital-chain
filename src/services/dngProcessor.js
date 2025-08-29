@@ -110,9 +110,9 @@ static async extractXMPMetadata(file) {
     for (const channel of hslChannels) {
       const hslKey = hslMap[channel];
       if (hslKey) {
-        const hue = this.extractXMPValue(xmpData, `crs:Hue${channel}`, 0);
-        const saturation = this.extractXMPValue(xmpData, `crs:Saturation${channel}`, 0);
-        const luminance = this.extractXMPValue(xmpData, `crs:Luminance${channel}`, 0);
+const hue = this.extractXMPValue(xmpData, `crs:HueAdjustment${channel}`, 0);
+        const saturation = this.extractXMPValue(xmpData, `crs:SaturationAdjustment${channel}`, 0);
+const luminance = this.extractXMPValue(xmpData, `crs:LuminanceAdjustment${channel}`, 0);
         
         if (hue !== 0 || saturation !== 0 || luminance !== 0) {
           adjustments[hslKey] = { hue, saturation, luminance };

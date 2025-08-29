@@ -396,12 +396,12 @@ onClick={() => setShowImportModal(true)}
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredPresets.map((preset) => (
-            <div key={preset.Id} className="relative">
+<div key={preset.Id} className="relative">
               <PresetCard
                 preset={preset}
                 onApply={handleApplyPreset}
                 strength={presetStrength}
-                previewImage={previewImage}
+previewImage={previewImage}
               />
               <Button
                 variant="ghost"

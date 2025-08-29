@@ -120,7 +120,7 @@ export const getPresets = async () => {
 
 export const getPresetById = async (id) => {
   await delay(150);
-  const preset = presets.find(p => p.Id === id);
+const preset = presets.find(p => p.Id === parseInt(id));
   if (!preset) {
     throw new Error("Preset not found");
   }
@@ -156,9 +156,9 @@ export const importPresets = async (importedPresets) => {
   const savedPresets = [];
   
   for (const preset of importedPresets) {
-    const highestId = Math.max(...presets.map(p => p.Id), 0);
+const currentHighestId = Math.max(...presets.map(p => p.Id), 0);
     const newPreset = {
-      Id: highestId + savedPresets.length + 1,
+      Id: currentHighestId + savedPresets.length + 1,
       category: preset.category || "imported",
       source: preset.source || "import",
       thumbnail: preset.source === "dng" ? "dng_preset.jpg" : "imported_preset.jpg",
@@ -199,7 +199,7 @@ export const exportPresets = async (presetsToExport) => {
 
 export const deletePreset = async (id) => {
   await delay(250);
-  const index = presets.findIndex(p => p.Id === parseInt(id));
+const index = presets.findIndex(p => p.Id === parseInt(id));
   if (index === -1) {
     throw new Error(`Preset with Id ${id} not found`);
   }
