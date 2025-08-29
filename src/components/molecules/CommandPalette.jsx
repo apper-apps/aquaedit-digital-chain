@@ -59,9 +59,12 @@ const commands = [
     { id: "adj-wb", name: "Auto White Balance", description: "Apply automatic white balance", icon: "Thermometer", action: () => {}, category: "Adjustments" },
     
     // Underwater Presets
-    { id: "preset-underwater", name: "Apply Underwater Preset", description: "Apply underwater color correction", icon: "Waves", action: () => {}, category: "Presets" },
+{ id: "preset-underwater", name: "Apply Underwater Preset", description: "Apply underwater color correction", icon: "Waves", action: () => {}, category: "Presets" },
     { id: "preset-coral", name: "Apply Coral Boost", description: "Enhance coral colors", icon: "Palette", action: () => {}, category: "Presets" },
     { id: "preset-blue", name: "Apply Blue Water", description: "Enhance blue water tones", icon: "Droplets", action: () => {}, category: "Presets" },
+    { id: "preset-import-dng", name: "Import DNG Presets", description: "Import Lightroom adjustments from DNG files", icon: "Upload", action: () => navigate("/presets/import"), category: "Presets" },
+    { id: "preset-import-json", name: "Import JSON Presets", description: "Import universal JSON preset format", icon: "FileText", action: () => navigate("/presets/import"), category: "Presets" },
+    { id: "preset-export", name: "Export Preset Collection", description: "Export current presets as JSON", icon: "Download", action: () => {}, category: "Presets" },
     { id: "preset-surface", name: "Surface Water Preset", description: "5600K temperature for surface shots", icon: "Sun", action: () => {}, category: "Presets" },
     { id: "preset-10ft", name: "10ft Depth Preset", description: "4800K temperature for 10ft depth", icon: "Waves", action: () => {}, category: "Presets" },
     { id: "preset-30ft", name: "30ft Depth Preset", description: "4200K temperature for 30ft depth", icon: "Waves", action: () => {}, category: "Presets" },

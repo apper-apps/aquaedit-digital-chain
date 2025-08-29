@@ -12,10 +12,11 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-slate-darker">
         <Routes>
-          <Route path="/" element={<Layout />}>
+<Route path="/" element={<Layout />}>
             <Route index element={<DashboardPage />} />
             <Route path="editor" element={<EditorPage />} />
             <Route path="presets" element={<PresetsPage />} />
+            <Route path="presets/import" element={<PresetsPage />} />
             <Route path="gallery" element={<GalleryPage />} />
           </Route>
         </Routes>

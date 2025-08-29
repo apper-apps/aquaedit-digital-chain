@@ -122,7 +122,7 @@ const [history, setHistory] = useState([]);
       handleFileUpload(uploadedFiles);
     } else if (project) {
       loadProject(project);
-    } else if (preset) {
+} else if (preset) {
       applyPreset(preset);
     }
   }, [location.state]);
@@ -193,11 +193,13 @@ const [history, setHistory] = useState([]);
     }
   };
 
-  const applyPreset = (preset) => {
+const applyPreset = (preset) => {
     if (preset.adjustments) {
-      setAdjustments(preset.adjustments);
-      addToHistory(preset.adjustments);
-      toast.success(`Applied preset: ${preset.name}`);
+      // Merge preset adjustments with current adjustments
+      const mergedAdjustments = { ...adjustments, ...preset.adjustments };
+      setAdjustments(mergedAdjustments);
+      addToHistory(mergedAdjustments);
+      toast.success(`Applied preset: ${preset.name}${preset.source ? ` (${preset.source.toUpperCase()})` : ''}`);
     }
   };
 

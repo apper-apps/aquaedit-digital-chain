@@ -51,12 +51,14 @@ const KeyboardShortcuts = ({ isOpen, onClose }) => {
       ]
     },
     {
-      category: "Quick Presets",
+category: "Quick Presets",
       shortcuts: [
         { keys: ["1"], description: "Apply Underwater Preset" },
         { keys: ["2"], description: "Apply Coral Boost" },
         { keys: ["3"], description: "Apply Blue Water" },
         { keys: ["4"], description: "Apply Surface Light" },
+        { keys: ["Ctrl", "Shift", "I"], description: "Import DNG/JSON Presets" },
+        { keys: ["Ctrl", "Shift", "E"], description: "Export Preset Collection" },
         { keys: ["0"], description: "Reset to Original" }
       ]
     },

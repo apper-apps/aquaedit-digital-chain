@@ -39,10 +39,11 @@ const QuickAccessSidebar = ({ className, isOpen, onToggle }) => {
       }
     ]);
 
-    setFavorites([
+setFavorites([
       { id: 1, name: "Blue Water Preset", type: "preset", icon: "Droplets" },
       { id: 2, name: "Coral Enhancement", type: "preset", icon: "Palette" },
-      { id: 3, name: "Quick Tutorial: Color Correction", type: "tutorial", icon: "PlayCircle" }
+      { id: 3, name: "DNG Import Tool", type: "import", icon: "Upload" },
+      { id: 4, name: "Quick Tutorial: Color Correction", type: "tutorial", icon: "PlayCircle" }
     ]);
   }, []);
 
@@ -155,13 +156,13 @@ const QuickAccessSidebar = ({ className, isOpen, onToggle }) => {
               New Edit Session
             </Button>
             <Button
-              variant="secondary"
+variant="secondary"
               size="small"
-              onClick={() => navigate("/presets")}
+              onClick={() => navigate("/presets/import")}
               className="w-full justify-start"
             >
-              <ApperIcon name="Palette" className="w-4 h-4 mr-2" />
-              Browse Presets
+              <ApperIcon name="Upload" className="w-4 h-4 mr-2" />
+              Import Presets
             </Button>
             <Button
               variant="secondary"

@@ -120,9 +120,9 @@ export const getPresets = async () => {
 
 export const getPresetById = async (id) => {
   await delay(150);
-  const preset = presets.find(p => p.Id === parseInt(id));
+  const preset = presets.find(p => p.Id === id);
   if (!preset) {
-    throw new Error(`Preset with Id ${id} not found`);
+    throw new Error("Preset not found");
   }
   return { ...preset };
 };
@@ -141,13 +141,49 @@ export const createPreset = async (presetData) => {
 };
 
 export const updatePreset = async (id, presetData) => {
-  await delay(300);
-  const index = presets.findIndex(p => p.Id === parseInt(id));
+  await delay(250);
+  const index = presets.findIndex(p => p.Id === id);
   if (index === -1) {
-    throw new Error(`Preset with Id ${id} not found`);
+    throw new Error("Preset not found");
   }
   presets[index] = { ...presets[index], ...presetData };
   return { ...presets[index] };
+};
+
+// Enhanced preset import/export functions
+export const importPresets = async (importedPresets) => {
+  await delay(500);
+  const savedPresets = [];
+  
+  for (const preset of importedPresets) {
+    const highestId = Math.max(...presets.map(p => p.Id), 0);
+    const newPreset = {
+      Id: highestId + savedPresets.length + 1,
+      category: preset.category || "imported",
+      thumbnail: "imported_preset.jpg",
+      createdAt: new Date().toISOString(),
+      usageCount: 0,
+      tags: preset.tags || [],
+      ...preset
+    };
+    presets.push(newPreset);
+    savedPresets.push({ ...newPreset });
+  }
+  
+  return savedPresets;
+};
+
+export const exportPresets = async (presetsToExport) => {
+  await delay(300);
+  return {
+    version: "1.0.0",
+    exportedAt: new Date().toISOString(),
+    totalPresets: presetsToExport.length,
+    presets: presetsToExport.map(preset => ({
+      ...preset,
+      exportedFrom: "AquaEdit Pro"
+    }))
+  };
 };
 
 export const deletePreset = async (id) => {
