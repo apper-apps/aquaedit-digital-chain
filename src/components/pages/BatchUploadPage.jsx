@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
-import BatchPreviewGrid from "@/components/molecules/BatchPreviewGrid";
-import { toast } from "react-toastify";
-import ApperIcon from "@/components/ApperIcon";
+import React, { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/Card'
+import { toast } from 'react-toastify'
+import ApperIcon from '@/components/ApperIcon'
 import BatchUploadModal from "@/components/molecules/BatchUploadModal";
 import DuplicateDetection from "@/components/molecules/DuplicateDetection";
 import SmartGrouping from "@/components/molecules/SmartGrouping";
