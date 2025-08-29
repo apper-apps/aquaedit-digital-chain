@@ -5,7 +5,7 @@
     "category": "shallow",
     "description": "Perfect for colorful coral formations in shallow water (0-30ft). Enhances warm tones and coral colors with moderate contrast.",
     "thumbnail": "preset_shallow_reef.jpg",
-    "adjustments": {
+"adjustments": {
       "exposure": 20,
       "contrast": 15,
       "highlights": -20,
@@ -13,7 +13,24 @@
       "saturation": 30,
       "vibrance": 25,
       "warmth": 15,
-      "clarity": 10
+      "clarity": 10,
+      "hslReds": { "hue": 5, "saturation": 10, "luminance": 0 },
+      "hslOranges": { "hue": 0, "saturation": 15, "luminance": 5 },
+      "hslYellows": { "hue": -5, "saturation": 20, "luminance": 0 },
+      "hslGreens": { "hue": 0, "saturation": 10, "luminance": 0 },
+      "hslAquas": { "hue": 0, "saturation": 5, "luminance": 0 },
+      "hslBlues": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslPurples": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslMagentas": { "hue": 0, "saturation": 5, "luminance": 0 },
+      "temperature": 10,
+      "tint": 0,
+      "luminanceNoise": 0,
+      "colorNoise": 0,
+      "sharpening": 15,
+      "sharpenRadius": 1,
+      "distortion": 0,
+      "chromaticAberration": 0,
+      "vignette": 0
     }
   },
   {
@@ -22,7 +39,7 @@
     "category": "deep",
     "description": "Ideal for deep water photography with blue backgrounds. Cool tone correction with enhanced shadows and clarity.",
     "thumbnail": "preset_deep_blue.jpg",
-    "adjustments": {
+"adjustments": {
       "exposure": 15,
       "contrast": 10,
       "highlights": -30,
@@ -30,7 +47,24 @@
       "saturation": 20,
       "vibrance": 30,
       "warmth": -15,
-      "clarity": 25
+      "clarity": 25,
+      "hslReds": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslOranges": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslYellows": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslGreens": { "hue": 5, "saturation": 10, "luminance": 0 },
+      "hslAquas": { "hue": 0, "saturation": 15, "luminance": 5 },
+      "hslBlues": { "hue": -5, "saturation": 20, "luminance": 10 },
+      "hslPurples": { "hue": 0, "saturation": 10, "luminance": 0 },
+      "hslMagentas": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "temperature": -25,
+      "tint": -5,
+      "luminanceNoise": 10,
+      "colorNoise": 5,
+      "sharpening": 20,
+      "sharpenRadius": 1.2,
+      "distortion": 0,
+      "chromaticAberration": 10,
+      "vignette": 0
     }
   },
   {
@@ -39,7 +73,7 @@
     "category": "cave",
     "description": "Designed for low-light cave diving with artificial lighting. Dramatic contrast and warm color balance.",
     "thumbnail": "preset_cave_dive.jpg",
-    "adjustments": {
+"adjustments": {
       "exposure": 35,
       "contrast": 25,
       "highlights": -35,
@@ -47,7 +81,24 @@
       "saturation": 15,
       "vibrance": 20,
       "warmth": 30,
-      "clarity": 35
+      "clarity": 35,
+      "hslReds": { "hue": 10, "saturation": 15, "luminance": 5 },
+      "hslOranges": { "hue": 5, "saturation": 20, "luminance": 10 },
+      "hslYellows": { "hue": -5, "saturation": 10, "luminance": 5 },
+      "hslGreens": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslAquas": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslBlues": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslPurples": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslMagentas": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "temperature": 35,
+      "tint": 0,
+      "luminanceNoise": 15,
+      "colorNoise": 10,
+      "sharpening": 25,
+      "sharpenRadius": 1.5,
+      "distortion": 0,
+      "chromaticAberration": 0,
+      "vignette": -10
     }
   },
   {
@@ -56,7 +107,7 @@
     "category": "murky",
     "description": "Specialized for low visibility conditions. Maximum clarity enhancement and backscatter reduction.",
     "thumbnail": "preset_murky_water.jpg",
-    "adjustments": {
+"adjustments": {
       "exposure": 30,
       "contrast": 30,
       "highlights": -25,
@@ -64,7 +115,24 @@
       "saturation": 25,
       "vibrance": 35,
       "warmth": 20,
-      "clarity": 45
+      "clarity": 45,
+      "hslReds": { "hue": 0, "saturation": 5, "luminance": 0 },
+      "hslOranges": { "hue": 0, "saturation": 5, "luminance": 0 },
+      "hslYellows": { "hue": 0, "saturation": 10, "luminance": 5 },
+      "hslGreens": { "hue": 5, "saturation": 15, "luminance": 10 },
+      "hslAquas": { "hue": 0, "saturation": 10, "luminance": 5 },
+      "hslBlues": { "hue": -5, "saturation": 5, "luminance": 0 },
+      "hslPurples": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslMagentas": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "temperature": 15,
+      "tint": 0,
+      "luminanceNoise": 25,
+      "colorNoise": 20,
+      "sharpening": 35,
+      "sharpenRadius": 2,
+      "distortion": 0,
+      "chromaticAberration": 5,
+      "vignette": 0
     }
   },
   {
@@ -73,7 +141,7 @@
     "category": "tropical",
     "description": "Perfect for crystal clear tropical waters. Vibrant saturation with balanced exposure and enhanced blues/greens.",
     "thumbnail": "preset_tropical_clear.jpg",
-    "adjustments": {
+"adjustments": {
       "exposure": 10,
       "contrast": 20,
       "highlights": -15,
@@ -81,7 +149,24 @@
       "saturation": 40,
       "vibrance": 35,
       "warmth": 5,
-      "clarity": 15
+      "clarity": 15,
+      "hslReds": { "hue": 0, "saturation": 15, "luminance": 5 },
+      "hslOranges": { "hue": 5, "saturation": 20, "luminance": 5 },
+      "hslYellows": { "hue": -10, "saturation": 25, "luminance": 10 },
+      "hslGreens": { "hue": 0, "saturation": 30, "luminance": 5 },
+      "hslAquas": { "hue": -5, "saturation": 35, "luminance": 10 },
+      "hslBlues": { "hue": -5, "saturation": 40, "luminance": 15 },
+      "hslPurples": { "hue": 0, "saturation": 15, "luminance": 5 },
+      "hslMagentas": { "hue": 5, "saturation": 10, "luminance": 0 },
+      "temperature": -10,
+      "tint": -5,
+      "luminanceNoise": 0,
+      "colorNoise": 0,
+      "sharpening": 10,
+      "sharpenRadius": 0.8,
+      "distortion": 0,
+      "chromaticAberration": 0,
+      "vignette": 5
     }
   },
   {
@@ -90,7 +175,7 @@
     "category": "macro",
     "description": "Optimized for close-up marine life photography. Enhanced detail and color pop for small subjects.",
     "thumbnail": "preset_macro_marine.jpg",
-    "adjustments": {
+"adjustments": {
       "exposure": 25,
       "contrast": 20,
       "highlights": -10,
@@ -98,7 +183,24 @@
       "saturation": 35,
       "vibrance": 40,
       "warmth": 10,
-      "clarity": 30
+      "clarity": 30,
+      "hslReds": { "hue": 10, "saturation": 25, "luminance": 10 },
+      "hslOranges": { "hue": 5, "saturation": 30, "luminance": 15 },
+      "hslYellows": { "hue": -5, "saturation": 20, "luminance": 10 },
+      "hslGreens": { "hue": 0, "saturation": 15, "luminance": 5 },
+      "hslAquas": { "hue": 0, "saturation": 10, "luminance": 5 },
+      "hslBlues": { "hue": 0, "saturation": 10, "luminance": 0 },
+      "hslPurples": { "hue": 5, "saturation": 15, "luminance": 5 },
+      "hslMagentas": { "hue": 10, "saturation": 20, "luminance": 5 },
+      "temperature": 5,
+      "tint": 0,
+      "luminanceNoise": 5,
+      "colorNoise": 0,
+      "sharpening": 40,
+      "sharpenRadius": 0.5,
+      "distortion": 0,
+      "chromaticAberration": 0,
+      "vignette": 0
     }
   },
   {
@@ -107,7 +209,7 @@
     "category": "wreck",
     "description": "Tailored for shipwreck exploration. Balanced exposure with enhanced structural details and atmospheric lighting.",
     "thumbnail": "preset_wreck_photo.jpg",
-    "adjustments": {
+"adjustments": {
       "exposure": 20,
       "contrast": 15,
       "highlights": -20,
@@ -115,7 +217,24 @@
       "saturation": 10,
       "vibrance": 15,
       "warmth": 0,
-      "clarity": 40
+      "clarity": 40,
+      "hslReds": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslOranges": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslYellows": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslGreens": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslAquas": { "hue": 0, "saturation": 5, "luminance": 0 },
+      "hslBlues": { "hue": 0, "saturation": 10, "luminance": 5 },
+      "hslPurples": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslMagentas": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "temperature": -5,
+      "tint": 0,
+      "luminanceNoise": 10,
+      "colorNoise": 5,
+      "sharpening": 45,
+      "sharpenRadius": 1.8,
+      "distortion": 5,
+      "chromaticAberration": 15,
+      "vignette": -15
     }
   },
   {
@@ -124,7 +243,7 @@
     "category": "night",
     "description": "Specialized for night diving with artificial light sources. Handles extreme contrasts and color temperature variations.",
     "thumbnail": "preset_night_dive.jpg",
-    "adjustments": {
+"adjustments": {
       "exposure": 40,
       "contrast": 30,
       "highlights": -40,
@@ -132,7 +251,24 @@
       "saturation": 20,
       "vibrance": 25,
       "warmth": 25,
-      "clarity": 20
+      "clarity": 20,
+      "hslReds": { "hue": 15, "saturation": 10, "luminance": 5 },
+      "hslOranges": { "hue": 10, "saturation": 15, "luminance": 10 },
+      "hslYellows": { "hue": 0, "saturation": 10, "luminance": 5 },
+      "hslGreens": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslAquas": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslBlues": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslPurples": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "hslMagentas": { "hue": 0, "saturation": 0, "luminance": 0 },
+      "temperature": 40,
+      "tint": 5,
+      "luminanceNoise": 20,
+      "colorNoise": 15,
+      "sharpening": 15,
+      "sharpenRadius": 2.5,
+      "distortion": 0,
+      "chromaticAberration": 5,
+      "vignette": -20
     }
   }
 ]

@@ -12,8 +12,9 @@ import { toast } from "react-toastify";
 
 const EditorPage = () => {
   const location = useLocation();
-  const [currentImage, setCurrentImage] = useState(null);
+const [currentImage, setCurrentImage] = useState(null);
   const [adjustments, setAdjustments] = useState({
+    // Basic adjustments
     exposure: 0,
     contrast: 0,
     highlights: 0,
@@ -21,7 +22,50 @@ const EditorPage = () => {
     saturation: 0,
     vibrance: 0,
     warmth: 0,
-    clarity: 0
+    clarity: 0,
+    
+    // HSL Selective adjustments
+    hslReds: { hue: 0, saturation: 0, luminance: 0 },
+    hslOranges: { hue: 0, saturation: 0, luminance: 0 },
+    hslYellows: { hue: 0, saturation: 0, luminance: 0 },
+    hslGreens: { hue: 0, saturation: 0, luminance: 0 },
+    hslAquas: { hue: 0, saturation: 0, luminance: 0 },
+    hslBlues: { hue: 0, saturation: 0, luminance: 0 },
+    hslPurples: { hue: 0, saturation: 0, luminance: 0 },
+    hslMagentas: { hue: 0, saturation: 0, luminance: 0 },
+    
+    // White Balance
+    temperature: 0,
+    tint: 0,
+    
+    // Tone Curves
+    rgbCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
+    redCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
+    greenCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
+    blueCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
+    
+    // Color Range Masking
+    colorMask: null,
+    maskTolerance: 20,
+    maskFeather: 10,
+    
+    // Local Adjustments
+    radialMask: null,
+    linearMask: null,
+    brushMask: null,
+    
+    // Noise Reduction & Sharpening
+    luminanceNoise: 0,
+    colorNoise: 0,
+    sharpening: 0,
+    sharpenRadius: 1,
+    sharpenThreshold: 0,
+    
+    // Lens Correction
+    distortion: 0,
+    chromaticAberration: 0,
+    vignette: 0,
+    perspective: { horizontal: 0, vertical: 0 }
   });
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -134,8 +178,9 @@ const EditorPage = () => {
     }, 500);
   };
 
-  const handleResetAll = () => {
+const handleResetAll = () => {
     const resetAdjustments = {
+      // Basic adjustments
       exposure: 0,
       contrast: 0,
       highlights: 0,
@@ -143,7 +188,50 @@ const EditorPage = () => {
       saturation: 0,
       vibrance: 0,
       warmth: 0,
-      clarity: 0
+      clarity: 0,
+      
+      // HSL Selective adjustments
+      hslReds: { hue: 0, saturation: 0, luminance: 0 },
+      hslOranges: { hue: 0, saturation: 0, luminance: 0 },
+      hslYellows: { hue: 0, saturation: 0, luminance: 0 },
+      hslGreens: { hue: 0, saturation: 0, luminance: 0 },
+      hslAquas: { hue: 0, saturation: 0, luminance: 0 },
+      hslBlues: { hue: 0, saturation: 0, luminance: 0 },
+      hslPurples: { hue: 0, saturation: 0, luminance: 0 },
+      hslMagentas: { hue: 0, saturation: 0, luminance: 0 },
+      
+      // White Balance
+      temperature: 0,
+      tint: 0,
+      
+      // Tone Curves
+      rgbCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
+      redCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
+      greenCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
+      blueCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
+      
+      // Color Range Masking
+      colorMask: null,
+      maskTolerance: 20,
+      maskFeather: 10,
+      
+      // Local Adjustments
+      radialMask: null,
+      linearMask: null,
+      brushMask: null,
+      
+      // Noise Reduction & Sharpening
+      luminanceNoise: 0,
+      colorNoise: 0,
+      sharpening: 0,
+      sharpenRadius: 1,
+      sharpenThreshold: 0,
+      
+      // Lens Correction
+      distortion: 0,
+      chromaticAberration: 0,
+      vignette: 0,
+      perspective: { horizontal: 0, vertical: 0 }
     };
     setAdjustments(resetAdjustments);
     addToHistory(resetAdjustments);
