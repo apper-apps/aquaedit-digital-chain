@@ -1,23 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
+import BatchPreviewGrid from "@/components/molecules/BatchPreviewGrid";
+import { toast } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
+import BatchUploadModal from "@/components/molecules/BatchUploadModal";
+import DuplicateDetection from "@/components/molecules/DuplicateDetection";
+import SmartGrouping from "@/components/molecules/SmartGrouping";
+import PresetMatcher from "@/components/molecules/PresetMatcher";
+import ProcessingQueue from "@/components/molecules/ProcessingQueue";
+import BreadcrumbNavigation from "@/components/molecules/BreadcrumbNavigation";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
-import ApperIcon from "@/components/ApperIcon";
-import BreadcrumbNavigation from "@/components/molecules/BreadcrumbNavigation";
-import BatchUploadModal from "@/components/molecules/BatchUploadModal";
-import SmartGrouping from "@/components/molecules/SmartGrouping";
-import ProgressTracker from "@/components/molecules/ProgressTracker";
-import DuplicateDetection from "@/components/molecules/DuplicateDetection";
-import PresetMatcher from "@/components/molecules/PresetMatcher";
-import BatchPreviewGrid from "@/components/molecules/BatchPreviewGrid";
-import ProcessingQueue from "@/components/molecules/ProcessingQueue";
-import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import { ConditionAnalysisService } from "@/services/conditionAnalysisService";
+import Loading from "@/components/ui/Loading";
 import { BatchPresetService } from "@/services/batchPresetService";
-import { toast } from "react-toastify";
+import { ConditionAnalysisService } from "@/services/conditionAnalysisService";
 
 const BatchUploadPage = () => {
   const navigate = useNavigate();
