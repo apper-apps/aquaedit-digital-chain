@@ -3,7 +3,7 @@ import imagesData from "@/services/mockData/images.json";
 import presetsData from "@/services/mockData/presets.json";
 
 // Mock API delay
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+export const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // In-memory data stores (simulating database)
 let projects = [...projectsData];
