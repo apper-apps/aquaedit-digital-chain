@@ -7,11 +7,12 @@ import { cn } from "@/utils/cn";
 const Header = ({ className }) => {
   const location = useLocation();
 
-  const navigationItems = [
+const navigationItems = [
     { name: "Dashboard", path: "/", icon: "Home" },
     { name: "Editor", path: "/editor", icon: "Edit3" },
     { name: "Presets", path: "/presets", icon: "Palette" },
-    { name: "Gallery", path: "/gallery", icon: "Images" }
+    { name: "Gallery", path: "/gallery", icon: "Images" },
+    { name: "Teams", path: "/teams", icon: "Users" }
   ];
 
   return (

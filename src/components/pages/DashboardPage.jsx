@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/Card";
-import Button from "@/components/atoms/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
+import { toast } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
 import UploadArea from "@/components/molecules/UploadArea";
 import BreadcrumbNavigation from "@/components/molecules/BreadcrumbNavigation";
-import Loading from "@/components/ui/Loading";
+import Button from "@/components/atoms/Button";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import ApperIcon from "@/components/ApperIcon";
-import { getRecentProjects, getPresets } from "@/services/api/projectService";
-import { toast } from "react-toastify";
-
+import Loading from "@/components/ui/Loading";
+import { getPresets, getRecentProjects } from "@/services/api/projectService";
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [recentProjects, setRecentProjects] = useState([]);
@@ -79,7 +78,7 @@ return (
           <BreadcrumbNavigation />
         </div>
       </div>
-    <div className="container mx-auto px-6 py-8 space-y-8">
+      <div className="container mx-auto px-6 py-8 space-y-8">
       {/* Welcome Section */}
       <div className="text-center space-y-4">
         <div className="flex justify-center">
@@ -95,7 +94,7 @@ return (
             Welcome to AquaEdit Pro
           </h1>
           <p className="text-gray-400 text-lg mt-2">
-            Transform your underwater photography with professional editing tools
+            Transform your underwater photography with professional editing tools and team collaboration
           </p>
         </div>
       </div>
@@ -106,7 +105,7 @@ return (
       </div>
 
       {/* Dashboard Grid */}
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Recent Projects */}
           <Card>
             <CardHeader>
@@ -173,6 +172,57 @@ return (
             </CardContent>
           </Card>
 
+          {/* Team Workspaces */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <ApperIcon name="Users" className="w-5 h-5 text-ocean-teal" />
+                  <span>Team Workspaces</span>
+                </div>
+                <Button variant="ghost" size="small" onClick={() => navigate("/teams")}>
+                  <ApperIcon name="Plus" className="w-4 h-4" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-slate-darker rounded-lg hover:bg-slate-dark transition-colors cursor-pointer group">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-ocean-gradient rounded-lg flex items-center justify-center">
+                      <ApperIcon name="Building" className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-white group-hover:text-ocean-teal transition-colors">
+                        Coral Dive Center
+                      </h3>
+                      <div className="text-sm text-gray-400">5 members • Admin</div>
+                    </div>
+                  </div>
+                  <ApperIcon name="ChevronRight" className="w-4 h-4 text-gray-400 group-hover:text-ocean-teal transition-colors" />
+                </div>
+                <div className="flex items-center justify-between p-3 bg-slate-darker rounded-lg hover:bg-slate-dark transition-colors cursor-pointer group">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-coral/20 rounded-lg flex items-center justify-center">
+                      <ApperIcon name="Camera" className="w-5 h-5 text-coral" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-white group-hover:text-ocean-teal transition-colors">
+                        Marine Photography
+                      </h3>
+                      <div className="text-sm text-gray-400">12 members • Editor</div>
+                    </div>
+                  </div>
+                  <ApperIcon name="ChevronRight" className="w-4 h-4 text-gray-400 group-hover:text-ocean-teal transition-colors" />
+                </div>
+                <Button variant="ghost" className="w-full mt-4" onClick={() => navigate("/teams/create-workspace")}>
+                  <ApperIcon name="Plus" className="w-4 h-4 mr-2" />
+                  Create Workspace
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Quick Start Presets */}
           <Card>
             <CardHeader>
@@ -211,44 +261,57 @@ return (
             </CardContent>
           </Card>
         </div>
+</div>
+
+        {/* Stats and Tips */}
+
+        {/* Stats and Tips */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <ApperIcon name="TrendingUp" className="w-6 h-6 text-emerald-400" />
+              </div>
+              <h3 className="font-semibold text-white mb-1">Color Accuracy</h3>
+              <p className="text-2xl font-bold text-emerald-400">98%</p>
+              <p className="text-xs text-gray-400">Underwater color restoration</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <ApperIcon name="Zap" className="w-6 h-6 text-blue-400" />
+              </div>
+              <h3 className="font-semibold text-white mb-1">Processing Speed</h3>
+              <p className="text-2xl font-bold text-blue-400">2.3s</p>
+              <p className="text-xs text-gray-400">Average edit time</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-coral/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <ApperIcon name="Star" className="w-6 h-6 text-coral" />
+              </div>
+              <h3 className="font-semibold text-white mb-1">User Rating</h3>
+              <p className="text-2xl font-bold text-coral">4.9</p>
+              <p className="text-xs text-gray-400">Professional grade tools</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-ocean-teal/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <ApperIcon name="Users" className="w-6 h-6 text-ocean-teal" />
+              </div>
+              <h3 className="font-semibold text-white mb-1">Team Members</h3>
+              <p className="text-2xl font-bold text-ocean-teal">17</p>
+              <p className="text-xs text-gray-400">Across all workspaces</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      {/* Stats and Tips */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-              <ApperIcon name="TrendingUp" className="w-6 h-6 text-emerald-400" />
-            </div>
-            <h3 className="font-semibold text-white mb-1">Color Accuracy</h3>
-            <p className="text-2xl font-bold text-emerald-400">98%</p>
-            <p className="text-xs text-gray-400">Underwater color restoration</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-              <ApperIcon name="Zap" className="w-6 h-6 text-blue-400" />
-            </div>
-            <h3 className="font-semibold text-white mb-1">Processing Speed</h3>
-            <p className="text-2xl font-bold text-blue-400">2.3s</p>
-            <p className="text-xs text-gray-400">Average edit time</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 bg-coral/20 rounded-full flex items-center justify-center mx-auto mb-3">
-              <ApperIcon name="Star" className="w-6 h-6 text-coral" />
-            </div>
-            <h3 className="font-semibold text-white mb-1">User Rating</h3>
-            <p className="text-2xl font-bold text-coral">4.9</p>
-            <p className="text-xs text-gray-400">Professional grade tools</p>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
   );
 };
 
