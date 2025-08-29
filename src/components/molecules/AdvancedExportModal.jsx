@@ -69,8 +69,8 @@ const [width, setWidth] = useState(image?.dimensions?.width || 1920);
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [estimatedFileSize, setEstimatedFileSize] = useState("~2.5 MB");
 
-  // Export Presets
-  const exportPresets = [
+// Export Presets
+  const exportPresetOptions = [
     {
       id: "instagram",
       name: "Instagram Ready",
@@ -264,8 +264,8 @@ id: "print-portfolio",
               <ApperIcon name="Download" className="w-5 h-5 text-ocean-teal" />
               <span>Advanced Export</span>
               {selectedPreset && (
-                <span className="text-sm text-ocean-teal bg-ocean-teal/20 px-2 py-1 rounded">
-                  {exportPresets.find(p => p.id === selectedPreset)?.name}
+<span className="text-sm text-ocean-teal bg-ocean-teal/20 px-2 py-1 rounded">
+                  {exportPresetOptions.find(p => p.id === selectedPreset)?.name}
                 </span>
               )}
             </CardTitle>
@@ -300,8 +300,8 @@ id: "print-portfolio",
           {/* Quick Presets */}
           <div>
             <Label className="text-base font-medium mb-3 block">Export Presets</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-              {exportPresets.map((preset) => (
+<div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+              {exportPresetOptions.map((preset) => (
                 <button
                   key={preset.id}
                   onClick={() => applyPreset(preset)}
@@ -710,7 +710,6 @@ id: "print-portfolio",
                   </>
                 )}
               </div>
-            )}
 )}
 
             {activeTab === "metadata" && (
