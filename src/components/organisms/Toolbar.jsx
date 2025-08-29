@@ -4,7 +4,7 @@ import Button from "@/components/atoms/Button";
 import ApperIcon from "@/components/ApperIcon";
 import { cn } from "@/utils/cn";
 
-const Toolbar = ({ onExport, onSave, onUndo, onRedo, canUndo, canRedo, className }) => {
+const Toolbar = ({ onExport, onSave, onUndo, onRedo, canUndo, canRedo, onQuickAccess, onCommandPalette, className }) => {
   const tools = [
     { 
       name: "Selection", 
@@ -94,14 +94,40 @@ const Toolbar = ({ onExport, onSave, onUndo, onRedo, canUndo, canRedo, className
               <ApperIcon name="Save" className="w-4 h-4" />
             </Button>
             
-            <Button
+<Button
               variant="secondary"
               size="small"
               className="w-10 h-10 p-0"
               onClick={onExport}
-              title="Export image"
+              title="Advanced Export (Ctrl+E)"
             >
               <ApperIcon name="Download" className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <div className="hidden lg:block w-full h-px bg-slate-dark my-2"></div>
+          <div className="lg:hidden w-px h-8 bg-slate-dark mx-2"></div>
+          
+          {/* Quick Access Tools */}
+          <div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2">
+            <Button
+              variant="ghost"
+              size="small"
+              className="w-10 h-10 p-0"
+              onClick={onQuickAccess}
+              title="Quick Access (Ctrl+Q)"
+            >
+              <ApperIcon name="Menu" className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="small"
+              className="w-10 h-10 p-0"
+              onClick={onCommandPalette}
+              title="Command Palette (Ctrl+Shift+P)"
+            >
+              <ApperIcon name="Search" className="w-4 h-4" />
             </Button>
           </div>
         </div>

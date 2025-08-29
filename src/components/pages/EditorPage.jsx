@@ -4,7 +4,12 @@ import Toolbar from "@/components/organisms/Toolbar";
 import ImageCanvas from "@/components/organisms/ImageCanvas";
 import AdjustmentPanel from "@/components/organisms/AdjustmentPanel";
 import UploadArea from "@/components/molecules/UploadArea";
-import ExportModal from "@/components/molecules/ExportModal";
+import AdvancedExportModal from "@/components/molecules/AdvancedExportModal";
+import BreadcrumbNavigation from "@/components/molecules/BreadcrumbNavigation";
+import QuickAccessSidebar from "@/components/molecules/QuickAccessSidebar";
+import CommandPalette from "@/components/molecules/CommandPalette";
+import KeyboardShortcuts from "@/components/molecules/KeyboardShortcuts";
+import PerformanceIndicator from "@/components/molecules/PerformanceIndicator";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import { getImages, saveProject } from "@/services/api/projectService";
@@ -67,12 +72,17 @@ const [currentImage, setCurrentImage] = useState(null);
     vignette: 0,
     perspective: { horizontal: 0, vertical: 0 }
   });
-  const [history, setHistory] = useState([]);
+const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showExportModal, setShowExportModal] = useState(false);
+  const [showAdvancedExport, setShowAdvancedExport] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
+  const [showQuickAccess, setShowQuickAccess] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState("");
 
   // Load initial data from navigation state
   useEffect(() => {
@@ -288,11 +298,75 @@ const handleResetAll = () => {
     }
   };
 
-  const handleExport = (exportSettings) => {
-    // Mock export functionality
-    toast.success(`Exporting ${currentImage.filename} as ${exportSettings.format.toUpperCase()}`);
-    console.log("Export settings:", exportSettings);
+const handleExport = async (exportSettings) => {
+    setIsProcessing(true);
+    setProcessingStatus("Preparing export...");
+    
+    try {
+      // Simulate export processing
+      setProcessingStatus("Applying adjustments...");
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (exportSettings.watermark) {
+        setProcessingStatus("Adding watermark...");
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      
+      if (exportSettings.metadata?.custom) {
+        setProcessingStatus("Embedding metadata...");
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      setProcessingStatus("Finalizing export...");
+      await new Promise(resolve => setTimeout(resolve, 400));
+      
+      const imageCount = exportSettings.batchMode ? exportSettings.selectedImages.length : 1;
+      const formatStr = exportSettings.format.toUpperCase();
+      
+      toast.success(
+        `Successfully exported ${imageCount} image${imageCount > 1 ? 's' : ''} as ${formatStr}${
+          exportSettings.watermark ? ' with watermark' : ''
+        }`
+      );
+      
+      console.log("Advanced export settings:", exportSettings);
+    } catch (error) {
+      toast.error("Export failed. Please try again.");
+      console.error("Export error:", error);
+    } finally {
+      setIsProcessing(false);
+      setProcessingStatus("");
+    }
   };
+
+  // Keyboard shortcuts handler
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Command Palette
+      if (e.ctrlKey && e.shiftKey && e.key === 'P') {
+        e.preventDefault();
+        setShowCommandPalette(true);
+      }
+      // Keyboard Shortcuts
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        setShowKeyboardShortcuts(true);
+      }
+      // Quick Access
+      if (e.ctrlKey && e.key === 'q') {
+        e.preventDefault();
+        setShowQuickAccess(!showQuickAccess);
+      }
+      // Export
+      if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        setShowAdvancedExport(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showQuickAccess]);
 
   if (loading) {
     return <Loading message="Loading editor..." />;
@@ -311,7 +385,7 @@ const handleResetAll = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-darker">
+<div className="min-h-screen bg-slate-darker">
       {/* Auto-save indicator */}
       {autoSaving && (
         <div className="fixed top-20 right-6 bg-ocean-teal text-white px-3 py-1 rounded text-sm z-50">
@@ -319,17 +393,32 @@ const handleResetAll = () => {
         </div>
       )}
 
+      {/* Breadcrumb Navigation */}
+      <div className="sticky top-16 bg-slate-dark/95 backdrop-blur-sm border-b border-slate-dark z-20">
+        <div className="px-6 py-3">
+          <BreadcrumbNavigation />
+        </div>
+      </div>
+
+      {/* Quick Access Sidebar */}
+      <QuickAccessSidebar
+        isOpen={showQuickAccess}
+        onToggle={() => setShowQuickAccess(!showQuickAccess)}
+      />
+
       {/* Editor Layout */}
       <div className="flex flex-col lg:flex-row min-h-screen">
         {/* Left Toolbar */}
         <div className="lg:w-16 p-4">
           <Toolbar
-            onExport={() => setShowExportModal(true)}
+            onExport={() => setShowAdvancedExport(true)}
             onSave={handleSave}
             onUndo={handleUndo}
             onRedo={handleRedo}
             canUndo={historyIndex > 0}
             canRedo={historyIndex < history.length - 1}
+            onQuickAccess={() => setShowQuickAccess(!showQuickAccess)}
+            onCommandPalette={() => setShowCommandPalette(true)}
           />
         </div>
 
@@ -357,12 +446,30 @@ const handleResetAll = () => {
         </div>
       </div>
 
-      {/* Export Modal */}
-      <ExportModal
-        isOpen={showExportModal}
-        onClose={() => setShowExportModal(false)}
+      {/* Advanced Export Modal */}
+      <AdvancedExportModal
+        isOpen={showAdvancedExport}
+        onClose={() => setShowAdvancedExport(false)}
         onExport={handleExport}
         image={currentImage}
+      />
+
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+      />
+
+      {/* Keyboard Shortcuts */}
+      <KeyboardShortcuts
+        isOpen={showKeyboardShortcuts}
+        onClose={() => setShowKeyboardShortcuts(false)}
+      />
+
+      {/* Performance Indicator */}
+      <PerformanceIndicator
+        isProcessing={isProcessing}
+        processingStatus={processingStatus}
       />
     </div>
   );

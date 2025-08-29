@@ -51,10 +51,20 @@ const Header = ({ className }) => {
             ))}
           </nav>
 
-          <div className="flex items-center space-x-2">
+<div className="flex items-center space-x-2">
             <Button variant="ghost" size="small" className="md:hidden">
               <ApperIcon name="Menu" className="w-5 h-5" />
             </Button>
+            <div className="hidden lg:flex items-center space-x-2 text-xs text-gray-400 mr-4">
+              <div className="flex items-center space-x-1">
+                <kbd className="px-1.5 py-0.5 bg-slate-darker rounded text-xs">Ctrl+Shift+P</kbd>
+                <span>Command</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <kbd className="px-1.5 py-0.5 bg-slate-darker rounded text-xs">Ctrl+K</kbd>
+                <span>Shortcuts</span>
+              </div>
+            </div>
             <Button variant="secondary" size="small">
               <ApperIcon name="HelpCircle" className="w-4 h-4 mr-2" />
               Help
