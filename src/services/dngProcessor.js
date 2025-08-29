@@ -119,32 +119,8 @@ static async extractXMPMetadata(file) {
         }
       }
     }
-    
-    // Parse tone curve if present
-// Extract HSL adjustments (8-channel color range support)
-    const hslChannels = [
-      'Red', 'Orange', 'Yellow', 'Green', 'Aqua', 'Blue', 'Purple', 'Magenta'
-    ];
-    
-    const hslMapping = {
-      'Red': 'hslReds', 'Orange': 'hslOranges', 'Yellow': 'hslYellows',
-      'Green': 'hslGreens', 'Aqua': 'hslCyans', 'Blue': 'hslBlues',
-      'Purple': 'hslPurples', 'Magenta': 'hslMagentas'
-    };
-
-    for (const [color, key] of Object.entries(hslMapping)) {
-      const hue = this.extractXMPValue(xmpData, `crs:HueAdjustment${color}`, 0);
-      const sat = this.extractXMPValue(xmpData, `crs:SaturationAdjustment${color}`, 0);
-      const lum = this.extractXMPValue(xmpData, `crs:LuminanceAdjustment${color}`, 0);
-
-      if (hue !== 0 || sat !== 0 || lum !== 0) {
-        adjustments[key] = {
-          hue: hue,
-          saturation: sat,
-          luminance: lum
-        };
-      }
-    }
+// Parse tone curve if present
+    // Note: HSL adjustments already processed above using hslChannels and hslMap
 
     // Extract tone curve data
     const curveData = this.extractToneCurve(xmpData);
