@@ -1047,7 +1047,7 @@ id: "print-portfolio",
                   Export {batchMode && selectedImages.length > 0 ? `(${selectedImages.length})` : ""}
                 </>
               )}
-            </Button>
+</Button>
           </div>
         </CardContent>
       </Card>
