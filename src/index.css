@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import 'react-toastify/dist/ReactToastify.css';
+
+/* Custom Toastify Styles */
+.Toastify__toast--default {
+  @apply bg-slate-dark border border-ocean-teal text-white;
+}
+
+.Toastify__toast--success {
+  @apply bg-emerald-900 border border-emerald-500;
+}
+
+.Toastify__toast--error {
+  @apply bg-red-900 border border-red-500;
+}
+
+.Toastify__toast--info {
+  @apply bg-ocean-deep border border-ocean-teal;
+}
+
+.Toastify__toast--warning {
+  @apply bg-amber-900 border border-coral;
+}
+
+.Toastify__progress-bar--default {
+  @apply bg-ocean-teal;
+}
+
+.Toastify__progress-bar--success {
+  @apply bg-emerald-400;
+}
+
+.Toastify__progress-bar--error {
+  @apply bg-red-400;
+}
+
+.Toastify__progress-bar--info {
+  @apply bg-ocean-teal;
+}
+
+.Toastify__progress-bar--warning {
+  @apply bg-coral;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-darker;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-ocean-teal rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-ocean-teal/80;
+}
+
+/* Canvas Styles */
+.canvas-container {
+  @apply relative overflow-hidden bg-slate-darker border border-slate-dark rounded-lg;
+}
+
+.canvas-container canvas {
+  @apply cursor-move;
+}
+
+/* Slider Customization */
+input[type="range"] {
+  -webkit-appearance: none;
+  @apply w-full h-2 bg-slate-darker rounded-lg outline-none cursor-pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  @apply appearance-none w-4 h-4 bg-ocean-teal rounded-full cursor-pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  @apply bg-ocean-teal/80 scale-110;
+}
+
+input[type="range"]::-moz-range-thumb {
+  @apply w-4 h-4 bg-ocean-teal rounded-full cursor-pointer border-none;
+}
+
+/* Drag and Drop Area */
+.drag-active {
+  @apply border-ocean-teal bg-ocean-teal/5;
+}
+
+/* Grid Overlay */
+.grid-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.grid-line {
+  @apply stroke-white/30 stroke-1;
+}

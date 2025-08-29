@@ -1,0 +1,87 @@
+[
+  {
+    "Id": 1,
+    "name": "Coral Reef Morning Dive",
+    "imageId": 1,
+    "adjustments": {
+      "exposure": 25,
+      "contrast": 20,
+      "highlights": -15,
+      "shadows": 30,
+      "saturation": 35,
+      "vibrance": 25,
+      "warmth": 15,
+      "clarity": 20
+    },
+    "createdDate": "2024-01-15T09:30:00Z",
+    "lastModified": "2024-01-15T11:45:00Z"
+  },
+  {
+    "Id": 2,
+    "name": "Deep Blue Encounter",
+    "imageId": 2,
+    "adjustments": {
+      "exposure": 15,
+      "contrast": 10,
+      "highlights": -25,
+      "shadows": 45,
+      "saturation": 20,
+      "vibrance": 30,
+      "warmth": -10,
+      "clarity": 25
+    },
+    "createdDate": "2024-01-12T14:20:00Z",
+    "lastModified": "2024-01-12T16:15:00Z"
+  },
+  {
+    "Id": 3,
+    "name": "Cave Photography Session",
+    "imageId": 3,
+    "adjustments": {
+      "exposure": 40,
+      "contrast": 25,
+      "highlights": -35,
+      "shadows": 50,
+      "saturation": 15,
+      "vibrance": 20,
+      "warmth": 25,
+      "clarity": 30
+    },
+    "createdDate": "2024-01-10T08:15:00Z",
+    "lastModified": "2024-01-10T10:30:00Z"
+  },
+  {
+    "Id": 4,
+    "name": "Tropical Fish Collection",
+    "imageId": 4,
+    "adjustments": {
+      "exposure": 20,
+      "contrast": 15,
+      "highlights": -20,
+      "shadows": 25,
+      "saturation": 40,
+      "vibrance": 35,
+      "warmth": 10,
+      "clarity": 15
+    },
+    "createdDate": "2024-01-08T13:45:00Z",
+    "lastModified": "2024-01-08T15:20:00Z"
+  },
+  {
+    "Id": 5,
+    "name": "Murky Water Challenge",
+    "imageId": 5,
+    "adjustments": {
+      "exposure": 35,
+      "contrast": 30,
+      "highlights": -30,
+      "shadows": 60,
+      "saturation": 25,
+      "vibrance": 40,
+      "warmth": 20,
+      "clarity": 45
+    },
+    "createdDate": "2024-01-05T11:00:00Z",
+    "lastModified": "2024-01-05T12:30:00Z"
+  }
+]

@@ -1,0 +1,107 @@
+[
+  {
+    "Id": 1,
+    "filename": "coral_reef_morning.jpg",
+    "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjMUU0OUJGIi8+CjxjaXJjbGUgY3g9IjIwMCIgY3k9IjE1MCIgcj0iNTAiIGZpbGw9IiNGNTlFMEIiLz4KPHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTAwIDgwIiB4PSIxNTAiIHk9IjIxMCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMCA2MEw5MCA2MEw4MCA0MEwyMCA0MEwxMCA2MFoiIGZpbGw9IiMwRDk0ODgiLz4KPC9zdmc+Cjx0ZXh0IHg9IjIwMCIgeT0iMjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIxNCIgZm9udC1mYW1pbHk9IkFyaWFsIj5Db3JhbCBSZWVmPC90ZXh0Pgo8L3N2Zz4=",
+    "uploadDate": "2024-01-15T09:00:00Z",
+    "format": "image/jpeg",
+    "dimensions": {
+      "width": 1920,
+      "height": 1440
+    },
+    "metadata": {
+      "size": 2485760,
+      "camera": "Canon EOS 5D Mark IV",
+      "lens": "16-35mm f/2.8",
+      "iso": 400,
+      "aperture": "f/8",
+      "shutterSpeed": "1/60",
+      "depth": "12m"
+    },
+    "editHistory": []
+  },
+  {
+    "Id": 2,
+    "filename": "deep_blue_shark.jpg",
+    "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjMDYyQzY2Ii8+CjxlbGxpcHNlIGN4PSIyMDAiIGN5PSIxNTAiIHJ4PSI4MCIgcnk9IjMwIiBmaWxsPSIjMzc0MTUxIi8+Cjx0cmlhbmdsZSBwb2ludHM9IjEyMCwxNTAgMTgwLDE0MCAyMDAsMTcwIiBmaWxsPSIjMzc0MTUxIi8+Cjx0ZXh0IHg9IjIwMCIgeT0iMjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIxNCIgZm9udC1mYW1pbHk9IkFyaWFsIj5EZWVwIEJsdWU8L3RleHQ+Cjwvc3ZnPg==",
+    "uploadDate": "2024-01-12T14:00:00Z",
+    "format": "image/jpeg",
+    "dimensions": {
+      "width": 1920,
+      "height": 1280
+    },
+    "metadata": {
+      "size": 3221225,
+      "camera": "Nikon D850",
+      "lens": "60mm f/2.8 Macro",
+      "iso": 800,
+      "aperture": "f/5.6",
+      "shutterSpeed": "1/125",
+      "depth": "25m"
+    },
+    "editHistory": []
+  },
+  {
+    "Id": 3,
+    "filename": "underwater_cave.jpg",
+    "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjMUEyMDJDIi8+CjxlbGxpcHNlIGN4PSIyMDAiIGN5PSI4MCIgcng9IjEwMCIgcnk9IjUwIiBmaWxsPSIjMEY0QzdGIi8+CjxyZWN0IHg9IjUwIiB5PSIyMDAiIHdpZHRoPSIzMDAiIGhlaWdodD0iNDAiIGZpbGw9IiM2NzQ3MzQiLz4KPHRleHQgeD0iMjAwIiB5PSIyODAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0iQXJpYWwiPkNhdmUgRGl2aW5nPC90ZXh0Pgo8L3N2Zz4=",
+    "uploadDate": "2024-01-10T08:00:00Z",
+    "format": "image/jpeg",
+    "dimensions": {
+      "width": 2048,
+      "height": 1536
+    },
+    "metadata": {
+      "size": 4194304,
+      "camera": "Sony α7R IV",
+      "lens": "16-35mm f/2.8",
+      "iso": 1600,
+      "aperture": "f/4",
+      "shutterSpeed": "1/30",
+      "depth": "18m"
+    },
+    "editHistory": []
+  },
+  {
+    "Id": 4,
+    "filename": "tropical_fish_school.jpg",
+    "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjMDY3RjhFIi8+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjgwIiByPSIxNSIgZmlsbD0iI0Y1OUUwQiIvPgo8Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjEyIiBmaWxsPSIjRkY2Qzg3Ii8+CjxjaXJjbGUgY3g9IjE4MCIgY3k9IjkwIiByPSIxOCIgZmlsbD0iIzM5REI0QSIvPgo8Y2lyY2xlIGN4PSIyMjAiIGN5PSIxMTAiIHI9IjE0IiBmaWxsPSIjRkY2Qzg3Ii8+CjxjaXJjbGUgY3g9IjI2MCIgY3k9IjEwMCIgcj0iMTYiIGZpbGw9IiNGNTlFMEIiLz4KPHR2eHQgeD0iMjAwIiB5PSIyODAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0iQXJpYWwiPlRyb3BpY2FsIEZpc2g8L3RleHQ+Cjwvc3ZnPg==",
+    "uploadDate": "2024-01-08T13:30:00Z",
+    "format": "image/jpeg",
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "metadata": {
+      "size": 2883584,
+      "camera": "Canon EOS R5",
+      "lens": "100mm f/2.8L Macro",
+      "iso": 320,
+      "aperture": "f/11",
+      "shutterSpeed": "1/80",
+      "depth": "8m"
+    },
+    "editHistory": []
+  },
+  {
+    "Id": 5,
+    "filename": "murky_water_turtle.jpg",
+    "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjNEM1RjQxIi8+CjxlbGxpcHNlIGN4PSIyMDAiIGN5PSIxNTAiIHJ4PSI2MCIgcnk9IjQwIiBmaWxsPSIjNjc0NzM0IiBvcGFjaXR5PSIwLjgiLz4KPGVsbGlwc2UgY3g9IjE4MCIgY3k9IjE0MCIgcng9IjEwIiByeT0iMTUiIGZpbGw9IiM2NzQ3MzQiLz4KPGVsbGlwc2UgY3g9IjIyMCIgY3k9IjE0MCIgcng9IjEwIiByeT0iMTUiIGZpbGw9IiM2NzQ3MzQiLz4KPHR2eHQgeD0iMjAwIiB5PSIyODAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0iQXJpYWwiPk11cmt5IFdhdGVyPC90ZXh0Pgo8L3N2Zz4=",
+    "uploadDate": "2024-01-05T10:45:00Z",
+    "format": "image/jpeg",
+    "dimensions": {
+      "width": 1600,
+      "height": 1200
+    },
+    "metadata": {
+      "size": 2097152,
+      "camera": "Olympus TG-6",
+      "lens": "Built-in 4.5-18mm",
+      "iso": 1250,
+      "aperture": "f/2.8",
+      "shutterSpeed": "1/50",
+      "depth": "6m"
+    },
+    "editHistory": []
+  }
+]

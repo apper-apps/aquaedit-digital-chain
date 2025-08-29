@@ -1,0 +1,138 @@
+[
+  {
+    "Id": 1,
+    "name": "Shallow Reef",
+    "category": "shallow",
+    "description": "Perfect for colorful coral formations in shallow water (0-30ft). Enhances warm tones and coral colors with moderate contrast.",
+    "thumbnail": "preset_shallow_reef.jpg",
+    "adjustments": {
+      "exposure": 20,
+      "contrast": 15,
+      "highlights": -20,
+      "shadows": 25,
+      "saturation": 30,
+      "vibrance": 25,
+      "warmth": 15,
+      "clarity": 10
+    }
+  },
+  {
+    "Id": 2,
+    "name": "Deep Blue",
+    "category": "deep",
+    "description": "Ideal for deep water photography with blue backgrounds. Cool tone correction with enhanced shadows and clarity.",
+    "thumbnail": "preset_deep_blue.jpg",
+    "adjustments": {
+      "exposure": 15,
+      "contrast": 10,
+      "highlights": -30,
+      "shadows": 40,
+      "saturation": 20,
+      "vibrance": 30,
+      "warmth": -15,
+      "clarity": 25
+    }
+  },
+  {
+    "Id": 3,
+    "name": "Cave Dive",
+    "category": "cave",
+    "description": "Designed for low-light cave diving with artificial lighting. Dramatic contrast and warm color balance.",
+    "thumbnail": "preset_cave_dive.jpg",
+    "adjustments": {
+      "exposure": 35,
+      "contrast": 25,
+      "highlights": -35,
+      "shadows": 50,
+      "saturation": 15,
+      "vibrance": 20,
+      "warmth": 30,
+      "clarity": 35
+    }
+  },
+  {
+    "Id": 4,
+    "name": "Murky Water",
+    "category": "murky",
+    "description": "Specialized for low visibility conditions. Maximum clarity enhancement and backscatter reduction.",
+    "thumbnail": "preset_murky_water.jpg",
+    "adjustments": {
+      "exposure": 30,
+      "contrast": 30,
+      "highlights": -25,
+      "shadows": 60,
+      "saturation": 25,
+      "vibrance": 35,
+      "warmth": 20,
+      "clarity": 45
+    }
+  },
+  {
+    "Id": 5,
+    "name": "Tropical Clear",
+    "category": "tropical",
+    "description": "Perfect for crystal clear tropical waters. Vibrant saturation with balanced exposure and enhanced blues/greens.",
+    "thumbnail": "preset_tropical_clear.jpg",
+    "adjustments": {
+      "exposure": 10,
+      "contrast": 20,
+      "highlights": -15,
+      "shadows": 20,
+      "saturation": 40,
+      "vibrance": 35,
+      "warmth": 5,
+      "clarity": 15
+    }
+  },
+  {
+    "Id": 6,
+    "name": "Macro Marine Life",
+    "category": "macro",
+    "description": "Optimized for close-up marine life photography. Enhanced detail and color pop for small subjects.",
+    "thumbnail": "preset_macro_marine.jpg",
+    "adjustments": {
+      "exposure": 25,
+      "contrast": 20,
+      "highlights": -10,
+      "shadows": 35,
+      "saturation": 35,
+      "vibrance": 40,
+      "warmth": 10,
+      "clarity": 30
+    }
+  },
+  {
+    "Id": 7,
+    "name": "Wreck Photography",
+    "category": "wreck",
+    "description": "Tailored for shipwreck exploration. Balanced exposure with enhanced structural details and atmospheric lighting.",
+    "thumbnail": "preset_wreck_photo.jpg",
+    "adjustments": {
+      "exposure": 20,
+      "contrast": 15,
+      "highlights": -20,
+      "shadows": 45,
+      "saturation": 10,
+      "vibrance": 15,
+      "warmth": 0,
+      "clarity": 40
+    }
+  },
+  {
+    "Id": 8,
+    "name": "Night Dive",
+    "category": "night",
+    "description": "Specialized for night diving with artificial light sources. Handles extreme contrasts and color temperature variations.",
+    "thumbnail": "preset_night_dive.jpg",
+    "adjustments": {
+      "exposure": 40,
+      "contrast": 30,
+      "highlights": -40,
+      "shadows": 65,
+      "saturation": 20,
+      "vibrance": 25,
+      "warmth": 25,
+      "clarity": 20
+    }
+  }
+]
