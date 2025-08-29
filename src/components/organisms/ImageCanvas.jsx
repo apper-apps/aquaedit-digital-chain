@@ -18,8 +18,35 @@ const data = imageData.data;
     const { 
       exposure, contrast, highlights, shadows, saturation, vibrance, warmth, clarity,
       temperature, tint, luminanceNoise, colorNoise, sharpening, distortion, chromaticAberration, vignette,
-      hslReds, hslOranges, hslYellows, hslGreens, hslAquas, hslBlues, hslPurples, hslMagentas
+      hslReds, hslOranges, hslYellows, hslGreens, hslCyans, hslBlues, hslPurples, hslMagentas,
+      coralEnhancementMode, coralBoost, fishColorIsolation, fishEnhancement, waterCastCorrection,
+      masterCurve, rgbCurve, redCurve, greenCurve, blueCurve
     } = adjustments;
+    
+    // Enhanced curve application with Bezier interpolation
+    const applyCurve = (value, curve) => {
+      if (!curve || curve.length < 2) return value;
+      
+      const clampedValue = Math.max(0, Math.min(255, value));
+      
+      // Find the two points that clampedValue falls between
+      for (let i = 0; i < curve.length - 1; i++) {
+        const p1 = curve[i];
+        const p2 = curve[i + 1];
+        
+        if (clampedValue >= p1.x && clampedValue <= p2.x) {
+          // Linear interpolation between curve points
+          const t = p2.x === p1.x ? 0 : (clampedValue - p1.x) / (p2.x - p1.x);
+          return Math.max(0, Math.min(255, p1.y + t * (p2.y - p1.y)));
+        }
+      }
+      
+      // If outside curve range, use nearest endpoint
+      if (clampedValue <= curve[0].x) return curve[0].y;
+      if (clampedValue >= curve[curve.length - 1].x) return curve[curve.length - 1].y;
+      
+      return clampedValue;
+    };
     
     // Helper function to convert RGB to HSL
     const rgbToHsl = (r, g, b) => {
@@ -67,17 +94,83 @@ const data = imageData.data;
       }
     };
 
-    // Helper function to determine color range
+    // Enhanced color range detection (8-channel)
     const getColorRange = (h) => {
       if (h >= 345 || h < 15) return 'hslReds';
       if (h >= 15 && h < 45) return 'hslOranges';
       if (h >= 45 && h < 75) return 'hslYellows';
       if (h >= 75 && h < 150) return 'hslGreens';
-      if (h >= 150 && h < 210) return 'hslAquas';
+      if (h >= 150 && h < 210) return 'hslCyans';
       if (h >= 210 && h < 270) return 'hslBlues';
       if (h >= 270 && h < 315) return 'hslPurples';
       if (h >= 315 && h < 345) return 'hslMagentas';
       return null;
+    };
+
+    // Coral enhancement algorithm
+    const enhanceCoral = (r, g, b, boost) => {
+      const [h, s, l] = rgbToHsl(r, g, b);
+      
+      // Target red-orange coral colors (hue 0-45 degrees)
+      if ((h >= 345 || h <= 45) && s > 20) {
+        const enhancementFactor = (boost / 100) * (s / 100); // Scale by existing saturation
+        const newS = Math.min(100, s + enhancementFactor * 30);
+        const newL = Math.min(100, l + enhancementFactor * 10);
+        return hslToRgb(h, newS, newL);
+      }
+      
+      return [r, g, b];
+    };
+
+    // Fish color isolation and enhancement
+    const enhanceFish = (r, g, b, enhancement) => {
+      const [h, s, l] = rgbToHsl(r, g, b);
+      
+      // Target vibrant tropical fish colors (high saturation across spectrum)
+      if (s > 40 && l > 20 && l < 80) {
+        const enhancementFactor = enhancement / 100;
+        
+        // Boost saturation and adjust luminance for tropical fish colors
+        let newS = s;
+        let newL = l;
+        
+        // Special enhancement for common tropical fish colors
+        if ((h >= 15 && h <= 60) || // Orange-yellow (clownfish, tangs)
+            (h >= 200 && h <= 260) || // Blue (blue tangs, parrotfish)
+            (h >= 280 && h <= 320)) { // Purple-magenta (royal gramma, dottybacks)
+          newS = Math.min(100, s + enhancementFactor * 40);
+          newL = Math.min(100, l + enhancementFactor * 15);
+        }
+        
+        return hslToRgb(h, newS, newL);
+      }
+      
+      return [r, g, b];
+    };
+
+    // Water cast correction (targets blue-green dominance)
+    const correctWaterCast = (r, g, b, correction) => {
+      if (correction === 0) return [r, g, b];
+      
+      const [h, s, l] = rgbToHsl(r, g, b);
+      
+      // Target blue-green water cast (180-240 degrees)
+      if (h >= 180 && h <= 240 && s < 80) {
+        const correctionFactor = correction / 100;
+        
+        if (correctionFactor > 0) {
+          // Reduce blue-green cast
+          const newS = Math.max(0, s - correctionFactor * 20);
+          const newH = h + (correctionFactor * 10); // Shift slightly warmer
+          return hslToRgb(newH % 360, newS, l);
+        } else {
+          // Enhance blue-green (negative correction)
+          const newS = Math.min(100, s + Math.abs(correctionFactor) * 15);
+          return hslToRgb(h, newS, l);
+        }
+      }
+      
+      return [r, g, b];
     };
     
     for (let i = 0; i < data.length; i += 4) {
@@ -115,22 +208,68 @@ const data = imageData.data;
         g = contrastFactor * (g - 128) + 128;
         b = contrastFactor * (b - 128) + 128;
       }
+
+      // Apply master curve (affects luminosity without color shifts)
+      if (masterCurve && masterCurve.length > 1) {
+        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+        const newLuminance = applyCurve(luminance, masterCurve);
+        const luminanceRatio = newLuminance / Math.max(1, luminance);
+        
+        r *= luminanceRatio;
+        g *= luminanceRatio;
+        b *= luminanceRatio;
+      }
+
+      // Apply RGB curve
+      if (rgbCurve && rgbCurve.length > 1) {
+        const avgValue = (r + g + b) / 3;
+        const newAvgValue = applyCurve(avgValue, rgbCurve);
+        const ratio = newAvgValue / Math.max(1, avgValue);
+        
+        r *= ratio;
+        g *= ratio;
+        b *= ratio;
+      }
+
+      // Apply individual color channel curves
+      if (redCurve && redCurve.length > 1) {
+        r = applyCurve(r, redCurve);
+      }
+      if (greenCurve && greenCurve.length > 1) {
+        g = applyCurve(g, greenCurve);
+      }
+      if (blueCurve && blueCurve.length > 1) {
+        b = applyCurve(b, blueCurve);
+      }
       
-      // Apply HSL Selective Adjustments
+      // Apply Enhanced HSL Selective Adjustments (8-channel precision)
       const [h, s, l] = rgbToHsl(r, g, b);
       const colorRange = getColorRange(h);
       const hslAdjustment = adjustments[colorRange];
       
-      if (hslAdjustment) {
-        let newH = h + hslAdjustment.hue || 0;
-        let newS = s + hslAdjustment.saturation || 0;
-        let newL = l + hslAdjustment.luminance || 0;
+      if (hslAdjustment && (hslAdjustment.hue !== 0 || hslAdjustment.saturation !== 0 || hslAdjustment.luminance !== 0)) {
+        let newH = h + (hslAdjustment.hue || 0);
+        let newS = s + (hslAdjustment.saturation || 0);
+        let newL = l + (hslAdjustment.luminance || 0);
         
         newH = ((newH % 360) + 360) % 360;
-        newS = Math.max(0, Math.min(100, newS));
+        newS = Math.max(0, Math.min(200, newS)); // Extended range to 200%
         newL = Math.max(0, Math.min(100, newL));
         
         [r, g, b] = hslToRgb(newH, newS, newL);
+      }
+
+      // Apply Underwater Enhancement Modes
+      if (coralEnhancementMode && coralBoost > 0) {
+        [r, g, b] = enhanceCoral(r, g, b, coralBoost);
+      }
+
+      if (fishColorIsolation && fishEnhancement > 0) {
+        [r, g, b] = enhanceFish(r, g, b, fishEnhancement);
+      }
+
+      if (waterCastCorrection !== 0) {
+        [r, g, b] = correctWaterCast(r, g, b, waterCastCorrection);
       }
       
       // Apply saturation
@@ -142,12 +281,15 @@ const data = imageData.data;
         b = gray + satFactor * (b - gray);
       }
       
-      // Apply vibrance (selective saturation)
+      // Apply vibrance (selective saturation with natural enhancement)
       if (vibrance !== 0) {
         const gray = 0.299 * r + 0.587 * g + 0.114 * b;
         const maxChannel = Math.max(r, g, b);
-        const satLevel = (maxChannel - gray) / maxChannel;
-        const vibFactor = (vibrance / 100) * (1 - satLevel);
+        const minChannel = Math.min(r, g, b);
+        const satLevel = maxChannel > 0 ? (maxChannel - minChannel) / maxChannel : 0;
+        
+        // Natural enhancement algorithm - less effect on already saturated colors
+        const vibFactor = (vibrance / 100) * (1 - Math.pow(satLevel, 0.5));
         
         r = gray + (1 + vibFactor) * (r - gray);
         g = gray + (1 + vibFactor) * (g - gray);
@@ -165,7 +307,7 @@ const data = imageData.data;
         }
       }
       
-      // Apply noise reduction (simplified)
+      // Apply noise reduction (enhanced luminance preservation)
       if (luminanceNoise > 0) {
         const lum = 0.299 * r + 0.587 * g + 0.114 * b;
         const factor = 1 - (luminanceNoise / 200);
@@ -175,7 +317,7 @@ const data = imageData.data;
         b = lum + diff[2] * factor;
       }
       
-      // Apply color noise reduction
+      // Apply color noise reduction (preserves detail better)
       if (colorNoise > 0) {
         const factor = 1 - (colorNoise / 200);
         const avg = (r + g + b) / 3;
@@ -184,7 +326,7 @@ const data = imageData.data;
         b = avg + (b - avg) * factor;
       }
       
-      // Apply chromatic aberration correction (simplified)
+      // Apply chromatic aberration correction
       if (chromaticAberration > 0) {
         const centerX = data.length / 8;
         const centerY = Math.sqrt(data.length / 4);
@@ -198,16 +340,18 @@ const data = imageData.data;
         b /= factor;
       }
       
-      // Apply sharpening (simple unsharp mask approximation)
+      // Apply sharpening with enhanced detail preservation
       if (sharpening > 0) {
         const sharpenFactor = sharpening / 100;
         const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-        r += (r - gray) * sharpenFactor;
-        g += (g - gray) * sharpenFactor;
-        b += (b - gray) * sharpenFactor;
+        
+        // Preserve color relationships while sharpening
+        r += (r - gray) * sharpenFactor * 0.8;
+        g += (g - gray) * sharpenFactor * 0.8;
+        b += (b - gray) * sharpenFactor * 0.8;
       }
       
-      // Clamp values
+      // Clamp values to valid range
       data[i] = Math.max(0, Math.min(255, r));
       data[i + 1] = Math.max(0, Math.min(255, g));
       data[i + 2] = Math.max(0, Math.min(255, b));

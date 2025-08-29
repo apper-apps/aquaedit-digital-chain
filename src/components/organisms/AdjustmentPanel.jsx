@@ -4,7 +4,7 @@ import { cn } from "@/utils/cn";
 import ApperIcon from "@/components/ApperIcon";
 import SliderControl from "@/components/molecules/SliderControl";
 import Button from "@/components/atoms/Button";
-
+import CurveEditor from "@/components/molecules/CurveEditor";
 const AdjustmentPanel = ({ adjustments, onAdjustmentChange, onResetAll, className }) => {
   const [activeTab, setActiveTab] = useState("basic");
 
@@ -20,22 +20,97 @@ const AdjustmentPanel = ({ adjustments, onAdjustmentChange, onResetAll, classNam
   ];
 
   const hslColors = [
-    { key: "hslReds", label: "Reds", color: "#ef4444" },
-    { key: "hslOranges", label: "Oranges", color: "#f97316" },
-    { key: "hslYellows", label: "Yellows", color: "#eab308" },
-    { key: "hslGreens", label: "Greens", color: "#22c55e" },
-    { key: "hslAquas", label: "Aquas", color: "#06b6d4" },
-    { key: "hslBlues", label: "Blues", color: "#3b82f6" },
-    { key: "hslPurples", label: "Purples", color: "#a855f7" },
-    { key: "hslMagentas", label: "Magentas", color: "#ec4899" }
+{ key: "hslReds", label: "Reds", color: "#ef4444", range: [345, 15] },
+    { key: "hslOranges", label: "Oranges", color: "#f97316", range: [15, 45] },
+    { key: "hslYellows", label: "Yellows", color: "#eab308", range: [45, 75] },
+    { key: "hslGreens", label: "Greens", color: "#22c55e", range: [75, 150] },
+    { key: "hslCyans", label: "Cyans", color: "#06b6d4", range: [150, 210] },
+    { key: "hslBlues", label: "Blues", color: "#3b82f6", range: [210, 270] },
+    { key: "hslPurples", label: "Purples", color: "#a855f7", range: [270, 315] },
+    { key: "hslMagentas", label: "Magentas", color: "#ec4899", range: [315, 345] }
   ];
 
-  const underwaterPresets = [
+const underwaterPresets = [
     { name: "Surface", temp: 0, desc: "5600K" },
     { name: "10ft", temp: -20, desc: "4800K" },
     { name: "30ft", temp: -35, desc: "4200K" },
     { name: "60ft+", temp: -50, desc: "3800K" }
   ];
+
+  const underwaterEnhancementModes = [
+    {
+      name: "Coral Enhancement",
+      key: "coralEnhancementMode",
+      description: "Boost red/orange coral colors",
+      icon: "Flower2"
+    },
+    {
+      name: "Fish Color Isolation",
+      key: "fishColorIsolation", 
+      description: "Selective tropical fish enhancement",
+      icon: "Fish"
+    }
+  ];
+
+  // Handle curve changes
+  const handleCurveChange = (channel, curve) => {
+    onAdjustmentChange(`${channel}Curve`, curve);
+  };
+
+  // Handle eyedropper color sampling
+  const handleEyedropperSample = (color) => {
+    onAdjustmentChange('eyedropperColor', color);
+    onAdjustmentChange('selectedColorRange', getColorRangeFromRGB(color));
+  };
+
+  // Convert RGB to HSV and determine color range
+  const getColorRangeFromRGB = (rgb) => {
+    const [r, g, b] = [rgb.r / 255, rgb.g / 255, rgb.b / 255];
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const diff = max - min;
+    
+    let h = 0;
+    if (diff !== 0) {
+      if (max === r) {
+        h = ((g - b) / diff + 6) % 6;
+      } else if (max === g) {
+        h = (b - r) / diff + 2;
+      } else {
+        h = (r - g) / diff + 4;
+      }
+    }
+    
+    const hue = h * 60;
+    
+    // Find matching color range
+    for (const color of hslColors) {
+      const [start, end] = color.range;
+      if (start > end) { // Wraps around (like red)
+        if (hue >= start || hue < end) return color.key;
+      } else {
+        if (hue >= start && hue < end) return color.key;
+      }
+    }
+    
+    return 'hslReds'; // Default
+  };
+
+  // Handle underwater enhancement modes
+  const handleEnhancementToggle = (mode) => {
+    const currentValue = adjustments[mode];
+    onAdjustmentChange(mode, !currentValue);
+    
+    if (mode === 'coralEnhancementMode' && !currentValue) {
+      // Auto-boost coral colors when enabled
+      onAdjustmentChange('coralBoost', 25);
+    }
+    
+    if (mode === 'fishColorIsolation' && !currentValue) {
+      // Auto-enhance fish colors when enabled
+      onAdjustmentChange('fishEnhancement', 20);
+    }
+  };
 
   const tabs = [
     { id: "basic", label: "Basic", icon: "Sliders" },
@@ -92,18 +167,137 @@ const AdjustmentPanel = ({ adjustments, onAdjustmentChange, onResetAll, classNam
   );
 
   const renderColorTab = () => (
-    <div className="space-y-6">
+<div className="space-y-6">
+      {/* Underwater Enhancement Modes */}
       <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3">HSL Selective Adjustments</h4>
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Underwater Enhancement</h4>
+        <div className="space-y-2">
+          {underwaterEnhancementModes.map((mode) => (
+            <div key={mode.key} className="flex items-center justify-between p-2 bg-slate-darker rounded">
+              <div className="flex items-center space-x-2">
+                <ApperIcon name={mode.icon} className="w-4 h-4 text-ocean-teal" />
+                <div>
+                  <div className="text-sm text-gray-300">{mode.name}</div>
+                  <div className="text-xs text-gray-400">{mode.description}</div>
+                </div>
+              </div>
+              <Button
+                variant={adjustments[mode.key] ? "secondary" : "ghost"}
+                size="small"
+                className="text-xs"
+                onClick={() => handleEnhancementToggle(mode.key)}
+              >
+                {adjustments[mode.key] ? 'ON' : 'OFF'}
+              </Button>
+            </div>
+          ))}
+        </div>
+        
+        {/* Enhancement Controls */}
+        {adjustments.coralEnhancementMode && (
+          <div className="mt-4 p-3 bg-slate-darker rounded-lg">
+            <h5 className="text-sm font-medium text-gray-300 mb-2">Coral Enhancement</h5>
+            <SliderControl
+              label="Coral Boost"
+              value={adjustments.coralBoost || 0}
+              onChange={(value) => onAdjustmentChange("coralBoost", value)}
+              min={0}
+              max={100}
+              step={1}
+              defaultValue={0}
+              className="text-xs"
+              suffix="%"
+            />
+          </div>
+        )}
+
+        {adjustments.fishColorIsolation && (
+          <div className="mt-4 p-3 bg-slate-darker rounded-lg">
+            <h5 className="text-sm font-medium text-gray-300 mb-2">Fish Enhancement</h5>
+            <SliderControl
+              label="Fish Colors"
+              value={adjustments.fishEnhancement || 0}
+              onChange={(value) => onAdjustmentChange("fishEnhancement", value)}
+              min={0}
+              max={100}
+              step={1}
+              defaultValue={0}
+              className="text-xs"
+              suffix="%"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Enhanced HSL Color Targeting */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-sm font-medium text-gray-300">HSL Precision Tools</h4>
+          <Button
+            variant="ghost"
+            size="small"
+            className="text-xs"
+            onClick={() => handleEyedropperSample({ r: 255, g: 0, b: 0 })}
+          >
+            <ApperIcon name="Pipette" className="w-3 h-3 mr-1" />
+            Eyedropper
+          </Button>
+        </div>
+        
+        {/* Color Targeting Controls */}
+        <div className="mb-4 p-3 bg-slate-darker rounded-lg">
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <SliderControl
+              label="Tolerance"
+              value={adjustments.colorTolerance || 15}
+              onChange={(value) => onAdjustmentChange("colorTolerance", value)}
+              min={1}
+              max={50}
+              step={1}
+              defaultValue={15}
+              className="text-xs"
+            />
+            <SliderControl
+              label="Feather"
+              value={adjustments.colorFeather || 10}
+              onChange={(value) => onAdjustmentChange("colorFeather", value)}
+              min={0}
+              max={50}
+              step={1}
+              defaultValue={10}
+              className="text-xs"
+            />
+          </div>
+          
+          <SliderControl
+            label="Water Cast Correction"
+            value={adjustments.waterCastCorrection || 0}
+            onChange={(value) => onAdjustmentChange("waterCastCorrection", value)}
+            min={-100}
+            max={100}
+            step={1}
+            defaultValue={0}
+            className="text-xs"
+            suffix="%"
+          />
+        </div>
+
+        {/* 8-Channel HSL Color Wheel */}
         {hslColors.map((color) => (
           <div key={color.key} className="mb-4 p-3 bg-slate-darker rounded-lg">
-            <div className="flex items-center space-x-2 mb-3">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color.color }}></div>
-              <span className="text-sm font-medium text-gray-300">{color.label}</span>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 rounded-full border border-gray-600" style={{ backgroundColor: color.color }}></div>
+                <span className="text-sm font-medium text-gray-300">{color.label}</span>
+                <span className="text-xs text-gray-400">({color.range[0]}°-{color.range[1]}°)</span>
+              </div>
+              {adjustments.selectedColorRange === color.key && (
+                <div className="w-2 h-2 bg-ocean-teal rounded-full"></div>
+              )}
             </div>
             <div className="space-y-2">
               <SliderControl
-                label="Hue"
+                label="Hue Rotation"
                 value={adjustments[color.key]?.hue || 0}
                 onChange={(value) => handleHSLChange(color.key, "hue", value)}
                 min={-180}
@@ -111,16 +305,18 @@ const AdjustmentPanel = ({ adjustments, onAdjustmentChange, onResetAll, classNam
                 step={1}
                 defaultValue={0}
                 className="text-xs"
+                suffix="°"
               />
               <SliderControl
                 label="Saturation"
                 value={adjustments[color.key]?.saturation || 0}
                 onChange={(value) => handleHSLChange(color.key, "saturation", value)}
                 min={-100}
-                max={100}
+                max={200}
                 step={1}
                 defaultValue={0}
                 className="text-xs"
+                suffix="%"
               />
               <SliderControl
                 label="Luminance"
@@ -131,6 +327,7 @@ const AdjustmentPanel = ({ adjustments, onAdjustmentChange, onResetAll, classNam
                 step={1}
                 defaultValue={0}
                 className="text-xs"
+                suffix="%"
               />
             </div>
           </div>
@@ -182,31 +379,98 @@ const AdjustmentPanel = ({ adjustments, onAdjustmentChange, onResetAll, classNam
     </div>
   );
 
-  const renderToneTab = () => (
+const renderToneTab = () => (
     <div className="space-y-6">
       <div>
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Tone Curve Controls</h4>
-        <div className="bg-slate-darker p-4 rounded-lg mb-4">
-          <div className="h-32 bg-slate-dark rounded border border-ocean-teal/30 mb-3 flex items-center justify-center">
-            <span className="text-gray-400 text-xs">Interactive RGB Curve Editor</span>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            <Button variant="secondary" size="small" className="text-xs">RGB</Button>
-            <Button variant="ghost" size="small" className="text-xs text-red-400">Red</Button>
-            <Button variant="ghost" size="small" className="text-xs text-green-400">Green</Button>
-            <Button variant="ghost" size="small" className="text-xs text-blue-400">Blue</Button>
-          </div>
-        </div>
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Advanced Curve Editor</h4>
         
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <Button variant="secondary" size="small" className="text-xs">
-            <ApperIcon name="Activity" className="w-3 h-3 mr-1" />
-            Auto Curve
-          </Button>
-          <Button variant="secondary" size="small" className="text-xs">
-            <ApperIcon name="RotateCcw" className="w-3 h-3 mr-1" />
-            Reset Curve
-          </Button>
+        {/* Interactive Curve Editor */}
+        <CurveEditor
+          curves={{
+            master: adjustments.masterCurve,
+            rgb: adjustments.rgbCurve,
+            red: adjustments.redCurve,
+            green: adjustments.greenCurve,
+            blue: adjustments.blueCurve
+          }}
+          onCurveChange={handleCurveChange}
+          activeChannel={adjustments.activeCurveChannel || 'rgb'}
+          onChannelChange={(channel) => onAdjustmentChange('activeCurveChannel', channel)}
+          showHistogram={adjustments.showHistogram}
+          histogram={null} // TODO: Generate from current image
+        />
+        
+        {/* Advanced Curve Controls */}
+        <div className="mt-4 space-y-4">
+          <div className="p-3 bg-slate-darker rounded-lg">
+            <h5 className="text-sm font-medium text-gray-300 mb-3">Tone Mapping Controls</h5>
+            <div className="grid grid-cols-2 gap-3">
+              <SliderControl
+                label="Shadow Clipping"
+                value={adjustments.shadowClipping || 0}
+                onChange={(value) => onAdjustmentChange("shadowClipping", value)}
+                min={0}
+                max={100}
+                step={1}
+                defaultValue={0}
+                className="text-xs"
+              />
+              <SliderControl
+                label="Highlight Clipping"
+                value={adjustments.highlightClipping || 0}
+                onChange={(value) => onAdjustmentChange("highlightClipping", value)}
+                min={0}
+                max={100}
+                step={1}
+                defaultValue={0}
+                className="text-xs"
+              />
+            </div>
+            
+            <SliderControl
+              label="Midtone Contrast"
+              value={adjustments.midtoneContrast || 0}
+              onChange={(value) => onAdjustmentChange("midtoneContrast", value)}
+              min={-100}
+              max={100}
+              step={1}
+              defaultValue={0}
+              className="text-xs mt-3"
+            />
+          </div>
+
+          {/* Curve Options */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant={adjustments.showHistogram ? "secondary" : "ghost"}
+                size="small"
+                className="text-xs"
+                onClick={() => onAdjustmentChange('showHistogram', !adjustments.showHistogram)}
+              >
+                <ApperIcon name="BarChart3" className="w-3 h-3 mr-1" />
+                Histogram
+              </Button>
+              <Button
+                variant={adjustments.showBeforeAfter ? "secondary" : "ghost"}
+                size="small"
+                className="text-xs"
+                onClick={() => onAdjustmentChange('showBeforeAfter', !adjustments.showBeforeAfter)}
+              >
+                <ApperIcon name="Eye" className="w-3 h-3 mr-1" />
+                Compare
+              </Button>
+            </div>
+            <Button
+              variant="ghost"
+              size="small"
+              className="text-xs"
+              onClick={() => onAdjustmentChange('curveSmoothingEnabled', !adjustments.curveSmoothingEnabled)}
+            >
+              <ApperIcon name="Zap" className="w-3 h-3 mr-1" />
+              {adjustments.curveSmoothingEnabled ? 'Disable' : 'Enable'} Smoothing
+            </Button>
+          </div>
         </div>
       </div>
 

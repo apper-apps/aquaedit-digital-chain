@@ -18,7 +18,7 @@ import { toast } from "react-toastify";
 const EditorPage = () => {
   const location = useLocation();
 const [currentImage, setCurrentImage] = useState(null);
-  const [adjustments, setAdjustments] = useState({
+const [adjustments, setAdjustments] = useState({
     // Basic adjustments
     exposure: 0,
     contrast: 0,
@@ -29,25 +29,55 @@ const [currentImage, setCurrentImage] = useState(null);
     warmth: 0,
     clarity: 0,
     
-    // HSL Selective adjustments
+    // Enhanced HSL Selective adjustments (8-channel)
     hslReds: { hue: 0, saturation: 0, luminance: 0 },
     hslOranges: { hue: 0, saturation: 0, luminance: 0 },
     hslYellows: { hue: 0, saturation: 0, luminance: 0 },
     hslGreens: { hue: 0, saturation: 0, luminance: 0 },
-    hslAquas: { hue: 0, saturation: 0, luminance: 0 },
+    hslCyans: { hue: 0, saturation: 0, luminance: 0 },
     hslBlues: { hue: 0, saturation: 0, luminance: 0 },
     hslPurples: { hue: 0, saturation: 0, luminance: 0 },
     hslMagentas: { hue: 0, saturation: 0, luminance: 0 },
+    
+    // Advanced Color Targeting
+    selectedColorRange: null,
+    colorTolerance: 15,
+    colorFeather: 10,
+    eyedropperColor: null,
+    
+    // Underwater Enhancement Modes
+    coralEnhancementMode: false,
+    coralBoost: 0,
+    fishColorIsolation: false,
+    fishEnhancement: 0,
+    waterCastCorrection: 0,
+    depthCompensation: 0,
     
     // White Balance
     temperature: 0,
     tint: 0,
     
-    // Tone Curves
+    // Advanced Tone Curves with unlimited control points
+    masterCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
     rgbCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
     redCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
     greenCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
     blueCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
+    activeCurveChannel: 'rgb',
+    
+    // Curve Presets & History
+    curvePreset: null,
+    curveHistory: [],
+    curveHistoryIndex: -1,
+    curveSmoothingEnabled: true,
+    showHistogram: true,
+    showBeforeAfter: false,
+    
+    // Advanced Curve Controls
+    autoContrastStrength: 50,
+    shadowClipping: 0,
+    highlightClipping: 0,
+    midtoneContrast: 0,
     
     // Color Range Masking
     colorMask: null,
@@ -200,25 +230,55 @@ const handleResetAll = () => {
       warmth: 0,
       clarity: 0,
       
-      // HSL Selective adjustments
+      // Enhanced HSL Selective adjustments (8-channel)
       hslReds: { hue: 0, saturation: 0, luminance: 0 },
       hslOranges: { hue: 0, saturation: 0, luminance: 0 },
       hslYellows: { hue: 0, saturation: 0, luminance: 0 },
       hslGreens: { hue: 0, saturation: 0, luminance: 0 },
-      hslAquas: { hue: 0, saturation: 0, luminance: 0 },
+      hslCyans: { hue: 0, saturation: 0, luminance: 0 },
       hslBlues: { hue: 0, saturation: 0, luminance: 0 },
       hslPurples: { hue: 0, saturation: 0, luminance: 0 },
       hslMagentas: { hue: 0, saturation: 0, luminance: 0 },
+      
+      // Advanced Color Targeting
+      selectedColorRange: null,
+      colorTolerance: 15,
+      colorFeather: 10,
+      eyedropperColor: null,
+      
+      // Underwater Enhancement Modes
+      coralEnhancementMode: false,
+      coralBoost: 0,
+      fishColorIsolation: false,
+      fishEnhancement: 0,
+      waterCastCorrection: 0,
+      depthCompensation: 0,
       
       // White Balance
       temperature: 0,
       tint: 0,
       
-      // Tone Curves
+      // Advanced Tone Curves
+      masterCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
       rgbCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
       redCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
       greenCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
       blueCurve: [{ x: 0, y: 0 }, { x: 255, y: 255 }],
+      activeCurveChannel: 'rgb',
+      
+      // Curve Presets & History
+      curvePreset: null,
+      curveHistory: [],
+      curveHistoryIndex: -1,
+      curveSmoothingEnabled: true,
+      showHistogram: true,
+      showBeforeAfter: false,
+      
+      // Advanced Curve Controls
+      autoContrastStrength: 50,
+      shadowClipping: 0,
+      highlightClipping: 0,
+      midtoneContrast: 0,
       
       // Color Range Masking
       colorMask: null,

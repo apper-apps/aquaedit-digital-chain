@@ -12,7 +12,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
   const [filteredCommands, setFilteredCommands] = useState([]);
 
   // Command definitions
-  const commands = [
+const commands = [
     // Navigation
     { id: "nav-dashboard", name: "Go to Dashboard", description: "Navigate to main dashboard", icon: "Home", action: () => navigate("/"), category: "Navigation" },
     { id: "nav-editor", name: "Open Editor", description: "Start editing images", icon: "Edit3", action: () => navigate("/editor"), category: "Navigation" },
@@ -26,20 +26,51 @@ const CommandPalette = ({ isOpen, onClose }) => {
     { id: "editor-redo", name: "Redo Action", description: "Redo the last undone action", icon: "Redo2", action: () => {}, category: "Editor" },
     { id: "editor-reset", name: "Reset All Adjustments", description: "Reset all editing adjustments", icon: "RotateCcw", action: () => {}, category: "Editor" },
     
+    // Advanced Curve Tools
+    { id: "curve-auto", name: "Apply Auto Curve", description: "Analyze image for optimal curve adjustment", icon: "Activity", action: () => {}, category: "Curves" },
+    { id: "curve-underwater-clarity", name: "Underwater Clarity Curve", description: "Preset curve for murky water enhancement", icon: "Waves", action: () => {}, category: "Curves" },
+    { id: "curve-deep-contrast", name: "Deep Water Contrast", description: "High contrast curve for deep water shots", icon: "Contrast", action: () => {}, category: "Curves" },
+    { id: "curve-coral-pop", name: "Coral Pop Curve", description: "Curve optimized for coral photography", icon: "Flower2", action: () => {}, category: "Curves" },
+    { id: "curve-cave-drama", name: "Cave Drama Curve", description: "High-drama curve for cave photography", icon: "Mountain", action: () => {}, category: "Curves" },
+    { id: "curve-reset", name: "Reset Current Curve", description: "Reset active curve channel to linear", icon: "RotateCcw", action: () => {}, category: "Curves" },
+    { id: "curve-switch-rgb", name: "Switch to RGB Curve", description: "Edit RGB master curve", icon: "Palette", action: () => {}, category: "Curves" },
+    { id: "curve-switch-red", name: "Switch to Red Curve", description: "Edit red channel curve", icon: "Circle", action: () => {}, category: "Curves" },
+    { id: "curve-switch-green", name: "Switch to Green Curve", description: "Edit green channel curve", icon: "Circle", action: () => {}, category: "Curves" },
+    { id: "curve-switch-blue", name: "Switch to Blue Curve", description: "Edit blue channel curve", icon: "Circle", action: () => {}, category: "Curves" },
+    
+    // HSL Precision Tools
+    { id: "hsl-coral-enhance", name: "Enable Coral Enhancement", description: "Boost red/orange coral colors", icon: "Flower2", action: () => {}, category: "HSL" },
+    { id: "hsl-fish-isolate", name: "Enable Fish Color Isolation", description: "Selective tropical fish enhancement", icon: "Fish", action: () => {}, category: "HSL" },
+    { id: "hsl-water-cast", name: "Correct Water Cast", description: "Remove blue/green water tint", icon: "Droplets", action: () => {}, category: "HSL" },
+    { id: "hsl-eyedropper", name: "Eyedropper Tool", description: "Sample colors for targeted adjustment", icon: "Pipette", action: () => {}, category: "HSL" },
+    { id: "hsl-reds", name: "Adjust Red Colors", description: "Target red color range (345°-15°)", icon: "Circle", action: () => {}, category: "HSL" },
+    { id: "hsl-oranges", name: "Adjust Orange Colors", description: "Target orange color range (15°-45°)", icon: "Circle", action: () => {}, category: "HSL" },
+    { id: "hsl-yellows", name: "Adjust Yellow Colors", description: "Target yellow color range (45°-75°)", icon: "Circle", action: () => {}, category: "HSL" },
+    { id: "hsl-greens", name: "Adjust Green Colors", description: "Target green color range (75°-150°)", icon: "Circle", action: () => {}, category: "HSL" },
+    { id: "hsl-cyans", name: "Adjust Cyan Colors", description: "Target cyan color range (150°-210°)", icon: "Circle", action: () => {}, category: "HSL" },
+    { id: "hsl-blues", name: "Adjust Blue Colors", description: "Target blue color range (210°-270°)", icon: "Circle", action: () => {}, category: "HSL" },
+    { id: "hsl-purples", name: "Adjust Purple Colors", description: "Target purple color range (270°-315°)", icon: "Circle", action: () => {}, category: "HSL" },
+    { id: "hsl-magentas", name: "Adjust Magenta Colors", description: "Target magenta color range (315°-345°)", icon: "Circle", action: () => {}, category: "HSL" },
+    
     // Quick Adjustments
     { id: "adj-exposure", name: "Adjust Exposure", description: "Quick exposure adjustment", icon: "Sun", action: () => {}, category: "Adjustments" },
     { id: "adj-contrast", name: "Adjust Contrast", description: "Quick contrast adjustment", icon: "Circle", action: () => {}, category: "Adjustments" },
     { id: "adj-saturation", name: "Adjust Saturation", description: "Quick saturation adjustment", icon: "Droplets", action: () => {}, category: "Adjustments" },
     { id: "adj-wb", name: "Auto White Balance", description: "Apply automatic white balance", icon: "Thermometer", action: () => {}, category: "Adjustments" },
     
-    // Presets
+    // Underwater Presets
     { id: "preset-underwater", name: "Apply Underwater Preset", description: "Apply underwater color correction", icon: "Waves", action: () => {}, category: "Presets" },
     { id: "preset-coral", name: "Apply Coral Boost", description: "Enhance coral colors", icon: "Palette", action: () => {}, category: "Presets" },
     { id: "preset-blue", name: "Apply Blue Water", description: "Enhance blue water tones", icon: "Droplets", action: () => {}, category: "Presets" },
+    { id: "preset-surface", name: "Surface Water Preset", description: "5600K temperature for surface shots", icon: "Sun", action: () => {}, category: "Presets" },
+    { id: "preset-10ft", name: "10ft Depth Preset", description: "4800K temperature for 10ft depth", icon: "Waves", action: () => {}, category: "Presets" },
+    { id: "preset-30ft", name: "30ft Depth Preset", description: "4200K temperature for 30ft depth", icon: "Waves", action: () => {}, category: "Presets" },
+    { id: "preset-deep", name: "Deep Water Preset", description: "3800K temperature for 60ft+ depth", icon: "Waves", action: () => {}, category: "Presets" },
     
     // Help & Tools
     { id: "help-shortcuts", name: "View Keyboard Shortcuts", description: "Show all keyboard shortcuts", icon: "Keyboard", action: () => {}, category: "Help" },
     { id: "help-tutorials", name: "Open Tutorials", description: "View learning resources", icon: "PlayCircle", action: () => {}, category: "Help" },
+    { id: "help-curves", name: "Curve Editor Help", description: "Learn to use the curve editor", icon: "HelpCircle", action: () => {}, category: "Help" },
     { id: "tool-batch-export", name: "Batch Export", description: "Export multiple images", icon: "Layers", action: () => {}, category: "Tools" }
   ];
 
