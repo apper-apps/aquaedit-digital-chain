@@ -314,7 +314,6 @@ const handleUpload = async () => {
                       {selectedFiles.length > 20 && (
                         <span className="ml-1 text-xs opacity-70">- Chunked Processing</span>
                       )}
-                    </>
 </>
                   )}
                 </Button>
