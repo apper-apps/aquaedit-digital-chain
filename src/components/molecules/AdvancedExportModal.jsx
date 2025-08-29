@@ -7,6 +7,7 @@ import Label from "@/components/atoms/Label";
 import Slider from "@/components/atoms/Slider";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
+import Header from "@/components/organisms/Header";
 
 const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) => {
   // Export Settings State
@@ -589,9 +590,9 @@ id: "print-portfolio",
                     className="w-4 h-4 text-ocean-teal bg-slate-darker border-slate-dark rounded focus:ring-ocean-teal"
                   />
                   <Label htmlFor="enableWatermark" className="text-base font-medium">Enable Watermark</Label>
-                </div>
+</div>
 
-{enableWatermark && (
+                {enableWatermark && (
                   <>
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
