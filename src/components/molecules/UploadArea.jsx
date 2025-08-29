@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/atoms/Card";
 import { cn } from "@/utils/cn";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
+import toast from "react-hot-toast";
 
 const UploadArea = ({ onUpload, className }) => {
   const [isDragActive, setIsDragActive] = useState(false);
@@ -32,17 +33,26 @@ const UploadArea = ({ onUpload, className }) => {
     setIsDragActive(false);
     
 const files = Array.from(e.dataTransfer.files);
+    
+    // Enhanced file validation and processing
     const imageFiles = files.filter(file => 
       file.type.startsWith("image/") || 
       file.type === "image/raw" ||
       file.name.toLowerCase().endsWith(".dng") ||
       file.name.toLowerCase().endsWith(".raw") ||
+      file.name.toLowerCase().endsWith(".cr2") ||
+      file.name.toLowerCase().endsWith(".nef") ||
+      file.name.toLowerCase().endsWith(".arw") ||
       file.name.toLowerCase().endsWith(".json") ||
       file.name.toLowerCase().endsWith(".xmp")
     );
     
+    if (imageFiles.length > 100) {
+      toast.warning("Maximum 100 files allowed. First 100 files will be processed.");
+    }
+    
     if (imageFiles.length > 0) {
-      onUpload(imageFiles);
+      onUpload(imageFiles.slice(0, 100));
     }
   }, [onUpload]);
 
@@ -66,7 +76,7 @@ const files = Array.from(e.dataTransfer.files);
     onDrop={handleDrop}>
     <CardContent className="p-8 text-center">
         <div className="space-y-4">
-            <div className="flex justify-center">
+<div className="flex justify-center">
                 <div className="p-4 bg-ocean-gradient rounded-full">
                     <ApperIcon name="Upload" className="w-8 h-8 text-white animate-float" />
                 </div>
@@ -83,11 +93,11 @@ const files = Array.from(e.dataTransfer.files);
                     type="file"
                     className="absolute inset-0 opacity-0 cursor-pointer"
                     multiple
-                    accept="image/*,.raw,.dng,.json,.xmp"
+                    accept="image/*,.raw,.dng,.cr2,.nef,.arw,.json,.xmp"
                     onChange={handleFileSelect} />
                 <ApperIcon name="FolderOpen" className="w-4 h-4 mr-2" />Browse Files
                             </Button>
-            <p className="text-xs text-gray-500">Supports up to 50 images at once
+            <p className="text-xs text-gray-500">Supports up to 100 images at once • Advanced batch processing available
                             </p>
         </div>
     </CardContent>

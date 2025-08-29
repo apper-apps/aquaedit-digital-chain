@@ -6,15 +6,17 @@ import EditorPage from "@/components/pages/EditorPage";
 import GalleryPage from "@/components/pages/GalleryPage";
 import PresetsPage from "@/components/pages/PresetsPage";
 import DashboardPage from "@/components/pages/DashboardPage";
+import BatchUploadPage from "@/components/pages/BatchUploadPage";
 
-function App() {
+const App = () => {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-slate-darker">
-        <Routes>
+<Routes>
 <Route path="/" element={<Layout />}>
             <Route index element={<DashboardPage />} />
             <Route path="editor" element={<EditorPage />} />
+            <Route path="batch-upload" element={<BatchUploadPage />} />
             <Route path="presets" element={<PresetsPage />} />
             <Route path="presets/import" element={<PresetsPage />} />
             <Route path="gallery" element={<GalleryPage />} />
