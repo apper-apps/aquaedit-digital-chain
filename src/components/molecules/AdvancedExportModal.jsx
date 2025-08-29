@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
 import { toast } from "react-toastify";
 import { cn } from "@/utils/cn";
@@ -7,6 +7,7 @@ import Label from "@/components/atoms/Label";
 import Slider from "@/components/atoms/Slider";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
+
 const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) => {
   // Export Settings State
   const [format, setFormat] = useState("jpeg");
@@ -14,8 +15,8 @@ const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) =>
   const [compression, setCompression] = useState(6);
   const [width, setWidth] = useState(image?.dimensions?.width || 1920);
   const [height, setHeight] = useState(image?.dimensions?.height || 1080);
-  const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
-const [colorSpace, setColorSpace] = useState("sRGB");
+const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
+  const [colorSpace, setColorSpace] = useState("sRGB");
   const [bitDepth, setBitDepth] = useState(8);
   const [colorProfile, setColorProfile] = useState("sRGB");
   // Batch Export State
@@ -34,8 +35,8 @@ const [colorSpace, setColorSpace] = useState("sRGB");
   
   // Metadata State
   const [preserveExif, setPreserveExif] = useState(true);
-  const [removeGPS, setRemoveGPS] = useState(false);
-const [customMetadata, setCustomMetadata] = useState({
+const [removeGPS, setRemoveGPS] = useState(false);
+  const [customMetadata, setCustomMetadata] = useState({
     diveSite: "",
     depth: "",
     waterTemp: "",
@@ -98,8 +99,8 @@ const [customMetadata, setCustomMetadata] = useState({
       name: "Print Portfolio",
       description: "High-resolution TIFF for professional printing",
       format: "tiff",
-      quality: 100,
-width: image?.dimensions?.width || 4000,
+format: "tiff",
+      width: image?.dimensions?.width || 4000,
       height: image?.dimensions?.height || 3000,
       colorSpace: "Adobe RGB",
       bitDepth: 16,
@@ -364,10 +365,11 @@ width: image?.dimensions?.width || 4000,
                         <option value="tiff">TIFF - Professional print quality</option>
                       </select>
                     </div>
+</div>
 
                     <div className="space-y-2">
-<Label>Color Space & Profile</Label>
-                      <select
+                        <Label>Color Space & Profile</Label>
+                        <select
                         value={colorSpace}
                         onChange={(e) => {
                           setColorSpace(e.target.value);
@@ -712,6 +714,8 @@ width: image?.dimensions?.width || 4000,
               </div>
             )}
 
+)}
+
             {activeTab === "metadata" && (
 <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -768,9 +772,9 @@ width: image?.dimensions?.width || 4000,
                       </div>
                     </div>
                   </div>
+</div>
 
-                    <div className="space-y-4">
-                      <Label className="text-base font-medium">Comprehensive Dive Metadata</Label>
+                  <div className="space-y-4">
                       <div className="space-y-3">
                         <Input
                           placeholder="Dive site location"
