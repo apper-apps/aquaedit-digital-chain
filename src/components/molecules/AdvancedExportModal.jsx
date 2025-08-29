@@ -7,7 +7,6 @@ import Label from "@/components/atoms/Label";
 import Slider from "@/components/atoms/Slider";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
-
 const AdvancedExportModal = ({ isOpen, onClose, onExport, image, className }) => {
   // Export Settings State
   const [format, setFormat] = useState("jpeg");
@@ -740,34 +739,35 @@ width: image?.dimensions?.width || 4000,
                         <Label htmlFor="removeGPS">Remove GPS coordinates (privacy)</Label>
                       </div>
                     </div>
-<div className="pt-4 border-t border-slate-dark">
-                        <Label className="text-base font-medium mb-3 block">Copyright & Attribution</Label>
-                        <div className="space-y-3">
-                          <Input
-                            placeholder="Photographer name"
-                            value={customMetadata.photographer}
-                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, photographer: e.target.value }))}
-                          />
-                          <Input
-                            placeholder="Copyright notice"
-                            value={customMetadata.copyright}
-                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, copyright: e.target.value }))}
-                          />
-                          <select
-                            value={customMetadata.license}
-                            onChange={(e) => setCustomMetadata(prev => ({ ...prev, license: e.target.value }))}
-                            className="w-full bg-slate-darker text-white px-3 py-2 rounded-lg border border-slate-dark focus:border-ocean-teal outline-none"
-                          >
-                            <option value="">Select License</option>
-                            <option value="All Rights Reserved">All Rights Reserved</option>
-                            <option value="CC BY 4.0">Creative Commons BY 4.0</option>
-                            <option value="CC BY-SA 4.0">Creative Commons BY-SA 4.0</option>
-                            <option value="CC BY-NC 4.0">Creative Commons BY-NC 4.0</option>
-                            <option value="Royalty Free">Royalty Free</option>
-                          </select>
-                        </div>
+
+                    <div className="pt-4 border-t border-slate-dark">
+                      <Label className="text-base font-medium mb-3 block">Copyright & Attribution</Label>
+                      <div className="space-y-3">
+                        <Input
+                          placeholder="Photographer name"
+                          value={customMetadata.photographer}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, photographer: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="Copyright notice"
+                          value={customMetadata.copyright}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, copyright: e.target.value }))}
+                        />
+                        <select
+                          value={customMetadata.license}
+                          onChange={(e) => setCustomMetadata(prev => ({ ...prev, license: e.target.value }))}
+                          className="w-full bg-slate-darker text-white px-3 py-2 rounded-lg border border-slate-dark focus:border-ocean-teal outline-none"
+                        >
+                          <option value="">Select License</option>
+                          <option value="All Rights Reserved">All Rights Reserved</option>
+                          <option value="CC BY 4.0">Creative Commons BY 4.0</option>
+                          <option value="CC BY-SA 4.0">Creative Commons BY-SA 4.0</option>
+                          <option value="CC BY-NC 4.0">Creative Commons BY-NC 4.0</option>
+                          <option value="Royalty Free">Royalty Free</option>
+                        </select>
                       </div>
                     </div>
+                  </div>
 
                     <div className="space-y-4">
                       <Label className="text-base font-medium">Comprehensive Dive Metadata</Label>
