@@ -914,7 +914,7 @@ id: "print-portfolio",
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-dark">
+<div className="pt-4 border-t border-slate-dark">
                   <Label className="text-base font-medium mb-3 block">Keywords & Tags</Label>
                   <Input
                     placeholder="Separate keywords with commas (e.g., underwater, coral reef, scuba diving)"
@@ -925,8 +925,8 @@ id: "print-portfolio",
                     Keywords help organize and search your images in photo management software
                   </p>
                 </div>
-</div>
               </div>
+            </div>
             )}
 
             {activeTab === "batch" && (
