@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/atoms/Card";
 import { cn } from "@/utils/cn";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
-import toast from "react-hot-toast";
+import { toast } from 'react-toastify';
 
 const UploadArea = ({ onUpload, className }) => {
   const [isDragActive, setIsDragActive] = useState(false);
