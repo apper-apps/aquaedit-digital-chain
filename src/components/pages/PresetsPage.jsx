@@ -11,7 +11,6 @@ import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import Loading from "@/components/ui/Loading";
 import { createPreset, exportPresets, getPresets, importPresets } from "@/services/api/projectService";
-
 const PresetsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -396,9 +395,8 @@ onClick={() => setShowImportModal(true)}
           actionLabel={searchQuery ? "Clear Search" : "Import Presets"}
           onAction={searchQuery ? () => setSearchQuery("") : () => setShowImportModal(true)}
         />
-      ) : (
+) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredPresets.map((preset) => (
             <div key={preset.id || preset.Id} className="relative">
               <PresetCard
