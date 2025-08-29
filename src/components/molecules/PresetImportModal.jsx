@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/Car
 import Button from "@/components/atoms/Button";
 import ApperIcon from "@/components/ApperIcon";
 import UploadArea from "@/components/molecules/UploadArea";
+import XMPProcessor from "@/services/xmpProcessor";
 import { cn } from "@/utils/cn";
 import { toast } from "react-toastify";
 
@@ -20,25 +21,25 @@ const PresetImportModal = ({ isOpen, onClose, onImport, className }) => {
   ];
 
   const processDNGFile = async (file) => {
-    return new Promise((resolve) => {
+return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = async (e) => {
+      reader.onload = (e) => {
         const buffer = e.target.result;
         const text = new TextDecoder().decode(buffer);
         
-        // Extract XMP metadata (simplified extraction)
+        // Enhanced XMP metadata extraction with local adjustments support
         const xmpStart = text.indexOf('<x:xmpmeta');
-        const xmpEnd = text.indexOf('</x:xmpmeta>');
+const xmpEnd = text.indexOf('</x:xmpmeta>');
         
         if (xmpStart !== -1 && xmpEnd !== -1) {
           const xmpData = text.substring(xmpStart, xmpEnd + 12);
           
-          // Parse Lightroom adjustments from XMP
+          // Enhanced Lightroom adjustments parsing with comprehensive parameter support
           const preset = {
             Id: Date.now(),
             name: file.name.replace('.dng', ''),
             category: 'imported',
-            description: 'Imported from DNG file',
+            description: 'Imported from DNG file with XMP metadata',
             source: 'dng',
             createdAt: new Date().toISOString(),
             adjustments: {
@@ -46,20 +47,67 @@ const PresetImportModal = ({ isOpen, onClose, onImport, className }) => {
               contrast: extractXMPValue(xmpData, 'crs:Contrast2012', 0),
               highlights: extractXMPValue(xmpData, 'crs:Highlights2012', 0),
               shadows: extractXMPValue(xmpData, 'crs:Shadows2012', 0),
+              whites: extractXMPValue(xmpData, 'crs:Whites2012', 0),
+              blacks: extractXMPValue(xmpData, 'crs:Blacks2012', 0),
               saturation: extractXMPValue(xmpData, 'crs:Saturation', 0),
               vibrance: extractXMPValue(xmpData, 'crs:Vibrance', 0),
-              warmth: extractXMPValue(xmpData, 'crs:Temperature', 0) / 50,
               clarity: extractXMPValue(xmpData, 'crs:Clarity2012', 0),
-              temperature: extractXMPValue(xmpData, 'crs:Temperature', 0) / 50,
-              tint: extractXMPValue(xmpData, 'crs:Tint', 0) / 50
+              texture: extractXMPValue(xmpData, 'crs:Texture', 0),
+              dehaze: extractXMPValue(xmpData, 'crs:Dehaze', 0),
+              temperature: extractXMPValue(xmpData, 'crs:Temperature', 0) * 0.02,
+              tint: extractXMPValue(xmpData, 'crs:Tint', 0) * 0.5,
+              luminanceNoise: extractXMPValue(xmpData, 'crs:LuminanceSmoothing', 0),
+              colorNoise: extractXMPValue(xmpData, 'crs:ColorNoiseReduction', 0),
+              sharpening: extractXMPValue(xmpData, 'crs:SharpenAmount', 0),
+              sharpenRadius: extractXMPValue(xmpData, 'crs:SharpenRadius', 1.0),
+              distortion: extractXMPValue(xmpData, 'crs:LensProfileDistortionScale', 0),
+              chromaticAberration: Math.max(
+                Math.abs(extractXMPValue(xmpData, 'crs:ChromaticAberrationR', 0)),
+                Math.abs(extractXMPValue(xmpData, 'crs:ChromaticAberrationB', 0))
+              ),
+              vignette: extractXMPValue(xmpData, 'crs:PostCropVignetteAmount', 0)
             },
             metadata: {
               camera: extractXMPValue(xmpData, 'tiff:Model', 'Unknown'),
               lens: extractXMPValue(xmpData, 'aux:Lens', 'Unknown'),
-              creationDate: extractXMPValue(xmpData, 'xmp:CreateDate', new Date().toISOString())
+              creationDate: extractXMPValue(xmpData, 'xmp:CreateDate', new Date().toISOString()),
+              processVersion: extractXMPValue(xmpData, 'crs:ProcessVersion', '5.0'),
+              hasSettings: extractXMPValue(xmpData, 'crs:HasSettings', false),
+              software: extractXMPValue(xmpData, 'xmp:CreatorTool', 'Adobe Lightroom')
             }
           };
+
+          // Extract HSL adjustments
+          const hslChannels = ['Red', 'Orange', 'Yellow', 'Green', 'Aqua', 'Blue', 'Purple', 'Magenta'];
+          const hslMapping = {
+            'Red': 'hslReds', 'Orange': 'hslOranges', 'Yellow': 'hslYellows',
+            'Green': 'hslGreens', 'Aqua': 'hslCyans', 'Blue': 'hslBlues',
+            'Purple': 'hslPurples', 'Magenta': 'hslMagentas'
+          };
+
+          hslChannels.forEach(color => {
+            const hue = extractXMPValue(xmpData, `crs:HueAdjustment${color}`, 0);
+            const sat = extractXMPValue(xmpData, `crs:SaturationAdjustment${color}`, 0);
+            const lum = extractXMPValue(xmpData, `crs:LuminanceAdjustment${color}`, 0);
+            
+            if (hue !== 0 || sat !== 0 || lum !== 0) {
+              preset.adjustments[hslMapping[color]] = { hue, saturation: sat, luminance: lum };
+            }
+          });
+
+          // Extract tone curve if present
+          const curveMatch = xmpData.match(/crs:ToneCurve="([^"]+)"/i);
+          if (curveMatch) {
+            const points = curveMatch[1].split(' ').map(point => {
+              const [input, output] = point.split(',').map(val => parseInt(val));
+              return { x: input || 0, y: output || 0 };
+            });
+            if (points.length > 1) {
+              preset.adjustments.masterCurve = points;
+            }
+          }
           
+toast.success(`Successfully imported Lightroom adjustments from ${file.name}`);
           resolve(preset);
         } else {
           toast.error('No XMP metadata found in DNG file');
@@ -74,6 +122,30 @@ const PresetImportModal = ({ isOpen, onClose, onImport, className }) => {
       
       reader.readAsArrayBuffer(file);
     });
+  };
+
+// Process XMP sidecar files
+  const processXMPFile = async (file) => {
+    try {
+      const result = await XMPProcessor.processSidecarFile(file);
+      const preset = {
+        Id: Date.now(),
+        name: file.name.replace('.xmp', ''),
+        category: 'imported',
+        description: 'Imported from XMP sidecar file',
+        source: 'xmp',
+        createdAt: new Date().toISOString(),
+        adjustments: result.adjustments,
+        metadata: result.metadata,
+        localAdjustments: result.localAdjustments
+      };
+      
+      toast.success(`Successfully imported XMP sidecar: ${file.name}`);
+      return preset;
+    } catch (error) {
+      toast.error(`Failed to process XMP file: ${error.message}`);
+      return null;
+    }
   };
 
   const extractXMPValue = (xmpData, key, defaultValue) => {
@@ -137,12 +209,14 @@ const PresetImportModal = ({ isOpen, onClose, onImport, className }) => {
       
       let preset = null;
       
-      if (file.name.toLowerCase().endsWith('.dng')) {
+if (file.name.toLowerCase().endsWith('.dng')) {
         preset = await processDNGFile(file);
+      } else if (file.name.toLowerCase().endsWith('.xmp')) {
+        preset = await processXMPFile(file);
       } else if (file.name.toLowerCase().endsWith('.json')) {
         preset = await processJSONFile(file);
       } else {
-        toast.warning(`Unsupported file format: ${file.name}`);
+        toast.warning(`Unsupported file format: ${file.name}. Supported formats: DNG, XMP, JSON`);
         continue;
       }
       
@@ -221,9 +295,14 @@ const PresetImportModal = ({ isOpen, onClose, onImport, className }) => {
                       <ApperIcon name="FileImage" className="w-5 h-5 text-ocean-teal" />
                       <span className="font-medium text-white">DNG Presets</span>
                     </div>
-                    <p className="text-sm text-gray-400">
-                      Import Lightroom adjustments from DNG files with XMP metadata extraction
+<p className="text-sm text-gray-400">
+                      Import Lightroom adjustments from DNG files with XMP metadata, XMP sidecar files, or JSON presets
                     </p>
+                    <div className="mt-2 text-xs text-gray-500">
+                      <div>• DNG: Camera RAW files with embedded Lightroom adjustments</div>
+                      <div>• XMP: Lightroom sidecar files with develop module settings</div>
+                      <div>• JSON: AquaEdit Pro preset files</div>
+                    </div>
                   </div>
                   <div className="p-4 bg-slate-darker rounded-lg">
                     <div className="flex items-center space-x-3 mb-2">

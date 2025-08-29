@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/Card";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
+import { toast } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
+import PresetImportModal from "@/components/molecules/PresetImportModal";
+import PresetCard from "@/components/molecules/PresetCard";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
-import PresetCard from "@/components/molecules/PresetCard";
-import PresetImportModal from "@/components/molecules/PresetImportModal";
-import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import ApperIcon from "@/components/ApperIcon";
-import { getPresets, createPreset, importPresets, exportPresets } from "@/services/api/projectService";
-import { toast } from "react-toastify";
+import Loading from "@/components/ui/Loading";
+import { createPreset, exportPresets, getPresets, importPresets } from "@/services/api/projectService";
 
 const PresetsPage = () => {
   const navigate = useNavigate();
@@ -37,11 +37,12 @@ const PresetsPage = () => {
     { id: "deep", name: "Deep Water", icon: "Waves" },
     { id: "cave", name: "Cave Diving", icon: "Mountain" },
     { id: "tropical", name: "Tropical", icon: "Palmtree" },
-    { id: "murky", name: "Murky Water", icon: "Cloud" },
+{ id: "murky", name: "Murky Water", icon: "Cloud" },
     { id: "macro", name: "Macro", icon: "Zap" },
     { id: "wreck", name: "Wreck", icon: "Anchor" },
     { id: "night", name: "Night Dive", icon: "Moon" },
     { id: "imported", name: "Imported", icon: "Upload" },
+    { id: "lightroom", name: "Lightroom", icon: "Camera" },
     { id: "custom", name: "Custom", icon: "User" }
   ];
 
@@ -105,9 +106,9 @@ const PresetsPage = () => {
 
     // Filter by creator
     if (selectedCreator !== "all") {
-      filtered = filtered.filter(preset => {
+filtered = filtered.filter(preset => {
         if (selectedCreator === "user") return preset.creator === "user" || preset.category === "custom";
-        if (selectedCreator === "imported") return preset.source === "dng" || preset.source === "json";
+        if (selectedCreator === "imported") return preset.source === "dng" || preset.source === "json" || preset.source === "xmp";
         if (selectedCreator === "aquaedit") return !preset.creator || preset.creator === "aquaedit";
         return preset.creator === selectedCreator;
       });
@@ -255,7 +256,6 @@ const PresetsPage = () => {
             Professional Preset Library
           </h1>
           <p className="text-gray-400 text-lg">
-            Advanced preset import system with DNG extraction and smart organization
           </p>
         </div>
       </div>
@@ -269,10 +269,10 @@ const PresetsPage = () => {
               <Button 
                 variant="secondary" 
                 size="small"
-                onClick={() => setShowImportModal(true)}
+onClick={() => setShowImportModal(true)}
               >
                 <ApperIcon name="Upload" className="w-4 h-4 mr-2" />
-                Import DNG/JSON
+                Import XMP/DNG/JSON
               </Button>
               <Button 
                 variant="secondary" 

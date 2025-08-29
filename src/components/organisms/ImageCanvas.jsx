@@ -15,12 +15,12 @@ const ImageCanvas = ({ image, adjustments, className }) => {
 
   const applyAdjustments = useCallback((ctx, imageData, adjustments) => {
 const data = imageData.data;
-    const { 
-      exposure, contrast, highlights, shadows, saturation, vibrance, warmth, clarity,
-      temperature, tint, luminanceNoise, colorNoise, sharpening, distortion, chromaticAberration, vignette,
+const { 
+      exposure, contrast, highlights, shadows, whites, blacks, saturation, vibrance, warmth, clarity, texture, dehaze,
+      temperature, tint, luminanceNoise, colorNoise, sharpening, sharpenRadius, distortion, chromaticAberration, vignette,
       hslReds, hslOranges, hslYellows, hslGreens, hslCyans, hslBlues, hslPurples, hslMagentas,
       coralEnhancementMode, coralBoost, fishColorIsolation, fishEnhancement, waterCastCorrection,
-      masterCurve, rgbCurve, redCurve, greenCurve, blueCurve
+      masterCurve, rgbCurve, redCurve, greenCurve, blueCurve, lensProfileEnabled
     } = adjustments;
     
     // Enhanced curve application with Bezier interpolation
@@ -326,7 +326,30 @@ const data = imageData.data;
         b = avg + (b - avg) * factor;
       }
       
-      // Apply chromatic aberration correction
+// Enhanced lens corrections with Lightroom compatibility
+      
+      // Apply barrel/pincushion distortion correction
+      if (distortion !== 0) {
+        const centerX = data.length / 8;
+        const centerY = Math.sqrt(data.length / 4);
+        const pixelIndex = i / 4;
+        const x = pixelIndex % centerX;
+        const y = Math.floor(pixelIndex / centerX);
+        const normalizedX = (x - centerX/2) / (centerX/2);
+        const normalizedY = (y - centerY/2) / (centerY/2);
+        const radius = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
+        
+        if (radius > 0) {
+          const distortionFactor = 1 + (distortion / 100) * Math.pow(radius, 2);
+          const correctionFactor = Math.max(0.5, Math.min(2.0, 1 / distortionFactor));
+          
+          r = Math.max(0, Math.min(255, r * correctionFactor));
+          g = Math.max(0, Math.min(255, g * correctionFactor));
+          b = Math.max(0, Math.min(255, b * correctionFactor));
+        }
+      }
+
+      // Apply chromatic aberration correction (Lightroom-compatible)
       if (chromaticAberration > 0) {
         const centerX = data.length / 8;
         const centerY = Math.sqrt(data.length / 4);
@@ -334,10 +357,45 @@ const data = imageData.data;
         const x = pixelIndex % centerX;
         const y = Math.floor(pixelIndex / centerX);
         const distance = Math.sqrt((x - centerX/2)**2 + (y - centerY/2)**2);
-        const factor = 1 + (chromaticAberration / 10000) * distance;
+        const normalizedDistance = distance / Math.max(centerX, centerY);
         
-        r /= factor;
-        b /= factor;
+        // Red channel correction
+        const redShift = 1 - (chromaticAberration / 100) * normalizedDistance * 0.002;
+        // Blue channel correction
+        const blueShift = 1 + (chromaticAberration / 100) * normalizedDistance * 0.002;
+        
+        r = Math.max(0, Math.min(255, r * redShift));
+        b = Math.max(0, Math.min(255, b * blueShift));
+      }
+
+      // Apply post-crop vignette (Lightroom style)
+      if (vignette !== 0) {
+        const centerX = data.length / 8;
+        const centerY = Math.sqrt(data.length / 4);
+        const pixelIndex = i / 4;
+        const x = pixelIndex % centerX;
+        const y = Math.floor(pixelIndex / centerX);
+        const normalizedX = (x - centerX/2) / (centerX/2);
+        const normalizedY = (y - centerY/2) / (centerY/2);
+        const distance = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
+        
+        // Lightroom-style vignette calculation
+        const vignetteStrength = vignette / 100;
+        const falloff = Math.pow(distance, 2);
+        const vignetteFactor = 1 - (vignetteStrength * falloff * 0.7);
+        
+        if (vignetteStrength > 0) {
+          // Darkening vignette
+          r = Math.max(0, r * vignetteFactor);
+          g = Math.max(0, g * vignetteFactor);
+          b = Math.max(0, b * vignetteFactor);
+        } else {
+          // Brightening vignette (negative values)
+          const brightFactor = 1 + Math.abs(vignetteStrength) * falloff * 0.5;
+          r = Math.min(255, r * brightFactor);
+          g = Math.min(255, g * brightFactor);
+          b = Math.min(255, b * brightFactor);
+        }
       }
       
       // Apply sharpening with enhanced detail preservation

@@ -160,10 +160,13 @@ export const importPresets = async (importedPresets) => {
     const newPreset = {
       Id: highestId + savedPresets.length + 1,
       category: preset.category || "imported",
-      thumbnail: "imported_preset.jpg",
+      source: preset.source || "import",
+      thumbnail: preset.source === "dng" ? "dng_preset.jpg" : "imported_preset.jpg",
       createdAt: new Date().toISOString(),
       usageCount: 0,
       tags: preset.tags || [],
+      processVersion: preset.metadata?.processVersion || "1.0",
+      hasLocalAdjustments: !!(preset.localAdjustments?.length),
       ...preset
     };
     presets.push(newPreset);
@@ -179,9 +182,17 @@ export const exportPresets = async (presetsToExport) => {
     version: "1.0.0",
     exportedAt: new Date().toISOString(),
     totalPresets: presetsToExport.length,
+    appVersion: "1.0.0",
+    compatibility: {
+      lightroomSupport: true,
+      processVersions: ["4.0", "5.0"],
+      localAdjustments: true
+    },
     presets: presetsToExport.map(preset => ({
       ...preset,
-      exportedFrom: "AquaEdit Pro"
+      exportedFrom: "AquaEdit Pro",
+      xmpCompatible: !!(preset.metadata?.processVersion),
+      preserveLocalAdjustments: !!(preset.localAdjustments?.length)
     }))
   };
 };

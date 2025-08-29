@@ -6,8 +6,8 @@ import Button from "@/components/atoms/Button";
 import { cn } from "@/utils/cn";
 
 const SliderControl = ({ 
-  label, 
-  value, 
+label, 
+  value,
   onChange, 
   min = -100, 
   max = 100, 

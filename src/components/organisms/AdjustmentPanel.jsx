@@ -2,21 +2,25 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
 import { cn } from "@/utils/cn";
 import ApperIcon from "@/components/ApperIcon";
+import CurveEditor from "@/components/molecules/CurveEditor";
 import SliderControl from "@/components/molecules/SliderControl";
 import Button from "@/components/atoms/Button";
-import CurveEditor from "@/components/molecules/CurveEditor";
 const AdjustmentPanel = ({ adjustments, onAdjustmentChange, onResetAll, className }) => {
   const [activeTab, setActiveTab] = useState("basic");
 
   const basicControls = [
     { key: "exposure", label: "Exposure", min: -200, max: 200, step: 10, defaultValue: 0 },
     { key: "contrast", label: "Contrast", min: -100, max: 100, step: 5, defaultValue: 0 },
-    { key: "highlights", label: "Highlights", min: -100, max: 100, step: 5, defaultValue: 0 },
+{ key: "highlights", label: "Highlights", min: -100, max: 100, step: 5, defaultValue: 0 },
     { key: "shadows", label: "Shadows", min: -100, max: 100, step: 5, defaultValue: 0 },
+    { key: "whites", label: "Whites", min: -100, max: 100, step: 5, defaultValue: 0 },
+    { key: "blacks", label: "Blacks", min: -100, max: 100, step: 5, defaultValue: 0 },
     { key: "saturation", label: "Saturation", min: -100, max: 100, step: 5, defaultValue: 0 },
     { key: "vibrance", label: "Vibrance", min: -100, max: 100, step: 5, defaultValue: 0 },
     { key: "warmth", label: "Warmth", min: -100, max: 100, step: 5, defaultValue: 0 },
-    { key: "clarity", label: "Clarity", min: -100, max: 100, step: 5, defaultValue: 0 }
+    { key: "clarity", label: "Clarity", min: -100, max: 100, step: 5, defaultValue: 0 },
+    { key: "texture", label: "Texture", min: -100, max: 100, step: 5, defaultValue: 0 },
+    { key: "dehaze", label: "Dehaze", min: -100, max: 100, step: 5, defaultValue: 0 }
   ];
 
   const hslColors = [
@@ -115,9 +119,10 @@ const underwaterPresets = [
   const tabs = [
     { id: "basic", label: "Basic", icon: "Sliders" },
     { id: "color", label: "Color", icon: "Palette" },
-    { id: "tone", label: "Tone", icon: "TrendingUp" },
+{ id: "tone", label: "Tone", icon: "TrendingUp" },
     { id: "local", label: "Local", icon: "Target" },
-    { id: "lens", label: "Lens", icon: "Camera" }
+    { id: "lens", label: "Lens", icon: "Camera" },
+    { id: "detail", label: "Detail", icon: "Focus" }
   ];
 
   const handleHSLChange = (colorKey, component, value) => {
@@ -517,8 +522,7 @@ const renderToneTab = () => (
       </div>
     </div>
   );
-
-  const renderLocalTab = () => (
+const renderLocalTab = () => (
     <div className="space-y-6">
       <div>
         <h4 className="text-sm font-medium text-gray-300 mb-3">Local Adjustment Tools</h4>
@@ -536,6 +540,23 @@ const renderToneTab = () => (
             Brush Tool
           </Button>
         </div>
+      </div>
+      
+      <div>
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Lightroom Import Status</h4>
+        <div className="text-xs text-gray-400 space-y-1">
+          <div>• Local adjustments imported from XMP/DNG files</div>
+          <div>• Graduated filters and radial masks supported</div>
+          <div>• Brush adjustments preserved in metadata</div>
+        </div>
+        
+        {adjustments.localAdjustments?.length > 0 && (
+          <div className="mt-3 p-2 bg-ocean-teal/10 border border-ocean-teal/30 rounded">
+            <div className="text-xs text-ocean-teal">
+              {adjustments.localAdjustments.length} imported local adjustment(s)
+            </div>
+          </div>
+)}
       </div>
 
       <div className="pt-4 border-t border-slate-dark">
@@ -585,8 +606,32 @@ const renderToneTab = () => (
       <div>
         <h4 className="text-sm font-medium text-gray-300 mb-3">Lens Correction Tools</h4>
         <div className="space-y-4">
+          <div>
+            <h4 className="text-sm font-medium text-gray-300 mb-3">Lens Profile Corrections</h4>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  id="lensProfile" 
+                  checked={adjustments.lensProfileEnabled || false}
+                  onChange={(e) => onAdjustmentChange("lensProfileEnabled", e.target.checked)}
+                  className="w-4 h-4 text-ocean-teal rounded"
+                />
+                <label htmlFor="lensProfile" className="text-sm text-gray-300">
+                  Enable Lens Profile Corrections
+                </label>
+              </div>
+              
+              {adjustments.metadata?.lens && (
+                <div className="text-xs text-gray-500">
+                  Detected Lens: {adjustments.metadata.lens}
+                </div>
+              )}
+            </div>
+          </div>
+
           <SliderControl
-            label="Distortion"
+            label="Lens Distortion"
             value={adjustments.distortion || 0}
             onChange={(value) => onAdjustmentChange("distortion", value)}
             min={-100}
@@ -594,6 +639,7 @@ const renderToneTab = () => (
             step={1}
             defaultValue={0}
           />
+          
           <SliderControl
             label="Chromatic Aberration"
             value={adjustments.chromaticAberration || 0}
@@ -603,6 +649,7 @@ const renderToneTab = () => (
             step={1}
             defaultValue={0}
           />
+          
           <SliderControl
             label="Vignette"
             value={adjustments.vignette || 0}
@@ -614,7 +661,155 @@ const renderToneTab = () => (
           />
         </div>
       </div>
+  const renderDetailTab = () => (
+    <div className="space-y-4">
+      <div>
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Noise Reduction</h4>
+        <div className="space-y-3">
+          <SliderControl
+            label="Luminance Noise"
+            value={adjustments.luminanceNoise || 0}
+            onChange={(value) => onAdjustmentChange("luminanceNoise", value)}
+            min={0}
+            max={100}
+            step={5}
+            defaultValue={0}
+          />
+          <SliderControl
+            label="Color Noise"
+            value={adjustments.colorNoise || 0}
+            onChange={(value) => onAdjustmentChange("colorNoise", value)}
+            min={0}
+            max={100}
+            step={5}
+            defaultValue={0}
+          />
+        </div>
+      </div>
 
+      <div>
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Sharpening</h4>
+        <div className="space-y-3">
+          <SliderControl
+            label="Amount"
+            value={adjustments.sharpening || 0}
+            onChange={(value) => onAdjustmentChange("sharpening", value)}
+            min={0}
+            max={150}
+            step={5}
+            defaultValue={0}
+          />
+          <SliderControl
+            label="Radius"
+            value={adjustments.sharpenRadius || 1.0}
+            onChange={(value) => onAdjustmentChange("sharpenRadius", value)}
+            min={0.5}
+            max={3.0}
+            step={0.1}
+            defaultValue={1.0}
+          />
+        </div>
+      </div>
+</div>
+      </div>
+
+      <div className="pt-4 border-t border-slate-dark">
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Perspective Correction</h4>
+        <div className="space-y-4">
+          <SliderControl
+            label="Horizontal"
+            value={adjustments.perspective?.horizontal || 0}
+            onChange={(value) => onAdjustmentChange("perspective", { 
+              ...adjustments.perspective, 
+              horizontal: value 
+            })}
+            min={-50}
+            max={50}
+            step={1}
+            defaultValue={0}
+          />
+          <SliderControl
+            label="Vertical"
+            value={adjustments.perspective?.vertical || 0}
+            onChange={(value) => onAdjustmentChange("perspective", { 
+              ...adjustments.perspective, 
+              vertical: value 
+            })}
+            min={-50}
+            max={50}
+            step={1}
+            defaultValue={0}
+          />
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-slate-dark">
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Housing Presets</h4>
+        <div className="grid grid-cols-1 gap-2">
+          <Button variant="secondary" size="small" className="text-xs justify-start">
+            Canon Housing + Wide Dome
+          </Button>
+          <Button variant="secondary" size="small" className="text-xs justify-start">
+            Nikon Housing + Macro Port
+          </Button>
+          <Button variant="secondary" size="small" className="text-xs justify-start">
+            Generic Flat Port
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDetailTab = () => (
+    <div className="space-y-4">
+      <div>
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Noise Reduction</h4>
+        <div className="space-y-3">
+          <SliderControl
+            label="Luminance Noise"
+            value={adjustments.luminanceNoise || 0}
+            onChange={(value) => onAdjustmentChange("luminanceNoise", value)}
+            min={0}
+            max={100}
+            step={5}
+            defaultValue={0}
+          />
+          <SliderControl
+            label="Color Noise"
+            value={adjustments.colorNoise || 0}
+            onChange={(value) => onAdjustmentChange("colorNoise", value)}
+            min={0}
+            max={100}
+            step={5}
+            defaultValue={0}
+          />
+        </div>
+      </div>
+
+      <div>
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Sharpening</h4>
+        <div className="space-y-3">
+          <SliderControl
+            label="Amount"
+            value={adjustments.sharpening || 0}
+            onChange={(value) => onAdjustmentChange("sharpening", value)}
+            min={0}
+            max={150}
+            step={5}
+            defaultValue={0}
+          />
+          <SliderControl
+            label="Radius"
+            value={adjustments.sharpenRadius || 1.0}
+            onChange={(value) => onAdjustmentChange("sharpenRadius", value)}
+            min={0.5}
+            max={3.0}
+            step={0.1}
+            defaultValue={1.0}
+          />
+        </div>
+      </div>
+    </div>
       <div className="pt-4 border-t border-slate-dark">
         <h4 className="text-sm font-medium text-gray-300 mb-3">Perspective Correction</h4>
         <div className="space-y-4">
@@ -668,7 +863,8 @@ const renderToneTab = () => (
       case "color": return renderColorTab();
       case "tone": return renderToneTab();
       case "local": return renderLocalTab();
-      case "lens": return renderLensTab();
+case "lens": return renderLensTab();
+      case "detail": return renderDetailTab();
       default: return renderBasicTab();
     }
   };

@@ -1,6 +1,6 @@
 // DNG Processing Service for Lightroom Preset Extraction
 export class DNGProcessor {
-  static async extractXMPMetadata(file) {
+static async extractXMPMetadata(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       
@@ -16,14 +16,18 @@ export class DNGProcessor {
             return;
           }
           
-          // Parse Lightroom adjustments
+          // Parse Lightroom adjustments with enhanced parameter support
           const adjustments = this.parseLightroomAdjustments(xmpData);
           const metadata = this.parseImageMetadata(xmpData);
+          const localAdjustments = this.parseLocalAdjustments(xmpData);
+          const lensCorrections = this.parseLensCorrections(xmpData);
           
           resolve({
-            adjustments,
+            adjustments: { ...adjustments, ...lensCorrections },
             metadata,
-            rawXMP: xmpData
+            localAdjustments,
+            rawXMP: xmpData,
+            processVersion: this.extractXMPValue(xmpData, 'crs:ProcessVersion', '5.0')
           });
         } catch (error) {
           reject(error);
@@ -58,7 +62,7 @@ export class DNGProcessor {
   static parseLightroomAdjustments(xmpData) {
     const adjustments = {};
     
-    // Lightroom to AquaEdit Pro parameter mapping
+// Enhanced Lightroom to AquaEdit Pro parameter mapping
     const parameterMap = {
       'crs:Exposure2012': { key: 'exposure', scale: 100 },
       'crs:Contrast2012': { key: 'contrast', scale: 1 },
@@ -66,20 +70,19 @@ export class DNGProcessor {
       'crs:Shadows2012': { key: 'shadows', scale: 1 },
       'crs:Whites2012': { key: 'whites', scale: 1 },
       'crs:Blacks2012': { key: 'blacks', scale: 1 },
-      'crs:Texture': { key: 'clarity', scale: 1 },
+      'crs:Texture': { key: 'texture', scale: 1 },
       'crs:Clarity2012': { key: 'clarity', scale: 1 },
       'crs:Dehaze': { key: 'dehaze', scale: 1 },
       'crs:Vibrance': { key: 'vibrance', scale: 1 },
       'crs:Saturation': { key: 'saturation', scale: 1 },
-      'crs:Temperature': { key: 'temperature', scale: 0.02 }, // Convert to AquaEdit scale
+      'crs:Temperature': { key: 'temperature', scale: 0.02 },
       'crs:Tint': { key: 'tint', scale: 0.5 },
       'crs:LuminanceSmoothing': { key: 'luminanceNoise', scale: 1 },
       'crs:ColorNoiseReduction': { key: 'colorNoise', scale: 1 },
       'crs:SharpenAmount': { key: 'sharpening', scale: 1 },
       'crs:SharpenRadius': { key: 'sharpenRadius', scale: 1 },
-      'crs:LensProfileDistortionScale': { key: 'distortion', scale: 1 },
-      'crs:ChromaticAberrationR': { key: 'chromaticAberration', scale: 1 },
-      'crs:PostCropVignetteAmount': { key: 'vignette', scale: 1 }
+      'crs:SharpenDetail': { key: 'sharpenDetail', scale: 1 },
+      'crs:SharpenEdgeMasking': { key: 'sharpenMasking', scale: 1 }
     };
     
     // Extract HSL adjustments
@@ -118,6 +121,32 @@ export class DNGProcessor {
     }
     
     // Parse tone curve if present
+// Extract HSL adjustments (8-channel color range support)
+    const hslChannels = [
+      'Red', 'Orange', 'Yellow', 'Green', 'Aqua', 'Blue', 'Purple', 'Magenta'
+    ];
+    
+    const hslMapping = {
+      'Red': 'hslReds', 'Orange': 'hslOranges', 'Yellow': 'hslYellows',
+      'Green': 'hslGreens', 'Aqua': 'hslCyans', 'Blue': 'hslBlues',
+      'Purple': 'hslPurples', 'Magenta': 'hslMagentas'
+    };
+
+    for (const [color, key] of Object.entries(hslMapping)) {
+      const hue = this.extractXMPValue(xmpData, `crs:HueAdjustment${color}`, 0);
+      const sat = this.extractXMPValue(xmpData, `crs:SaturationAdjustment${color}`, 0);
+      const lum = this.extractXMPValue(xmpData, `crs:LuminanceAdjustment${color}`, 0);
+
+      if (hue !== 0 || sat !== 0 || lum !== 0) {
+        adjustments[key] = {
+          hue: hue,
+          saturation: sat,
+          luminance: lum
+        };
+      }
+    }
+
+    // Extract tone curve data
     const curveData = this.extractToneCurve(xmpData);
     if (curveData) {
       adjustments.masterCurve = curveData;
@@ -125,9 +154,140 @@ export class DNGProcessor {
     
     return adjustments;
   }
+
+  static parseLensCorrections(xmpData) {
+    const lensCorrections = {};
+    
+    // Lens distortion correction
+    const distortion = this.extractXMPValue(xmpData, 'crs:LensProfileDistortionScale', 0);
+    if (distortion !== 0) {
+      lensCorrections.distortion = distortion;
+    }
+
+    // Chromatic aberration correction
+    const chromaticR = this.extractXMPValue(xmpData, 'crs:ChromaticAberrationR', 0);
+    const chromaticB = this.extractXMPValue(xmpData, 'crs:ChromaticAberrationB', 0);
+    if (chromaticR !== 0 || chromaticB !== 0) {
+      lensCorrections.chromaticAberration = Math.max(Math.abs(chromaticR), Math.abs(chromaticB));
+    }
+
+    // Vignette correction
+    const vignette = this.extractXMPValue(xmpData, 'crs:PostCropVignetteAmount', 0);
+    if (vignette !== 0) {
+      lensCorrections.vignette = vignette;
+    }
+
+    // Lens profile corrections
+    const lensProfileEnabled = this.extractXMPValue(xmpData, 'crs:LensProfileEnable', 0);
+    if (lensProfileEnabled) {
+      lensCorrections.lensProfileEnabled = true;
+      lensCorrections.lensProfileName = this.extractXMPValue(xmpData, 'crs:LensProfileName', '');
+    }
+
+    return lensCorrections;
+  }
+
+  static parseLocalAdjustments(xmpData) {
+    const localAdjustments = [];
+    
+    // Extract graduated filter data
+    const gradientMatch = xmpData.match(/crs:GradientBasedCorrections="([^"]*)"/);
+    if (gradientMatch) {
+      localAdjustments.push({
+        type: 'gradient',
+        data: this.parseGradientFilter(gradientMatch[1])
+      });
+    }
+
+    // Extract radial filter data
+    const radialMatch = xmpData.match(/crs:CircularGradientBasedCorrections="([^"]*)"/);
+    if (radialMatch) {
+      localAdjustments.push({
+        type: 'radial',
+        data: this.parseRadialFilter(radialMatch[1])
+      });
+    }
+
+    // Extract masking/brush data
+    const maskMatch = xmpData.match(/crs:PaintBasedCorrections="([^"]*)"/);
+    if (maskMatch) {
+      localAdjustments.push({
+        type: 'brush',
+        data: this.parseBrushAdjustments(maskMatch[1])
+      });
+    }
+
+    return localAdjustments;
+  }
+
+  static parseGradientFilter(data) {
+    // Parse linear gradient filter parameters
+    const params = data.split(',');
+    return {
+      centerX: parseFloat(params[0]) || 0.5,
+      centerY: parseFloat(params[1]) || 0.5,
+      rotation: parseFloat(params[2]) || 0,
+      feather: parseFloat(params[3]) || 50,
+      adjustments: this.parseLocalAdjustmentParams(data)
+    };
+  }
+
+  static parseRadialFilter(data) {
+    // Parse radial gradient filter parameters
+    const params = data.split(',');
+    return {
+      centerX: parseFloat(params[0]) || 0.5,
+      centerY: parseFloat(params[1]) || 0.5,
+      radiusX: parseFloat(params[2]) || 0.2,
+      radiusY: parseFloat(params[3]) || 0.2,
+      feather: parseFloat(params[4]) || 50,
+      invert: params[5] === '1',
+      adjustments: this.parseLocalAdjustmentParams(data)
+    };
+  }
+
+  static parseBrushAdjustments(data) {
+    // Parse brush/masking adjustment data
+    return {
+      brushStrokes: this.parseBrushStrokes(data),
+      adjustments: this.parseLocalAdjustmentParams(data)
+    };
+  }
+
+  static parseBrushStrokes(data) {
+    const strokes = [];
+    const strokePattern = /Dabs="([^"]*)"/g;
+    let strokeMatch;
+    
+    while ((strokeMatch = strokePattern.exec(data)) !== null) {
+      const strokeData = strokeMatch[1];
+      const points = strokeData.split(' ').map(point => {
+        const [x, y, pressure] = point.split(',').map(parseFloat);
+        return { x: x || 0, y: y || 0, pressure: pressure || 1 };
+      });
+      strokes.push({ points });
+    }
+    
+    return strokes;
+  }
+
+  static parseLocalAdjustmentParams(data) {
+    const adjustments = {};
+    const params = ['Exposure', 'Contrast', 'Highlights', 'Shadows', 'Clarity', 'Saturation', 'Temperature', 'Tint'];
+    
+    params.forEach(param => {
+      const regex = new RegExp(`${param}="([^"]*)"`, 'i');
+      const match = data.match(regex);
+      if (match) {
+        adjustments[param.toLowerCase()] = parseFloat(match[1]) || 0;
+      }
+    });
+
+    return adjustments;
+  }
   
   static parseImageMetadata(xmpData) {
-    return {
+return {
       camera: this.extractXMPValue(xmpData, 'tiff:Model', 'Unknown'),
       lens: this.extractXMPValue(xmpData, 'aux:Lens', 'Unknown') || 
             this.extractXMPValue(xmpData, 'aux:LensInfo', 'Unknown'),
@@ -137,8 +297,11 @@ export class DNGProcessor {
       focalLength: this.extractXMPValue(xmpData, 'exif:FocalLength', null),
       creationDate: this.extractXMPValue(xmpData, 'xmp:CreateDate', new Date().toISOString()),
       modifyDate: this.extractXMPValue(xmpData, 'xmp:ModifyDate', new Date().toISOString()),
-      software: this.extractXMPValue(xmpData, 'xmp:CreatorTool', 'Unknown'),
-      colorSpace: this.extractXMPValue(xmpData, 'exif:ColorSpace', 'sRGB')
+      software: this.extractXMPValue(xmpData, 'xmp:CreatorTool', 'Adobe Lightroom'),
+      colorSpace: this.extractXMPValue(xmpData, 'exif:ColorSpace', 'sRGB'),
+      processVersion: this.extractXMPValue(xmpData, 'crs:ProcessVersion', '5.0'),
+      hasSettings: this.extractXMPValue(xmpData, 'crs:HasSettings', false),
+      hasLensCorrections: this.extractXMPValue(xmpData, 'crs:LensProfileEnable', false)
     };
   }
   

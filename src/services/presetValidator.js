@@ -7,17 +7,28 @@ export class PresetValidator {
     adjustments: { 
       required: true, 
       type: 'object',
-      properties: {
+properties: {
         exposure: { type: 'number', min: -500, max: 500 },
         contrast: { type: 'number', min: -100, max: 100 },
         highlights: { type: 'number', min: -100, max: 100 },
         shadows: { type: 'number', min: -100, max: 100 },
+        whites: { type: 'number', min: -100, max: 100 },
+        blacks: { type: 'number', min: -100, max: 100 },
         saturation: { type: 'number', min: -100, max: 100 },
         vibrance: { type: 'number', min: -100, max: 100 },
         warmth: { type: 'number', min: -100, max: 100 },
         clarity: { type: 'number', min: -100, max: 100 },
+        texture: { type: 'number', min: -100, max: 100 },
+        dehaze: { type: 'number', min: -100, max: 100 },
         temperature: { type: 'number', min: -100, max: 100 },
-        tint: { type: 'number', min: -100, max: 100 }
+        tint: { type: 'number', min: -100, max: 100 },
+        luminanceNoise: { type: 'number', min: 0, max: 100 },
+        colorNoise: { type: 'number', min: 0, max: 100 },
+        sharpening: { type: 'number', min: 0, max: 150 },
+        sharpenRadius: { type: 'number', min: 0.5, max: 3.0 },
+        distortion: { type: 'number', min: -100, max: 100 },
+        chromaticAberration: { type: 'number', min: 0, max: 100 },
+        vignette: { type: 'number', min: -100, max: 100 }
       }
     },
     version: { required: false, type: 'string' },
@@ -75,7 +86,7 @@ export class PresetValidator {
       }
     }
     
-    // Check version compatibility
+// Check version and process compatibility
     if (presetData.version) {
       const version = this.parseVersion(presetData.version);
       const currentVersion = this.parseVersion('1.0.0');
@@ -83,6 +94,25 @@ export class PresetValidator {
       if (version.major > currentVersion.major) {
         warnings.push(`Preset was created with a newer version (${presetData.version}). Some features may not be supported.`);
       }
+    }
+
+    // Check Lightroom process version compatibility
+    if (presetData.metadata?.processVersion) {
+      const processVersion = parseFloat(presetData.metadata.processVersion);
+      if (processVersion < 4.0) {
+        warnings.push('Preset uses legacy Lightroom process version. Some adjustments may appear different.');
+      } else if (processVersion > 5.0) {
+        warnings.push('Preset uses newer Lightroom process version. Some features may not be fully supported.');
+      }
+    }
+
+    // Validate local adjustments if present
+    if (presetData.localAdjustments && Array.isArray(presetData.localAdjustments)) {
+      presetData.localAdjustments.forEach((adjustment, index) => {
+        if (!adjustment.type || !['gradient', 'radial', 'brush'].includes(adjustment.type)) {
+          warnings.push(`Local adjustment ${index + 1} has invalid type`);
+        }
+      });
     }
     
     return {
@@ -101,7 +131,7 @@ export class PresetValidator {
     };
   }
   
-  static upgradePreset(presetData) {
+static upgradePreset(presetData) {
     // Handle version upgrades and compatibility issues
     const upgraded = { ...presetData };
     
@@ -112,6 +142,33 @@ export class PresetValidator {
     if (upgraded.adjustments.hslAquas) {
       upgraded.adjustments.hslCyans = upgraded.adjustments.hslAquas;
       delete upgraded.adjustments.hslAquas;
+    }
+
+    // Convert Lightroom parameter names to AquaEdit equivalents
+    if (upgraded.adjustments.temperature2012) {
+      upgraded.adjustments.temperature = upgraded.adjustments.temperature2012;
+      delete upgraded.adjustments.temperature2012;
+    }
+
+    if (upgraded.adjustments.exposure2012) {
+      upgraded.adjustments.exposure = upgraded.adjustments.exposure2012;
+      delete upgraded.adjustments.exposure2012;
+    }
+
+    // Ensure lens corrections are properly structured
+    if (upgraded.adjustments.lensProfileEnabled && !upgraded.adjustments.distortion) {
+      upgraded.adjustments.distortion = 0;
+    }
+
+    // Handle process version upgrades
+    if (upgraded.metadata?.processVersion) {
+      const processVersion = parseFloat(upgraded.metadata.processVersion);
+      if (processVersion < 4.0) {
+        // Legacy process version adjustments
+        if (upgraded.adjustments.exposure) {
+          upgraded.adjustments.exposure *= 0.8; // Adjust for process version differences
+        }
+      }
     }
     
     // Ensure all HSL channels have proper structure
@@ -144,16 +201,20 @@ export class PresetValidator {
       category: "custom",
       creator: "Photographer Name",
       version: "1.0.0",
-      tags: ["underwater", "coral", "tropical"],
+tags: ["underwater", "coral", "tropical"],
       adjustments: {
         exposure: 25,
         contrast: 15,
         highlights: -20,
         shadows: 30,
+        whites: 10,
+        blacks: -15,
         saturation: 35,
         vibrance: 40,
         warmth: 10,
         clarity: 20,
+        texture: 5,
+        dehaze: 0,
         temperature: -15,
         tint: 5,
         hslReds: { hue: 5, saturation: 15, luminance: 0 },
