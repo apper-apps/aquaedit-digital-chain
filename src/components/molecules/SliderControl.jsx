@@ -6,7 +6,7 @@ import Button from "@/components/atoms/Button";
 import { cn } from "@/utils/cn";
 
 const SliderControl = ({ 
-label, 
+  label, 
   value,
   onChange, 
   min = -100, 
@@ -14,7 +14,10 @@ label,
   step = 1, 
   defaultValue = 0,
   className,
-  suffix = ""
+  suffix = "",
+  precision = 0,
+  showValue = true,
+  disabled = false
 }) => {
   const [inputValue, setInputValue] = useState(value.toString());
 

@@ -68,11 +68,16 @@ const CurveEditor = ({
   ];
 
   // Channel colors
-  const channelColors = {
+const channelColors = {
     rgb: '#ffffff',
     red: '#ef4444',
     green: '#22c55e',
-    blue: '#3b82f6'
+    blue: '#3b82f6',
+    // Professional channel extensions
+    cyan: '#06b6d4',
+    magenta: '#d946ef',
+    yellow: '#eab308',
+    luminosity: '#94a3b8'
   };
 
   const getCurrentCurve = useCallback(() => {
@@ -414,20 +419,41 @@ const CurveEditor = ({
         </div>
 
         {/* Channel Selector */}
-        <div className="grid grid-cols-4 gap-2 mb-4">
-          {Object.entries(channelColors).map(([channel, color]) => (
+<div className="grid grid-cols-4 gap-2 mb-4">
+          {Object.entries(channelColors).slice(0, 4).map(([channel, color]) => (
             <Button
               key={channel}
               variant={activeChannel === channel ? "secondary" : "ghost"}
               size="small"
-              className="text-xs"
+              className="text-xs transition-all duration-200"
               style={{ 
                 color: activeChannel === channel ? '#ffffff' : color,
-                borderColor: activeChannel === channel ? color : 'transparent'
+                borderColor: activeChannel === channel ? color : 'transparent',
+                borderWidth: activeChannel === channel ? '1px' : '0px'
               }}
               onClick={() => onChannelChange(channel)}
             >
               {channel.toUpperCase()}
+            </Button>
+          ))}
+        </div>
+        
+        {/* Professional Channels */}
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          {Object.entries(channelColors).slice(4).map(([channel, color]) => (
+            <Button
+              key={channel}
+              variant={activeChannel === channel ? "secondary" : "ghost"}
+              size="small"
+              className="text-xs transition-all duration-200"
+              style={{ 
+                color: activeChannel === channel ? '#ffffff' : color,
+                borderColor: activeChannel === channel ? color : 'transparent',
+                borderWidth: activeChannel === channel ? '1px' : '0px'
+              }}
+              onClick={() => onChannelChange(channel)}
+            >
+              {channel === 'luminosity' ? 'LUM' : channel.toUpperCase()}
             </Button>
           ))}
         </div>

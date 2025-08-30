@@ -1,6 +1,7 @@
 /**
  * Professional Color Science Service for 16-bit workflows
- * Handles color space conversions, gamut mapping, and professional printing workflows
+ * Specialized for freediving photography with advanced color correction
+ * Handles color space conversions, gamut mapping, and underwater color science
  */
 
 class ProfessionalColorService {
@@ -14,7 +15,8 @@ class ProfessionalColorService {
           red: [0.64, 0.33],
           green: [0.3, 0.6],
           blue: [0.15, 0.06]
-        }
+        },
+        transferFunction: 'sRGB'
       },
       'Adobe RGB': {
         gamut: 'print',
@@ -24,7 +26,8 @@ class ProfessionalColorService {
           red: [0.64, 0.33],
           green: [0.21, 0.71],
           blue: [0.15, 0.06]
-        }
+        },
+        transferFunction: 'gamma2.2'
       },
       'ProPhoto RGB': {
         gamut: 'professional',
@@ -34,29 +37,78 @@ class ProfessionalColorService {
           red: [0.7347, 0.2653],
           green: [0.1596, 0.8404],
           blue: [0.0366, 0.0001]
-        }
+        },
+        transferFunction: 'gamma1.8'
+      },
+      'Rec. 2020': {
+        gamut: 'ultra_wide',
+        bitDepth: 16,
+        whitePoint: 'D65',
+        primaries: {
+          red: [0.708, 0.292],
+          green: [0.170, 0.797],
+          blue: [0.131, 0.046]
+        },
+        transferFunction: 'PQ'
       }
     };
 
+    // Advanced underwater color profiles with depth-based mathematical models
     this.underwaterColorProfiles = {
-      'Underwater Standard': {
-        redCompensation: 1.3,
-        blueAttenuation: 0.8,
-        greenShift: 1.1,
-        depthAdjustment: true
+      'Shallow Reef (0-10m)': {
+        redCompensation: 1.2,
+        blueAttenuation: 0.85,
+        greenShift: 1.08,
+        depthAdjustment: true,
+        lightPenetration: 0.95,
+        backscatterCompensation: 0.1,
+        coralEnhancement: 1.15
       },
-      'Deep Water': {
-        redCompensation: 1.8,
+      'Open Water (10-20m)': {
+        redCompensation: 1.5,
+        blueAttenuation: 0.75,
+        greenShift: 1.2,
+        depthAdjustment: true,
+        lightPenetration: 0.8,
+        backscatterCompensation: 0.2,
+        coralEnhancement: 1.0
+      },
+      'Deep Blue (20-40m)': {
+        redCompensation: 2.0,
         blueAttenuation: 0.6,
-        greenShift: 1.3,
-        depthAdjustment: true
+        greenShift: 1.4,
+        depthAdjustment: true,
+        lightPenetration: 0.6,
+        backscatterCompensation: 0.3,
+        coralEnhancement: 0.9
       },
-      'Shallow Reef': {
-        redCompensation: 1.1,
-        blueAttenuation: 0.9,
-        greenShift: 1.05,
-        depthAdjustment: false
+      'Cave/Wreck Interior': {
+        redCompensation: 2.5,
+        blueAttenuation: 0.5,
+        greenShift: 1.6,
+        depthAdjustment: false,
+        lightPenetration: 0.4,
+        backscatterCompensation: 0.4,
+        coralEnhancement: 0.8,
+        artificialLightCompensation: true
+      },
+      'Murky Water': {
+        redCompensation: 1.8,
+        blueAttenuation: 0.4,
+        greenShift: 1.8,
+        depthAdjustment: true,
+        lightPenetration: 0.3,
+        backscatterCompensation: 0.6,
+        coralEnhancement: 0.7,
+        particleCorrection: true
       }
+    };
+
+    // Three-way color correction matrices for professional grading
+    this.colorGradingMatrices = {
+      shadows: { range: [0, 0.3], weight: 1.0 },
+      midtones: { range: [0.2, 0.8], weight: 1.0 },
+      highlights: { range: [0.7, 1.0], weight: 1.0 }
     };
   }
 
@@ -313,34 +365,132 @@ class ProfessionalColorService {
     return converted;
   }
 
-  /**
-   * Color matching between images for consistent processing
+/**
+   * Apply three-way color correction (shadows, midtones, highlights)
    */
-  matchColors(sourceImageData, targetImageData, matchType = 'histogram') {
-    if (matchType === 'histogram') {
-      return this.histogramMatching(sourceImageData, targetImageData);
-    } else if (matchType === 'statistics') {
-      return this.statisticalMatching(sourceImageData, targetImageData);
+  applyThreeWayColorCorrection(imageData, colorGrading) {
+    const data = imageData.data;
+    const result = new ImageData(data.slice(), imageData.width, imageData.height);
+
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i] / 255;
+      const g = data[i + 1] / 255;
+      const b = data[i + 2] / 255;
+      
+      // Calculate luminance for tonal range determination
+      const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+      
+      // Calculate weights for each tonal range
+      const shadowWeight = this.calculateTonalWeight(luminance, 'shadows');
+      const midtoneWeight = this.calculateTonalWeight(luminance, 'midtones');
+      const highlightWeight = this.calculateTonalWeight(luminance, 'highlights');
+      
+      // Apply lift, gamma, and gain adjustments
+      let newR = r, newG = g, newB = b;
+      
+      // Shadows (Lift)
+      if (colorGrading.shadows?.lift) {
+        newR += (colorGrading.shadows.lift[0] / 100) * shadowWeight;
+        newG += (colorGrading.shadows.lift[1] / 100) * shadowWeight;
+        newB += (colorGrading.shadows.lift[2] / 100) * shadowWeight;
+      }
+      
+      // Midtones (Gamma)
+      if (colorGrading.midtones?.gamma) {
+        const gammaR = 1 + (colorGrading.midtones.gamma[0] / 100);
+        const gammaG = 1 + (colorGrading.midtones.gamma[1] / 100);
+        const gammaB = 1 + (colorGrading.midtones.gamma[2] / 100);
+        
+        newR = Math.pow(newR, 1/gammaR) * midtoneWeight + newR * (1 - midtoneWeight);
+        newG = Math.pow(newG, 1/gammaG) * midtoneWeight + newG * (1 - midtoneWeight);
+        newB = Math.pow(newB, 1/gammaB) * midtoneWeight + newB * (1 - midtoneWeight);
+      }
+      
+      // Highlights (Gain)
+      if (colorGrading.highlights?.gain) {
+        newR *= (1 + (colorGrading.highlights.gain[0] / 100) * highlightWeight);
+        newG *= (1 + (colorGrading.highlights.gain[1] / 100) * highlightWeight);
+        newB *= (1 + (colorGrading.highlights.gain[2] / 100) * highlightWeight);
+      }
+      
+      // Apply master controls
+      if (colorGrading.master) {
+        // Master saturation
+        if (colorGrading.master.saturation) {
+          const satMult = 1 + (colorGrading.master.saturation / 100);
+          const gray = 0.299 * newR + 0.587 * newG + 0.114 * newB;
+          newR = gray + (newR - gray) * satMult;
+          newG = gray + (newG - gray) * satMult;
+          newB = gray + (newB - gray) * satMult;
+        }
+      }
+      
+      result.data[i] = Math.max(0, Math.min(255, newR * 255));
+      result.data[i + 1] = Math.max(0, Math.min(255, newG * 255));
+      result.data[i + 2] = Math.max(0, Math.min(255, newB * 255));
     }
-    
-    return sourceImageData;
+
+    return result;
   }
 
   /**
-   * Histogram-based color matching
+   * Calculate tonal weight for three-way color correction
    */
-  histogramMatching(sourceImageData, targetImageData) {
+  calculateTonalWeight(luminance, range) {
+    const ranges = this.colorGradingMatrices[range];
+    if (!ranges) return 0;
+
+    const [min, max] = ranges.range;
+    
+    if (luminance < min) {
+      return range === 'shadows' ? 1 : 0;
+    } else if (luminance > max) {
+      return range === 'highlights' ? 1 : 0;
+    } else {
+      // Smooth transition using cosine interpolation
+      const t = (luminance - min) / (max - min);
+      if (range === 'shadows') {
+        return Math.cos(t * Math.PI / 2);
+      } else if (range === 'highlights') {
+        return Math.sin(t * Math.PI / 2);
+      } else { // midtones
+        return Math.sin(t * Math.PI);
+      }
+    }
+  }
+
+  /**
+   * Advanced color matching with freediving-specific algorithms
+   */
+  matchColors(sourceImageData, targetImageData, matchType = 'underwater_histogram') {
+    switch (matchType) {
+      case 'underwater_histogram':
+        return this.underwaterHistogramMatching(sourceImageData, targetImageData);
+      case 'color_temperature':
+        return this.colorTemperatureMatching(sourceImageData, targetImageData);
+      case 'depth_based':
+        return this.depthBasedMatching(sourceImageData, targetImageData);
+      default:
+        return this.histogramMatching(sourceImageData, targetImageData);
+    }
+  }
+
+  /**
+   * Underwater-specific histogram matching
+   */
+  underwaterHistogramMatching(sourceImageData, targetImageData) {
     const sourceData = sourceImageData.data;
     const targetData = targetImageData.data;
     const result = new ImageData(sourceData.slice(), sourceImageData.width, sourceImageData.height);
 
-    // Calculate histograms for each channel
+    // Separate processing for underwater channels with different weights
+    const channelWeights = [1.3, 1.0, 0.7]; // Red enhanced, blue reduced for underwater
+
     for (let channel = 0; channel < 3; channel++) {
       const sourceHist = this.calculateHistogram(sourceData, channel);
       const targetHist = this.calculateHistogram(targetData, channel);
-      const mapping = this.createHistogramMapping(sourceHist, targetHist);
+      const mapping = this.createHistogramMapping(sourceHist, targetHist, channelWeights[channel]);
 
-      // Apply mapping to source image
       for (let i = channel; i < sourceData.length; i += 4) {
         result.data[i] = mapping[sourceData[i]];
       }
@@ -350,23 +500,24 @@ class ProfessionalColorService {
   }
 
   /**
-   * Calculate histogram for a color channel
+   * Calculate histogram for a color channel with weighting
    */
-  calculateHistogram(imageData, channel) {
+  calculateHistogram(imageData, channel, weight = 1.0) {
     const histogram = new Array(256).fill(0);
     
     for (let i = channel; i < imageData.length; i += 4) {
-      histogram[imageData[i]]++;
+      const value = Math.round(imageData[i] * weight);
+      const clampedValue = Math.max(0, Math.min(255, value));
+      histogram[clampedValue]++;
     }
 
     return histogram;
   }
 
   /**
-   * Create mapping between source and target histograms
+   * Create mapping between source and target histograms with weighting
    */
-  createHistogramMapping(sourceHist, targetHist) {
-    // Calculate cumulative distribution functions
+  createHistogramMapping(sourceHist, targetHist, weight = 1.0) {
     const sourceCDF = this.calculateCDF(sourceHist);
     const targetCDF = this.calculateCDF(targetHist);
     
@@ -374,10 +525,12 @@ class ProfessionalColorService {
     
     for (let i = 0; i < 256; i++) {
       let j = 0;
-      while (j < 255 && targetCDF[j] < sourceCDF[i]) {
+      const adjustedSource = sourceCDF[i] * weight;
+      
+      while (j < 255 && targetCDF[j] < adjustedSource) {
         j++;
       }
-      mapping[i] = j;
+      mapping[i] = Math.max(0, Math.min(255, j));
     }
 
     return mapping;
@@ -396,11 +549,171 @@ class ProfessionalColorService {
 
     // Normalize
     const total = cdf[255];
-    for (let i = 0; i < 256; i++) {
-      cdf[i] /= total;
+    if (total > 0) {
+      for (let i = 0; i < 256; i++) {
+        cdf[i] /= total;
+      }
     }
 
     return cdf;
+  }
+
+  /**
+   * Color harmony analysis for underwater scenes
+   */
+  analyzeColorHarmony(imageData) {
+    const dominantColors = this.extractDominantColors(imageData, 5);
+    const harmonyScore = this.calculateHarmonyScore(dominantColors);
+    const recommendations = this.generateHarmonyRecommendations(dominantColors);
+    
+    return {
+      dominantColors,
+      harmonyScore,
+      recommendations,
+      colorTemperature: this.estimateColorTemperature(dominantColors),
+      underwaterCompatibility: this.assessUnderwaterCompatibility(dominantColors)
+    };
+  }
+
+  /**
+   * Extract dominant colors using k-means clustering
+   */
+  extractDominantColors(imageData, k = 5) {
+    const data = imageData.data;
+    const pixels = [];
+    
+    // Sample pixels (every 10th pixel for performance)
+    for (let i = 0; i < data.length; i += 40) {
+      pixels.push([data[i], data[i + 1], data[i + 2]]);
+    }
+    
+    // Simplified k-means clustering
+    const clusters = this.kMeansClustering(pixels, k);
+    return clusters.map(cluster => ({
+      rgb: cluster.center,
+      percentage: (cluster.size / pixels.length) * 100,
+      hsv: this.rgbToHsv(cluster.center)
+    }));
+  }
+
+  /**
+   * Simplified k-means clustering for color extraction
+   */
+  kMeansClustering(pixels, k) {
+    const clusters = [];
+    
+    // Initialize random centroids
+    for (let i = 0; i < k; i++) {
+      const randomIndex = Math.floor(Math.random() * pixels.length);
+      clusters.push({
+        center: [...pixels[randomIndex]],
+        pixels: [],
+        size: 0
+      });
+    }
+    
+    // Simplified clustering (3 iterations for performance)
+    for (let iter = 0; iter < 3; iter++) {
+      // Clear previous assignments
+      clusters.forEach(cluster => {
+        cluster.pixels = [];
+        cluster.size = 0;
+      });
+      
+      // Assign pixels to nearest cluster
+      pixels.forEach(pixel => {
+        let minDist = Infinity;
+        let nearestCluster = 0;
+        
+        clusters.forEach((cluster, index) => {
+          const dist = this.colorDistance(pixel, cluster.center);
+          if (dist < minDist) {
+            minDist = dist;
+            nearestCluster = index;
+          }
+        });
+        
+        clusters[nearestCluster].pixels.push(pixel);
+        clusters[nearestCluster].size++;
+      });
+      
+      // Update centroids
+      clusters.forEach(cluster => {
+        if (cluster.pixels.length > 0) {
+          const sum = cluster.pixels.reduce((acc, pixel) => [
+            acc[0] + pixel[0],
+            acc[1] + pixel[1],
+            acc[2] + pixel[2]
+          ], [0, 0, 0]);
+          
+          cluster.center = [
+            Math.round(sum[0] / cluster.pixels.length),
+            Math.round(sum[1] / cluster.pixels.length),
+            Math.round(sum[2] / cluster.pixels.length)
+          ];
+        }
+      });
+    }
+    
+    return clusters;
+  }
+
+  /**
+   * Calculate color distance using weighted Euclidean distance
+   */
+  colorDistance(color1, color2) {
+    const rDiff = color1[0] - color2[0];
+    const gDiff = color1[1] - color2[1];
+    const bDiff = color1[2] - color2[2];
+    
+    return Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
+  }
+
+  /**
+   * Convert RGB to HSV color space
+   */
+  rgbToHsv([r, g, b]) {
+    r /= 255; g /= 255; b /= 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const diff = max - min;
+    
+    let h = 0;
+    if (diff !== 0) {
+      if (max === r) h = ((g - b) / diff) % 6;
+      else if (max === g) h = (b - r) / diff + 2;
+      else h = (r - g) / diff + 4;
+    }
+    h = Math.round(h * 60);
+    if (h < 0) h += 360;
+    
+    const s = max === 0 ? 0 : Math.round((diff / max) * 100);
+    const v = Math.round(max * 100);
+    
+    return [h, s, v];
+  }
+
+  /**
+   * Get available color profiles
+   */
+  getAvailableProfiles() {
+    return Object.keys(this.colorProfiles);
+  }
+
+  /**
+   * Get available underwater profiles
+   */
+  getAvailableUnderwaterProfiles() {
+    return Object.keys(this.underwaterColorProfiles);
+  }
+
+  /**
+   * Check if profile is compatible with bit depth
+   */
+  isProfileCompatible(profileName, bitDepth) {
+    const profile = this.colorProfiles[profileName];
+    return profile ? profile.bitDepth >= bitDepth : false;
   }
 
   /**

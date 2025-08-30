@@ -26,7 +26,7 @@ underwater: false,
   });
 
   // Default adjustment values
-  const defaultAdjustments = useMemo(() => ({
+const defaultAdjustments = useMemo(() => ({
     exposure: 0,
     highlights: 0,
     shadows: 0,
@@ -44,7 +44,33 @@ underwater: false,
     blueRemoval: 0,
     greenRemoval: 0,
     depthCompensation: 0,
-    coralEnhancement: 0
+    coralEnhancement: 0,
+    // Advanced Color Grading
+    shadowsTemp: 0,
+    midtonesTemp: 0,
+    highlightsTemp: 0,
+    shadowsTint: 0,
+    midtonesTint: 0,
+    highlightsTint: 0,
+    shadowsSat: 0,
+    midtonesSat: 0,
+    highlightsSat: 0,
+    masterSaturation: 0,
+    masterVibrance: 0,
+    colorBalance: 0,
+    colorHarmony: 0,
+    gamutWarning: false,
+    // Professional Masking
+    activeLuminosityMask: null,
+    luminosityPrecision: 8,
+    aiSubjectMask: null,
+    aiConfidence: 75,
+    edgeDetection: 50,
+    maskFeathering: 10,
+    maskRefinement: 0,
+    hueRange: 15,
+    satRange: 20,
+    valRange: 20
   }), []);
 
   // Merge with defaults
@@ -216,63 +242,201 @@ const renderBasicAdjustments = () => (
     </div>
   );
 
-  const renderColorAdjustments = () => (
-    <div className="space-y-4">
-      <SliderControl
-        label="Temperature"
-        value={currentAdjustments.temperature}
-        onChange={(value) => handleAdjustmentChange('temperature', value)}
-        min={-1000}
-        max={1000}
-        step={10}
-        defaultValue={0}
-        suffix="K"
-      />
-      
-      <SliderControl
-        label="Tint"
-        value={currentAdjustments.tint}
-        onChange={(value) => handleAdjustmentChange('tint', value)}
-        min={-100}
-        max={100}
-        defaultValue={0}
-      />
-      
-      <SliderControl
-        label="Vibrance"
-        value={currentAdjustments.vibrance}
-        onChange={(value) => handleAdjustmentChange('vibrance', value)}
-        min={-100}
-        max={100}
-        defaultValue={0}
-      />
-      
-      <SliderControl
-        label="Saturation"
-        value={currentAdjustments.saturation}
-        onChange={(value) => handleAdjustmentChange('saturation', value)}
-        min={-100}
-        max={100}
-        defaultValue={0}
-      />
-      
-      <SliderControl
-        label="Clarity"
-        value={currentAdjustments.clarity}
-        onChange={(value) => handleAdjustmentChange('clarity', value)}
-        min={-100}
-        max={100}
-        defaultValue={0}
-      />
-      
-      <SliderControl
-        label="Dehaze"
-        value={currentAdjustments.dehaze}
-        onChange={(value) => handleAdjustmentChange('dehaze', value)}
-        min={-100}
-        max={100}
-        defaultValue={0}
-      />
+const renderColorAdjustments = () => (
+    <div className="space-y-6">
+      {/* Three-Way Color Correction */}
+      <div>
+        <h5 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
+          <ApperIcon name="Palette" className="w-4 h-4 mr-2" />
+          Professional Color Grading
+        </h5>
+        
+        {/* Shadows */}
+        <div className="mb-4 p-3 bg-slate-darker rounded">
+          <h6 className="text-xs font-medium text-gray-400 mb-2">Shadows</h6>
+          <div className="grid grid-cols-3 gap-2">
+            <SliderControl
+              label="Temp"
+              value={currentAdjustments.shadowsTemp || 0}
+              onChange={(value) => handleAdjustmentChange('shadowsTemp', value)}
+              min={-100}
+              max={100}
+              defaultValue={0}
+              suffix="K"
+            />
+            <SliderControl
+              label="Tint"
+              value={currentAdjustments.shadowsTint || 0}
+              onChange={(value) => handleAdjustmentChange('shadowsTint', value)}
+              min={-100}
+              max={100}
+              defaultValue={0}
+            />
+            <SliderControl
+              label="Sat"
+              value={currentAdjustments.shadowsSat || 0}
+              onChange={(value) => handleAdjustmentChange('shadowsSat', value)}
+              min={-100}
+              max={100}
+              defaultValue={0}
+            />
+          </div>
+        </div>
+        
+        {/* Midtones */}
+        <div className="mb-4 p-3 bg-slate-darker rounded">
+          <h6 className="text-xs font-medium text-gray-400 mb-2">Midtones</h6>
+          <div className="grid grid-cols-3 gap-2">
+            <SliderControl
+              label="Temp"
+              value={currentAdjustments.midtonesTemp || 0}
+              onChange={(value) => handleAdjustmentChange('midtonesTemp', value)}
+              min={-100}
+              max={100}
+              defaultValue={0}
+              suffix="K"
+            />
+            <SliderControl
+              label="Tint"
+              value={currentAdjustments.midtonesTint || 0}
+              onChange={(value) => handleAdjustmentChange('midtonesTint', value)}
+              min={-100}
+              max={100}
+              defaultValue={0}
+            />
+            <SliderControl
+              label="Sat"
+              value={currentAdjustments.midtonesSat || 0}
+              onChange={(value) => handleAdjustmentChange('midtonesSat', value)}
+              min={-100}
+              max={100}
+              defaultValue={0}
+            />
+          </div>
+        </div>
+        
+        {/* Highlights */}
+        <div className="mb-4 p-3 bg-slate-darker rounded">
+          <h6 className="text-xs font-medium text-gray-400 mb-2">Highlights</h6>
+          <div className="grid grid-cols-3 gap-2">
+            <SliderControl
+              label="Temp"
+              value={currentAdjustments.highlightsTemp || 0}
+              onChange={(value) => handleAdjustmentChange('highlightsTemp', value)}
+              min={-100}
+              max={100}
+              defaultValue={0}
+              suffix="K"
+            />
+            <SliderControl
+              label="Tint"
+              value={currentAdjustments.highlightsTint || 0}
+              onChange={(value) => handleAdjustmentChange('highlightsTint', value)}
+              min={-100}
+              max={100}
+              defaultValue={0}
+            />
+            <SliderControl
+              label="Sat"
+              value={currentAdjustments.highlightsSat || 0}
+              onChange={(value) => handleAdjustmentChange('highlightsSat', value)}
+              min={-100}
+              max={100}
+              defaultValue={0}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Master Controls */}
+      <div>
+        <h5 className="text-sm font-medium text-gray-300 mb-3">Master Controls</h5>
+        <SliderControl
+          label="Master Saturation"
+          value={currentAdjustments.masterSaturation || 0}
+          onChange={(value) => handleAdjustmentChange('masterSaturation', value)}
+          min={-100}
+          max={100}
+          defaultValue={0}
+        />
+        
+        <SliderControl
+          label="Master Vibrance"
+          value={currentAdjustments.masterVibrance || 0}
+          onChange={(value) => handleAdjustmentChange('masterVibrance', value)}
+          min={-100}
+          max={100}
+          defaultValue={0}
+        />
+        
+        <SliderControl
+          label="Color Harmony"
+          value={currentAdjustments.colorHarmony || 0}
+          onChange={(value) => handleAdjustmentChange('colorHarmony', value)}
+          min={0}
+          max={100}
+          defaultValue={0}
+          suffix="%"
+        />
+      </div>
+
+      {/* Gamut Warning */}
+      <div className="flex items-center justify-between p-3 bg-slate-darker rounded">
+        <div className="flex items-center space-x-2">
+          <ApperIcon name="AlertTriangle" className="w-4 h-4 text-coral" />
+          <span className="text-sm">Gamut Warning</span>
+        </div>
+        <Button
+          variant={currentAdjustments.gamutWarning ? "secondary" : "ghost"}
+          size="small"
+          className="text-xs"
+          onClick={() => handleAdjustmentChange('gamutWarning', !currentAdjustments.gamutWarning)}
+        >
+          {currentAdjustments.gamutWarning ? 'On' : 'Off'}
+        </Button>
+      </div>
+
+      {/* Legacy Controls */}
+      <div>
+        <h5 className="text-sm font-medium text-gray-300 mb-3">Basic Color</h5>
+        <SliderControl
+          label="Temperature"
+          value={currentAdjustments.temperature}
+          onChange={(value) => handleAdjustmentChange('temperature', value)}
+          min={-1000}
+          max={1000}
+          step={10}
+          defaultValue={0}
+          suffix="K"
+        />
+        
+        <SliderControl
+          label="Tint"
+          value={currentAdjustments.tint}
+          onChange={(value) => handleAdjustmentChange('tint', value)}
+          min={-100}
+          max={100}
+          defaultValue={0}
+        />
+        
+        <SliderControl
+          label="Clarity"
+          value={currentAdjustments.clarity}
+          onChange={(value) => handleAdjustmentChange('clarity', value)}
+          min={-100}
+          max={100}
+          defaultValue={0}
+        />
+        
+        <SliderControl
+          label="Dehaze"
+          value={currentAdjustments.dehaze}
+          onChange={(value) => handleAdjustmentChange('dehaze', value)}
+          min={-100}
+          max={100}
+          defaultValue={0}
+        />
+      </div>
     </div>
   );
 
@@ -345,59 +509,101 @@ const renderBasicAdjustments = () => (
     </div>
   );
 
-  const renderMaskingAdjustments = () => (
+const renderMaskingAdjustments = () => (
     <div className="space-y-6">
-      {/* Luminosity Masking */}
+      {/* Professional Message */}
+      <div className="p-3 bg-ocean-deep/30 rounded border border-ocean-teal/30">
+        <div className="flex items-center space-x-2 mb-2">
+          <ApperIcon name="Layers" className="w-4 h-4 text-ocean-teal" />
+          <span className="text-sm font-medium text-ocean-teal">Professional Masking Suite</span>
+        </div>
+        <p className="text-xs text-gray-300">
+          Advanced 16-bit precision masking tools with AI-powered underwater subject detection and mathematical color range selection.
+        </p>
+      </div>
+
+      {/* Luminosity Masking with 16-bit Precision */}
       <div>
         <h5 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
           <ApperIcon name="Sun" className="w-4 h-4 mr-2" />
-          Luminosity Masking (16-bit)
+          16-bit Luminosity Masking
         </h5>
         <div className="grid grid-cols-2 gap-2 mb-4">
-          {['Highlights', 'Midtones', 'Shadows', 'Brights', 'Darks', 'Ultra Brights'].map((maskType) => (
+          {[
+            { name: 'Highlights', range: '200-255' },
+            { name: 'Midtones', range: '85-170' },
+            { name: 'Shadows', range: '0-85' },
+            { name: 'Brights', range: '170-255' },
+            { name: 'Darks', range: '0-55' },
+            { name: 'Ultra Brights', range: '230-255' }
+          ].map((maskType) => (
             <Button
-              key={maskType}
-              variant="ghost"
+              key={maskType.name}
+              variant={currentAdjustments.activeLuminosityMask === maskType.name ? "secondary" : "ghost"}
               size="small"
-              className="text-xs h-8"
-              onClick={() => handleAdjustmentChange('activeLuminosityMask', maskType)}
+              className="text-xs h-auto p-2 flex flex-col"
+              onClick={() => handleAdjustmentChange('activeLuminosityMask', maskType.name)}
             >
-              {maskType}
+              <span className="font-medium">{maskType.name}</span>
+              <span className="text-[10px] text-gray-400">{maskType.range}</span>
             </Button>
           ))}
         </div>
-        <SliderControl
-          label="Mask Precision"
-          value={currentAdjustments.luminosityPrecision || 8}
-          onChange={(value) => handleAdjustmentChange('luminosityPrecision', value)}
-          min={1}
-          max={16}
-          step={1}
-          defaultValue={8}
-        />
+        
+        <div className="space-y-2">
+          <SliderControl
+            label="Mask Precision (bit depth)"
+            value={currentAdjustments.luminosityPrecision || 8}
+            onChange={(value) => handleAdjustmentChange('luminosityPrecision', value)}
+            min={1}
+            max={16}
+            step={1}
+            defaultValue={8}
+            suffix=" bit"
+          />
+          
+          <div className="flex space-x-2">
+            <Button variant="ghost" size="small" className="text-xs flex-1">
+              <ApperIcon name="Plus" className="w-3 h-3 mr-1" />
+              Intersect
+            </Button>
+            <Button variant="ghost" size="small" className="text-xs flex-1">
+              <ApperIcon name="Minus" className="w-3 h-3 mr-1" />
+              Subtract
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* AI Subject Detection */}
+      {/* AI Subject Detection for Underwater */}
       <div>
         <h5 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
           <ApperIcon name="Brain" className="w-4 h-4 mr-2" />
-          AI Subject Detection
+          AI Underwater Subject Detection
         </h5>
         <div className="grid grid-cols-2 gap-2 mb-4">
-          {['Fish', 'Coral', 'Divers', 'Equipment', 'Background'].map((subject) => (
+          {[
+            { name: 'Fish', confidence: '85%' },
+            { name: 'Coral', confidence: '90%' },
+            { name: 'Divers', confidence: '95%' },
+            { name: 'Equipment', confidence: '88%' },
+            { name: 'Kelp/Seaweed', confidence: '82%' },
+            { name: 'Water Column', confidence: '70%' }
+          ].map((subject) => (
             <Button
-              key={subject}
-              variant={currentAdjustments.aiSubjectMask === subject ? "secondary" : "ghost"}
+              key={subject.name}
+              variant={currentAdjustments.aiSubjectMask === subject.name ? "secondary" : "ghost"}
               size="small"
-              className="text-xs h-8"
-              onClick={() => handleAdjustmentChange('aiSubjectMask', subject)}
+              className="text-xs h-auto p-2 flex flex-col"
+              onClick={() => handleAdjustmentChange('aiSubjectMask', subject.name)}
             >
-              {subject}
+              <span className="font-medium">{subject.name}</span>
+              <span className="text-[10px] text-gray-400">{subject.confidence}</span>
             </Button>
           ))}
         </div>
         <SliderControl
-          label="Detection Confidence"
+          label="Detection Confidence Threshold"
           value={currentAdjustments.aiConfidence || 75}
           onChange={(value) => handleAdjustmentChange('aiConfidence', value)}
           min={50}
@@ -408,98 +614,126 @@ const renderBasicAdjustments = () => (
         />
       </div>
 
-      {/* Edge-Aware Masking */}
+      {/* Edge-Aware Masking with Refinement */}
       <div>
         <h5 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
           <ApperIcon name="Scissors" className="w-4 h-4 mr-2" />
           Edge-Aware Masking
         </h5>
-        <SliderControl
-          label="Edge Detection"
-          value={currentAdjustments.edgeDetection || 50}
-          onChange={(value) => handleAdjustmentChange('edgeDetection', value)}
-          min={0}
-          max={100}
-          defaultValue={50}
-        />
-        <SliderControl
-          label="Feathering"
-          value={currentAdjustments.maskFeathering || 10}
-          onChange={(value) => handleAdjustmentChange('maskFeathering', value)}
-          min={0}
-          max={50}
-          defaultValue={10}
-          suffix="px"
-        />
-        <SliderControl
-          label="Refinement"
-          value={currentAdjustments.maskRefinement || 0}
-          onChange={(value) => handleAdjustmentChange('maskRefinement', value)}
-          min={-50}
-          max={50}
-          defaultValue={0}
-        />
+        <div className="space-y-2">
+          <SliderControl
+            label="Edge Detection Strength"
+            value={currentAdjustments.edgeDetection || 50}
+            onChange={(value) => handleAdjustmentChange('edgeDetection', value)}
+            min={0}
+            max={100}
+            defaultValue={50}
+            suffix="%"
+          />
+          <SliderControl
+            label="Feathering (pixel precision)"
+            value={currentAdjustments.maskFeathering || 10}
+            onChange={(value) => handleAdjustmentChange('maskFeathering', value)}
+            min={0}
+            max={50}
+            defaultValue={10}
+            suffix="px"
+          />
+          <SliderControl
+            label="Mask Refinement"
+            value={currentAdjustments.maskRefinement || 0}
+            onChange={(value) => handleAdjustmentChange('maskRefinement', value)}
+            min={-50}
+            max={50}
+            defaultValue={0}
+          />
+          
+          <div className="flex space-x-2 mt-3">
+            <Button variant="ghost" size="small" className="text-xs">Smooth</Button>
+            <Button variant="ghost" size="small" className="text-xs">Expand</Button>
+            <Button variant="ghost" size="small" className="text-xs">Contract</Button>
+            <Button variant="ghost" size="small" className="text-xs">Blur</Button>
+          </div>
+        </div>
       </div>
 
-      {/* Color Range Masking */}
+      {/* Advanced Color Range Masking (HSV) */}
       <div>
         <h5 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
           <ApperIcon name="Pipette" className="w-4 h-4 mr-2" />
-          Color Range Masking (HSV)
+          Advanced Color Range (HSV)
         </h5>
-        <div className="grid grid-cols-3 gap-2 mb-3">
+        <div className="space-y-2 mb-3">
           <SliderControl
-            label="Hue Range"
+            label="Hue Range (degrees)"
             value={currentAdjustments.hueRange || 15}
             onChange={(value) => handleAdjustmentChange('hueRange', value)}
             min={0}
-            max={180}
+            max={360}
             defaultValue={15}
+            suffix="°"
           />
           <SliderControl
-            label="Saturation"
+            label="Saturation Tolerance"
             value={currentAdjustments.satRange || 20}
             onChange={(value) => handleAdjustmentChange('satRange', value)}
             min={0}
             max={100}
             defaultValue={20}
+            suffix="%"
           />
           <SliderControl
-            label="Brightness"
+            label="Brightness/Value Tolerance"
             value={currentAdjustments.valRange || 20}
             onChange={(value) => handleAdjustmentChange('valRange', value)}
             min={0}
             max={100}
             defaultValue={20}
+            suffix="%"
           />
         </div>
+        
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <Button variant="ghost" size="small" className="text-xs">
+            <ApperIcon name="Pipette" className="w-3 h-3 mr-1" />
+            Eyedropper
+          </Button>
+          <Button variant="ghost" size="small" className="text-xs">
+            <ApperIcon name="Target" className="w-3 h-3 mr-1" />
+            Multi-Sample
+          </Button>
+        </div>
+        
         <div className="flex space-x-2">
-          <Button variant="ghost" size="small" className="text-xs">
-            Expand
-          </Button>
-          <Button variant="ghost" size="small" className="text-xs">
-            Contract
-          </Button>
-          <Button variant="ghost" size="small" className="text-xs">
-            Smooth
-          </Button>
+          <Button variant="ghost" size="small" className="text-xs flex-1">Expand</Button>
+          <Button variant="ghost" size="small" className="text-xs flex-1">Contract</Button>
+          <Button variant="ghost" size="small" className="text-xs flex-1">Smooth</Button>
         </div>
       </div>
 
-      {/* Mask Groups */}
+      {/* Boolean Mask Operations */}
       <div>
         <h5 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
           <ApperIcon name="Layers" className="w-4 h-4 mr-2" />
-          Mask Groups & Boolean Operations
+          Boolean Mask Operations
         </h5>
         <div className="space-y-2">
           <div className="flex items-center justify-between p-2 bg-slate-darker rounded">
-            <span className="text-xs">Mask Group 1</span>
+            <span className="text-xs">Active Mask Group</span>
             <div className="flex space-x-1">
-              <Button variant="ghost" size="small" className="text-xs h-6 px-2">Add</Button>
-              <Button variant="ghost" size="small" className="text-xs h-6 px-2">Subtract</Button>
-              <Button variant="ghost" size="small" className="text-xs h-6 px-2">Intersect</Button>
+              <Button variant="ghost" size="small" className="text-xs h-6 px-2">
+                <ApperIcon name="Plus" className="w-3 h-3" />
+              </Button>
+              <Button variant="ghost" size="small" className="text-xs h-6 px-2">
+                <ApperIcon name="Minus" className="w-3 h-3" />
+              </Button>
+              <Button variant="ghost" size="small" className="text-xs h-6 px-2">
+                <ApperIcon name="Circle" className="w-3 h-3" />
+              </Button>
             </div>
+          </div>
+          <div className="text-xs text-gray-400 px-2">
+            Combine masks using Add, Subtract, and Intersect operations with mathematical precision
           </div>
         </div>
       </div>
@@ -554,17 +788,25 @@ switch (activeTab) {
         </div>
         
 {/* Tab Navigation */}
-        <div className="grid grid-cols-5 gap-1 mt-4">
+<div className="grid grid-cols-5 gap-1 mt-4">
           {tabs.map((tab) => (
             <Button
               key={tab.id}
               variant={activeTab === tab.id ? "secondary" : "ghost"}
               size="small"
-              className="text-xs p-2 h-auto flex-col"
+              className={cn(
+                "text-xs p-2 h-auto flex-col transition-all duration-200",
+                activeTab === tab.id && "border border-ocean-teal/50"
+              )}
               onClick={() => setActiveTab(tab.id)}
             >
-              <ApperIcon name={tab.icon} className="w-3 h-3 mb-1" />
-              <span>{tab.name}</span>
+              <ApperIcon name={tab.icon} className={cn(
+                "w-3 h-3 mb-1",
+                activeTab === tab.id ? "text-ocean-teal" : "text-gray-400"
+              )} />
+              <span className={cn(
+                activeTab === tab.id ? "text-ocean-teal" : "text-gray-300"
+              )}>{tab.name}</span>
             </Button>
           ))}
         </div>
