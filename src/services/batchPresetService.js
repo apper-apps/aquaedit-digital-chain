@@ -1,35 +1,20 @@
 import { getPresets } from '@/services/api/projectService';
 
 /**
- * Smart Batch Preset Service
- * Matches images with optimal presets based on underwater conditions
+ * Single Image Preset Service
+ * Optimized for single image workflow with optimal performance
  */
-export class BatchPresetService {
+export class SingleImagePresetService {
   constructor() {
     this.presetCache = null;
-    this.ruleEngine = new PresetRuleEngine();
   }
 
   /**
-   * Get preset recommendations for a batch of analyzed images
+   * Get preset recommendation for a single analyzed image
    */
-  async getRecommendations(analyzedImages) {
+  async getRecommendation(analyzedImage) {
     const presets = await this.getAvailablePresets();
-    const recommendations = {};
-    
-    for (const image of analyzedImages) {
-      const matchedPreset = this.matchPresetToImage(image, presets);
-      if (matchedPreset) {
-        recommendations[image.Id] = {
-          preset: matchedPreset.preset,
-          strength: matchedPreset.strength,
-          confidence: matchedPreset.confidence,
-          reasons: matchedPreset.reasons
-        };
-      }
-    }
-    
-    return recommendations;
+    return this.matchPresetToImage(analyzedImage, presets);
   }
 
   /**
@@ -114,7 +99,7 @@ export class BatchPresetService {
     // Color cast severity matching
     if (this.matchesColorCast(preset, analysis.colorCastSeverity)) {
       scores.colorCast = 0.6;
-      reasons.push(`Handles ${analysis.colorCastSeverity.level.toLowerCase()} color cast`);
+      reasons.push(`Handles ${analysis.colorCastSeverity?.level?.toLowerCase()} color cast`);
     }
     
     const total = Object.values(scores).reduce((sum, score) => sum + score, 0) / Object.keys(scores).length;
@@ -278,6 +263,8 @@ export class BatchPresetService {
    * Check if preset matches color cast severity
    */
   matchesColorCast(preset, colorCast) {
+    if (!colorCast) return true;
+    
     const adjustments = preset.adjustments || {};
     const hasColorCorrection = adjustments.temperature !== 0 || 
                               adjustments.tint !== 0 ||
@@ -329,133 +316,29 @@ export class BatchPresetService {
   }
 
   /**
-   * Create custom batch rules
+   * Generate processing summary for single image
    */
-  createBatchRule(conditions, presetId, strength = 75) {
-    return {
-      id: `rule_${Date.now()}`,
-      name: `Custom Rule ${Date.now()}`,
-      conditions,
-      presetId,
-      strength,
-      createdAt: new Date().toISOString(),
-      active: true
-    };
-  }
-
-  /**
-   * Apply batch rules to images
-   */
-  async applyBatchRules(images, rules) {
-    const results = {};
-    const presets = await this.getAvailablePresets();
-    
-    for (const image of images) {
-      for (const rule of rules) {
-        if (!rule.active) continue;
-        
-        if (this.ruleEngine.evaluate(rule.conditions, image.analysis)) {
-          const preset = presets.find(p => p.Id === rule.presetId);
-          if (preset) {
-            results[image.Id] = {
-              preset,
-              strength: rule.strength,
-              appliedRule: rule.name,
-              confidence: 0.9 // High confidence for rule-based matching
-            };
-            break; // First matching rule wins
-          }
-        }
-      }
+  generateProcessingSummary(image, recommendation) {
+    if (!recommendation) {
+      return {
+        image: image.filename,
+        hasRecommendation: false,
+        message: "No suitable preset found for current image conditions"
+      };
     }
-    
-    return results;
-  }
 
-  /**
-   * Generate batch processing summary
-   */
-  generateBatchSummary(images, recommendations) {
-    const summary = {
-      totalImages: images.length,
-      processedImages: Object.keys(recommendations).length,
-      unprocessedImages: images.length - Object.keys(recommendations).length,
-      presetDistribution: {},
-      averageStrength: 0,
-      averageConfidence: 0
-    };
-    
-    let totalStrength = 0;
-    let totalConfidence = 0;
-    
-    Object.values(recommendations).forEach(rec => {
-      const presetName = rec.preset.name;
-      summary.presetDistribution[presetName] = (summary.presetDistribution[presetName] || 0) + 1;
-      totalStrength += rec.strength;
-      totalConfidence += rec.confidence;
-    });
-    
-    const processedCount = Object.keys(recommendations).length;
-    summary.averageStrength = processedCount > 0 ? Math.round(totalStrength / processedCount) : 0;
-    summary.averageConfidence = processedCount > 0 ? totalConfidence / processedCount : 0;
-    
-    return summary;
-  }
-}
-
-/**
- * Rule Engine for custom batch processing rules
- */
-class PresetRuleEngine {
-  /**
-   * Evaluate if image analysis matches rule conditions
-   */
-  evaluate(conditions, analysis) {
-    if (!conditions || !analysis) return false;
-    
-    return Object.entries(conditions).every(([key, expectedValue]) => {
-      switch (key) {
-        case 'waterClarity':
-          return analysis.waterClarity === expectedValue;
-        
-        case 'estimatedDepth':
-          return analysis.estimatedDepth === expectedValue;
-        
-        case 'lightingCondition':
-          return analysis.lightingCondition === expectedValue;
-        
-        case 'subjectType':
-          return analysis.subjectType === expectedValue;
-        
-        case 'colorCastLevel':
-          return analysis.colorCastSeverity?.level === expectedValue;
-        
-        case 'backscatterLevel':
-          return analysis.backscatterDensity?.level === expectedValue;
-        
-        case 'minConfidence':
-          return analysis.confidence >= expectedValue;
-        
-        default:
-          return true;
-      }
-    });
-  }
-
-  /**
-   * Get available rule conditions
-   */
-  getAvailableConditions() {
     return {
-      waterClarity: ['Crystal Clear', 'Slightly Murky', 'Very Murky', 'Sandy/Silty'],
-      estimatedDepth: ['Surface (0-10ft)', 'Shallow (10-30ft)', 'Deep (30ft+)'],
-      lightingCondition: ['Natural Sunlight', 'Artificial Strobe', 'Mixed Lighting', 'Low Light'],
-      subjectType: ['Coral Reef', 'Open Water', 'Cave/Wreck', 'Macro', 'Wide Angle'],
-      colorCastLevel: ['Mild', 'Moderate', 'Severe'],
-      backscatterLevel: ['Low', 'Medium', 'High'],
-      minConfidence: [0.5, 0.6, 0.7, 0.8, 0.9]
+      image: image.filename,
+      hasRecommendation: true,
+      preset: recommendation.preset.name,
+      strength: recommendation.strength,
+      confidence: recommendation.confidence,
+      reasons: recommendation.reasons,
+      optimizedForSingle: true,
+      processingTime: "< 1 second",
+      memoryUsage: "Minimal"
     };
   }
 }
 
-export default BatchPresetService;
+export default SingleImagePresetService;

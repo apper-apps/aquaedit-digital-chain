@@ -8,10 +8,11 @@ const Header = ({ className }) => {
   const location = useLocation();
 
 const navigationItems = [
-    { name: "Dashboard", path: "/", icon: "Home" },
+    { name: "Home", path: "/", icon: "Home" },
     { name: "Editor", path: "/editor", icon: "Edit3" },
     { name: "Presets", path: "/presets", icon: "Palette" },
     { name: "Gallery", path: "/gallery", icon: "Images" },
+    { name: "Dashboard", path: "/dashboard", icon: "BarChart3" },
     { name: "Teams", path: "/teams", icon: "Users" }
   ];
 

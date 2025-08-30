@@ -1,169 +1,139 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
-import Button from "@/components/atoms/Button";
+import { cn } from "@/utils/cn";
 import ApperIcon from "@/components/ApperIcon";
 import PresetCard from "@/components/molecules/PresetCard";
+import Button from "@/components/atoms/Button";
 import Loading from "@/components/ui/Loading";
-import { cn } from "@/utils/cn";
 
-const PresetMatcher = ({
-  images,
-  selectedPresets,
-  onPresetsChange,
-  onApplyRecommendations,
-  onNext,
+const SingleImagePresetSelector = ({
+  image,
+  selectedPreset,
+  onPresetChange,
+  onApplyRecommendation,
   loading
 }) => {
-  const [viewMode, setViewMode] = useState("recommendations");
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [batchStrength, setBatchStrength] = useState(75);
+  const [presetStrength, setPresetStrength] = useState(75);
   const [showPreview, setShowPreview] = useState(false);
 
-  useEffect(() => {
-    if (selectedPresets && Object.keys(selectedPresets).length > 0) {
-      setViewMode("review");
+  // Mock preset library for underwater photography
+  const presets = [
+    {
+      Id: 1,
+      name: "Coral Enhancement",
+      description: "Boost coral colors and reduce blue cast",
+      category: "Coral Reef",
+      tags: ["coral", "reef", "shallow"],
+      thumbnail: "/api/placeholder/80/60",
+      adjustments: { temperature: 20, tint: -10, vibrance: 30, saturation: 15 }
+    },
+    {
+      Id: 2,
+      name: "Deep Blue Correction",
+      description: "Correct deep water blue cast",
+      category: "Deep Water", 
+      tags: ["deep", "blue", "correction"],
+      thumbnail: "/api/placeholder/80/60",
+      adjustments: { temperature: 35, tint: -15, exposure: 0.5, contrast: 20 }
+    },
+    {
+      Id: 3,
+      name: "Tropical Fish",
+      description: "Enhance tropical fish colors",
+      category: "Wildlife",
+      tags: ["fish", "tropical", "vibrant"],
+      thumbnail: "/api/placeholder/80/60", 
+      adjustments: { vibrance: 40, saturation: 20, clarity: 15, shadows: 25 }
+    },
+    {
+      Id: 4,
+      name: "Natural Sunlight",
+      description: "Natural sunlit shallow water",
+      category: "Natural Light",
+      tags: ["natural", "sunlight", "shallow"],
+      thumbnail: "/api/placeholder/80/60",
+      adjustments: { temperature: 10, contrast: 15, highlights: -20, shadows: 30 }
+    },
+    {
+      Id: 5,
+      name: "Macro Close-up",
+      description: "Perfect for macro underwater shots",
+      category: "Macro",
+      tags: ["macro", "close-up", "detail"],
+      thumbnail: "/api/placeholder/80/60",
+      adjustments: { clarity: 25, texture: 20, sharpening: 30, vibrance: 25 }
+    },
+    {
+      Id: 6,
+      name: "Cave/Wreck",
+      description: "Enhance cave and wreck photography",
+      category: "Cave/Wreck",
+      tags: ["cave", "wreck", "artificial"],
+      thumbnail: "/api/placeholder/80/60",
+      adjustments: { exposure: 0.7, shadows: 50, highlights: -30, clarity: 20 }
     }
-  }, [selectedPresets]);
+  ];
 
-  const handleImageSelection = (imageId, selected) => {
-    if (selected) {
-      setSelectedImages(prev => [...prev, imageId]);
-    } else {
-      setSelectedImages(prev => prev.filter(id => id !== imageId));
+  const handlePresetSelect = (preset) => {
+    onPresetChange(preset, presetStrength);
+  };
+
+  const handleStrengthChange = (newStrength) => {
+    setPresetStrength(newStrength);
+    if (selectedPreset) {
+      onPresetChange(selectedPreset, newStrength);
     }
   };
 
-  const handlePresetChange = (imageId, preset, strength) => {
-    onPresetsChange({
-      ...selectedPresets,
-      [imageId]: {
-        preset,
-        strength,
-        confidence: 0.9, // User-selected presets have high confidence
-        reasons: ["Manually selected"]
-      }
-    });
-  };
-
-  const handleBatchStrengthChange = (newStrength) => {
-    setBatchStrength(newStrength);
+  const getRecommendedPreset = () => {
+    // Simple recommendation based on mock analysis
+    if (!image?.analysis) return presets[0];
     
-    // Update strength for all selected presets
-    const updatedPresets = { ...selectedPresets };
-    Object.keys(updatedPresets).forEach(imageId => {
-      updatedPresets[imageId] = {
-        ...updatedPresets[imageId],
-        strength: newStrength
-      };
-    });
-    onPresetsChange(updatedPresets);
-  };
-
-  const removePresetFromImage = (imageId) => {
-    const updatedPresets = { ...selectedPresets };
-    delete updatedPresets[imageId];
-    onPresetsChange(updatedPresets);
-  };
-
-  const getConditionSummary = () => {
-    const conditions = {
-      waterClarity: {},
-      depth: {},
-      lighting: {},
-      subjects: {}
-    };
-
-    images.forEach(image => {
-      if (image.analysis) {
-        const { waterClarity, estimatedDepth, lightingCondition, subjectType } = image.analysis;
-        conditions.waterClarity[waterClarity] = (conditions.waterClarity[waterClarity] || 0) + 1;
-        conditions.depth[estimatedDepth] = (conditions.depth[estimatedDepth] || 0) + 1;
-        conditions.lighting[lightingCondition] = (conditions.lighting[lightingCondition] || 0) + 1;
-        conditions.subjects[subjectType] = (conditions.subjects[subjectType] || 0) + 1;
-      }
-    });
-
-    return conditions;
-  };
-
-  const renderConditionOverview = () => {
-    const summary = getConditionSummary();
+    const { subjectType, estimatedDepth, lightingCondition } = image.analysis;
     
+    if (subjectType === "Coral Reef") return presets[0];
+    if (estimatedDepth === "Deep (30ft+)") return presets[1];
+    if (subjectType === "Tropical Fish") return presets[2];
+    if (lightingCondition === "Natural Sunlight") return presets[3];
+    if (subjectType === "Macro") return presets[4];
+    if (subjectType === "Cave/Wreck") return presets[5];
+    
+    return presets[0];
+  };
+
+  if (!image) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <ApperIcon name="BarChart3" className="w-5 h-5 text-ocean-teal" />
-            <span>Condition Analysis Summary</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div>
-              <h4 className="font-medium text-white mb-3">Water Clarity</h4>
-              <div className="space-y-2">
-                {Object.entries(summary.waterClarity).map(([condition, count]) => (
-                  <div key={condition} className="flex justify-between text-sm">
-                    <span className="text-gray-400">{condition}</span>
-                    <span className="text-ocean-teal">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-medium text-white mb-3">Depth Range</h4>
-              <div className="space-y-2">
-                {Object.entries(summary.depth).map(([depth, count]) => (
-                  <div key={depth} className="flex justify-between text-sm">
-                    <span className="text-gray-400">{depth.replace(/\([^)]*\)/, '')}</span>
-                    <span className="text-ocean-teal">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-medium text-white mb-3">Lighting</h4>
-              <div className="space-y-2">
-                {Object.entries(summary.lighting).map(([lighting, count]) => (
-                  <div key={lighting} className="flex justify-between text-sm">
-                    <span className="text-gray-400">{lighting}</span>
-                    <span className="text-ocean-teal">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-medium text-white mb-3">Subjects</h4>
-              <div className="space-y-2">
-                {Object.entries(summary.subjects).map(([subject, count]) => (
-                  <div key={subject} className="flex justify-between text-sm">
-                    <span className="text-gray-400">{subject}</span>
-                    <span className="text-ocean-teal">{count}</span>
-                  </div>
-                ))}
-              </div>
+        <CardContent className="p-8 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="p-4 bg-slate-dark rounded-full">
+              <ApperIcon name="Palette" className="w-8 h-8 text-gray-400" />
             </div>
           </div>
+          <h3 className="text-lg font-semibold text-white mb-2">No Image Loaded</h3>
+          <p className="text-gray-400">
+            Upload an underwater photo to see preset recommendations.
+          </p>
         </CardContent>
       </Card>
     );
-  };
+  }
 
-  const renderRecommendationMode = () => (
+  return (
     <div className="space-y-6">
-      {renderConditionOverview()}
-      
+      {/* AI Recommendation */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <ApperIcon name="Wand2" className="w-5 h-5 text-ocean-teal" />
-              <span>AI Preset Recommendations</span>
+              <span>AI Preset Recommendation</span>
             </div>
-            <Button onClick={onApplyRecommendations} disabled={loading}>
+            <Button 
+              onClick={() => onApplyRecommendation(getRecommendedPreset())}
+              disabled={loading}
+              size="small"
+            >
               {loading ? (
                 <>
                   <ApperIcon name="Loader2" className="w-4 h-4 mr-2 animate-spin" />
@@ -172,259 +142,167 @@ const PresetMatcher = ({
               ) : (
                 <>
                   <ApperIcon name="Zap" className="w-4 h-4 mr-2" />
-                  Generate Recommendations
+                  Auto-Apply
                 </>
               )}
             </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
-            <div className="flex justify-center mb-4">
-              <div className="p-4 bg-ocean-teal/20 rounded-full">
-                <ApperIcon name="Brain" className="w-8 h-8 text-ocean-teal" />
-              </div>
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-2">
-              AI-Powered Preset Matching
-            </h3>
-            <p className="text-gray-400 max-w-md mx-auto">
-              Our intelligent system will analyze each image's underwater conditions and recommend 
-              the optimal preset with appropriate strength settings.
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-sm">
-              <div className="p-4 bg-slate-darker rounded-lg">
-                <ApperIcon name="Search" className="w-6 h-6 text-ocean-teal mx-auto mb-2" />
-                <div className="font-medium text-white">Condition Analysis</div>
-                <div className="text-gray-400">Water clarity, depth, lighting</div>
-              </div>
-              <div className="p-4 bg-slate-darker rounded-lg">
-                <ApperIcon name="Target" className="w-6 h-6 text-ocean-teal mx-auto mb-2" />
-                <div className="font-medium text-white">Smart Matching</div>
-                <div className="text-gray-400">Best preset for each image</div>
-              </div>
-              <div className="p-4 bg-slate-darker rounded-lg">
-                <ApperIcon name="Sliders" className="w-6 h-6 text-ocean-teal mx-auto mb-2" />
-                <div className="font-medium text-white">Optimal Strength</div>
-                <div className="text-gray-400">Automatic intensity adjustment</div>
+          <div className="flex items-start space-x-4 p-4 bg-slate-darker rounded-lg">
+            <img 
+              src={getRecommendedPreset().thumbnail}
+              alt={getRecommendedPreset().name}
+              className="w-16 h-12 object-cover rounded"
+            />
+            <div className="flex-1">
+              <h4 className="font-medium text-white">{getRecommendedPreset().name}</h4>
+              <p className="text-sm text-gray-400 mb-2">{getRecommendedPreset().description}</p>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs bg-ocean-teal/20 text-ocean-teal px-2 py-1 rounded">
+                  {getRecommendedPreset().category}
+                </span>
+                <span className="text-xs text-gray-500">
+                  Based on: {image.analysis?.subjectType || 'Image analysis'}
+                </span>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
 
-  const renderReviewMode = () => (
-    <div className="space-y-6">
-      {/* Batch Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <ApperIcon name="Settings" className="w-5 h-5 text-ocean-teal" />
-              <span>Preset Recommendations ({Object.keys(selectedPresets).length})</span>
-            </div>
-            <div className="flex space-x-2">
+      {/* Current Selection & Strength */}
+      {selectedPreset && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <ApperIcon name="Settings" className="w-5 h-5 text-ocean-teal" />
+                <span>Selected Preset</span>
+              </div>
               <Button
-                variant="secondary"
+                variant="secondary" 
                 size="small"
                 onClick={() => setShowPreview(!showPreview)}
               >
                 <ApperIcon name={showPreview ? "EyeOff" : "Eye"} className="w-4 h-4 mr-2" />
                 {showPreview ? "Hide" : "Show"} Preview
               </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-4 p-4 bg-slate-darker rounded-lg">
+              <img 
+                src={selectedPreset.thumbnail}
+                alt={selectedPreset.name}
+                className="w-16 h-12 object-cover rounded"
+              />
+              <div className="flex-1">
+                <h4 className="font-medium text-white">{selectedPreset.name}</h4>
+                <p className="text-sm text-gray-400">{selectedPreset.description}</p>
+              </div>
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="small"
-                onClick={onApplyRecommendations}
+                onClick={() => onPresetChange(null, 0)}
+                className="text-red-400 hover:text-red-300"
               >
-                <ApperIcon name="RefreshCw" className="w-4 h-4 mr-2" />
-                Regenerate
+                <ApperIcon name="X" className="w-4 h-4" />
               </Button>
             </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-300">Preset Strength</span>
+                <span className="text-sm text-ocean-teal font-medium">{presetStrength}%</span>
+              </div>
+              <input
+                type="range"
+                min="25"
+                max="100"
+                value={presetStrength}
+                onChange={(e) => handleStrengthChange(parseInt(e.target.value))}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>Subtle</span>
+                <span>Strong</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Preset Library */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <ApperIcon name="Palette" className="w-5 h-5 text-coral" />
+            <span>Underwater Preset Library</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-gray-300">Batch Strength:</span>
-            <input
-              type="range"
-              min="25"
-              max="100"
-              value={batchStrength}
-              onChange={(e) => handleBatchStrengthChange(parseInt(e.target.value))}
-              className="flex-1"
-            />
-            <span className="text-sm text-ocean-teal font-medium min-w-[60px]">
-              {batchStrength}%
-            </span>
-          </div>
-          
-          <div className="text-sm text-gray-400">
-            Adjusts the intensity of all preset applications simultaneously
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Image Grid with Preset Assignments */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {images.map((image) => {
-          const presetAssignment = selectedPresets[image.Id];
-          const isSelected = selectedImages.includes(image.Id);
-          
-          return (
-            <Card 
-              key={image.Id}
-              className={cn(
-                "transition-all duration-200",
-                isSelected ? "border-ocean-teal bg-ocean-teal/5" : "border-slate-dark"
-              )}
-            >
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={(e) => handleImageSelection(image.Id, e.target.checked)}
-                      className="w-4 h-4 text-ocean-teal bg-slate-darker border-slate-dark rounded focus:ring-ocean-teal mt-1"
-                    />
-                    <img 
-                      src={image.url}
-                      alt={image.filename}
-                      className="w-20 h-16 object-cover rounded"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-white truncate">
-                        {image.filename}
-                      </div>
-                      <div className="text-xs text-gray-400 space-y-1">
-                        <div>{image.analysis?.waterClarity}</div>
-                        <div>{image.analysis?.estimatedDepth}</div>
-                        <div>{image.analysis?.lightingCondition}</div>
-                      </div>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {presets.map((preset) => (
+              <div
+                key={preset.Id}
+                className={cn(
+                  "relative p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-105",
+                  selectedPreset?.Id === preset.Id
+                    ? "border-ocean-teal bg-ocean-teal/5"
+                    : "border-slate-dark hover:border-ocean-teal/50"
+                )}
+                onClick={() => handlePresetSelect(preset)}
+              >
+                <img 
+                  src={preset.thumbnail}
+                  alt={preset.name}
+                  className="w-full h-16 object-cover rounded mb-2"
+                />
+                <h4 className="text-sm font-medium text-white mb-1">{preset.name}</h4>
+                <p className="text-xs text-gray-400 mb-2">{preset.description}</p>
+                <div className="flex flex-wrap gap-1">
+                  {preset.tags.slice(0, 2).map((tag) => (
+                    <span
+                      key={tag}
+                      className="text-xs bg-slate-dark text-gray-300 px-2 py-0.5 rounded"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                {selectedPreset?.Id === preset.Id && (
+                  <div className="absolute top-2 right-2">
+                    <div className="w-6 h-6 bg-ocean-teal rounded-full flex items-center justify-center">
+                      <ApperIcon name="Check" className="w-4 h-4 text-white" />
                     </div>
                   </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-                  {presetAssignment ? (
-                    <div className="space-y-3">
-                      <div className="p-3 bg-slate-darker rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="text-sm font-medium text-white">
-                            {presetAssignment.preset.name}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="small"
-                            onClick={() => removePresetFromImage(image.Id)}
-                          >
-                            <ApperIcon name="X" className="w-3 h-3" />
-                          </Button>
-                        </div>
-                        <div className="text-xs text-gray-400 mb-2">
-                          {presetAssignment.reasons?.[0] || "AI recommended"}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs text-gray-400">Strength:</span>
-                          <span className="text-xs text-ocean-teal font-medium">
-                            {presetAssignment.strength}%
-                          </span>
-                          <div className="flex-1 bg-slate-dark rounded-full h-1">
-                            <div 
-                              className="bg-ocean-teal h-1 rounded-full"
-                              style={{ width: `${presetAssignment.strength}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-3 border border-dashed border-slate-dark rounded-lg text-center">
-                      <div className="text-sm text-gray-400">No preset assigned</div>
-                      <Button
-                        variant="ghost"
-                        size="small"
-                        className="mt-2"
-                        onClick={() => {/* Open preset selector */}}
-                      >
-                        <ApperIcon name="Plus" className="w-3 h-3 mr-1" />
-                        Assign Preset
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Summary */}
+      {/* Tips */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-400">
-              {Object.keys(selectedPresets).length} of {images.length} images have preset assignments
-            </div>
-            <div className="flex space-x-3">
-              <Button
-                variant="secondary"
-                onClick={() => setSelectedImages(images.map(img => img.Id))}
-              >
-                Select All Images
-              </Button>
-              <Button
-                onClick={onNext}
-                disabled={Object.keys(selectedPresets).length === 0}
-              >
-                <ApperIcon name="ArrowRight" className="w-4 h-4 mr-2" />
-                Start Processing ({Object.keys(selectedPresets).length})
-              </Button>
+          <div className="flex items-start space-x-3">
+            <ApperIcon name="Lightbulb" className="w-5 h-5 text-ocean-teal mt-0.5" />
+            <div className="space-y-2">
+              <h4 className="font-medium text-white">Preset Tips</h4>
+              <ul className="text-sm text-gray-400 space-y-1">
+                <li>• Start with AI recommendations based on your image analysis</li>
+                <li>• Adjust preset strength to match your artistic vision</li>
+                <li>• Combine presets with manual adjustments for perfect results</li>
+                <li>• Different presets work better for specific underwater conditions</li>
+              </ul>
             </div>
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
-
-  if (loading) {
-    return (
-      <div className="py-12">
-        <Loading message="Generating intelligent preset recommendations..." />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* View Mode Toggle */}
-      <div className="flex justify-center">
-        <div className="flex space-x-1 bg-slate-darker p-1 rounded-lg">
-          <Button
-            variant={viewMode === "recommendations" ? "primary" : "ghost"}
-            size="small"
-            onClick={() => setViewMode("recommendations")}
-          >
-            <ApperIcon name="Wand2" className="w-4 h-4 mr-2" />
-            Recommendations
-          </Button>
-          <Button
-            variant={viewMode === "review" ? "primary" : "ghost"}
-            size="small"
-            onClick={() => setViewMode("review")}
-            disabled={Object.keys(selectedPresets).length === 0}
-          >
-            <ApperIcon name="Eye" className="w-4 h-4 mr-2" />
-            Review ({Object.keys(selectedPresets).length})
-          </Button>
-        </div>
-      </div>
-
-      {viewMode === "recommendations" ? renderRecommendationMode() : renderReviewMode()}
     </div>
   );
 };
 
-export default PresetMatcher;
+export default SingleImagePresetSelector;

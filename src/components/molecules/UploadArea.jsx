@@ -34,26 +34,32 @@ const UploadArea = ({ onUpload, className }) => {
     
 const files = Array.from(e.dataTransfer.files);
     
-    // Enhanced file validation and processing
-    const imageFiles = files.filter(file => 
-      file.type.startsWith("image/") || 
-      file.type === "image/raw" ||
-      file.name.toLowerCase().endsWith(".dng") ||
-      file.name.toLowerCase().endsWith(".raw") ||
-      file.name.toLowerCase().endsWith(".cr2") ||
-      file.name.toLowerCase().endsWith(".nef") ||
-      file.name.toLowerCase().endsWith(".arw") ||
-      file.name.toLowerCase().endsWith(".json") ||
-      file.name.toLowerCase().endsWith(".xmp")
-    );
-    
-    if (imageFiles.length > 100) {
-      toast.warning("Maximum 100 files allowed. First 100 files will be processed.");
+    // Single file validation for optimal performance
+    if (files.length > 1) {
+      toast.warning("Please upload one image at a time for optimal editing performance.");
+      return;
     }
     
-    if (imageFiles.length > 0) {
-      onUpload(imageFiles.slice(0, 100));
+    const file = files[0];
+    if (!file) return;
+    
+    // Enhanced file validation for single upload
+    const supportedFormats = /\.(jpg|jpeg|png|raw|dng|cr2|nef|arw)$/i;
+    const isValidImage = file.type.startsWith("image/") || supportedFormats.test(file.name);
+    
+    if (!isValidImage) {
+      toast.error("Please select a valid image file (JPEG, PNG, or RAW format).");
+      return;
     }
+    
+    // File size check (50MB limit)
+    const maxSize = 50 * 1024 * 1024; // 50MB for optimal browser performance
+    if (file.size > maxSize) {
+      toast.error("File size too large. Please select an image under 50MB.");
+      return;
+    }
+    
+    onUpload([file]);
   }, [onUpload]);
 
   const handleFileSelect = useCallback((e) => {
@@ -92,12 +98,11 @@ const files = Array.from(e.dataTransfer.files);
                 <input
                     type="file"
                     className="absolute inset-0 opacity-0 cursor-pointer"
-                    multiple
-                    accept="image/*,.raw,.dng,.cr2,.nef,.arw,.json,.xmp"
+accept="image/*,.raw,.dng,.cr2,.nef,.arw"
                     onChange={handleFileSelect} />
                 <ApperIcon name="FolderOpen" className="w-4 h-4 mr-2" />Browse Files
                             </Button>
-            <p className="text-xs text-gray-500">Supports up to 100 images at once • Advanced batch processing available
+            <p className="text-xs text-gray-500">Single image upload for optimal performance • Professional RAW support
                             </p>
         </div>
     </CardContent>

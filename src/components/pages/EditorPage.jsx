@@ -182,31 +182,53 @@ const [history, setHistory] = useState([]);
     return () => clearInterval(autoSaveInterval);
   }, [currentImage, adjustments, historyIndex]);
 
-  const handleFileUpload = async (files) => {
+const handleFileUpload = async (files) => {
     try {
       setLoading(true);
       setError("");
       
-      // Create mock image objects from uploaded files
-      const file = files[0]; // Use first file for now
+      if (!files || files.length === 0) {
+        toast.error("No file provided");
+        return;
+      }
+      
+      // Process single file for optimal performance
+      const file = files[0];
       const imageUrl = URL.createObjectURL(file);
       
-      const image = {
-        Id: Date.now(),
-        filename: file.name,
-        url: imageUrl,
-        uploadDate: new Date(),
-        format: file.type,
-        dimensions: { width: 1920, height: 1080 }, // Mock dimensions
-        metadata: {
-          size: file.size,
-          type: file.type
-        }
+      // Extract actual image dimensions
+      const img = new Image();
+      img.onload = () => {
+        const image = {
+          Id: Date.now(),
+          filename: file.name,
+          url: imageUrl,
+          uploadDate: new Date(),
+          format: file.type,
+          dimensions: { 
+            width: img.naturalWidth, 
+            height: img.naturalHeight 
+          },
+          metadata: {
+            size: file.size,
+            type: file.type,
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+            aspectRatio: img.naturalWidth / img.naturalHeight
+          }
+        };
+        
+        setCurrentImage(image);
+        addToHistory(adjustments);
+        toast.success(`Image loaded: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB)`);
       };
       
-      setCurrentImage(image);
-      addToHistory(adjustments);
-      toast.success("Image loaded successfully!");
+      img.onerror = () => {
+        toast.error("Failed to load image. Please try a different file.");
+        setLoading(false);
+      };
+      
+      img.src = imageUrl;
     } catch (err) {
       setError("Failed to load image");
       console.error(err);

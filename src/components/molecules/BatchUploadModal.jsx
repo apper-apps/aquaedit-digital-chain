@@ -5,11 +5,10 @@ import { cn } from "@/utils/cn";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 
-const BatchUploadModal = ({ isOpen, onClose, onUpload, maxFiles = 100 }) => {
+const SingleUploadModal = ({ isOpen, onClose, onUpload }) => {
   const [isDragActive, setIsDragActive] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState({});
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleDragEnter = useCallback((e) => {
@@ -37,120 +36,64 @@ const BatchUploadModal = ({ isOpen, onClose, onUpload, maxFiles = 100 }) => {
     setIsDragActive(false);
     
     const files = Array.from(e.dataTransfer.files);
-    handleFiles(files);
+    handleFile(files[0]); // Only take the first file
   }, []);
 
   const handleFileSelect = useCallback((e) => {
     const files = Array.from(e.target.files);
-    handleFiles(files);
+    if (files.length > 0) {
+      handleFile(files[0]);
+    }
   }, []);
 
-const handleFiles = (files) => {
-    // Filter for supported image formats
-    const imageFiles = files.filter(file => 
-      file.type.startsWith("image/") || 
-      file.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|tiff|raw|dng|cr2|nef|arw)$/i)
-    );
+  const handleFile = (file) => {
+    if (!file) return;
 
-    if (imageFiles.length === 0) {
-      toast.error("No supported image files found");
+    // Check if it's a supported image format
+    const supportedFormats = /\.(jpg|jpeg|png|raw|dng|cr2|nef|arw)$/i;
+    const isValidImage = file.type.startsWith("image/") || supportedFormats.test(file.name);
+    
+    if (!isValidImage) {
+      toast.error("Please select a valid image file (JPEG, PNG, or RAW format)");
       return;
     }
 
-    // Check for context-friendly limits
-    const contextSafeMax = Math.min(maxFiles, 50); // Prevent context overflow
-    const totalSize = imageFiles.reduce((sum, file) => sum + file.size, 0);
-    const maxTotalSize = 50 * 1024 * 1024; // 50MB total limit
-    
-    if (totalSize > maxTotalSize) {
-      toast.error("Total file size too large. Please select smaller files or fewer images.");
+    // Check file size (50MB limit for optimal performance)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      toast.error("File size too large. Please select an image under 50MB for optimal performance.");
       return;
     }
 
-    if (imageFiles.length > contextSafeMax) {
-      toast.warning(`For optimal performance, maximum ${contextSafeMax} files allowed. First ${contextSafeMax} files will be selected.`);
-    }
-
-    const validFiles = imageFiles.slice(0, contextSafeMax);
-    setSelectedFiles(validFiles);
-    
-    // Show detailed file summary
-    const sizeInMB = (totalSize / 1024 / 1024).toFixed(2);
-    toast.info(`Selected ${validFiles.length} images (${sizeInMB}MB total) for upload`);
+    setSelectedFile(file);
+    const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+    toast.success(`Image selected: ${file.name} (${sizeInMB}MB)`);
   };
 
-const handleUpload = async () => {
-    if (selectedFiles.length === 0) {
-      toast.error("No files selected");
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast.error("No file selected");
       return;
     }
 
     setIsUploading(true);
-    setUploadProgress({});
     
     try {
-      // Process files in chunks to prevent context overflow
-      const chunkSize = 5; // Process 5 files at a time
-      const chunks = [];
+      // Simulate upload processing with progress
+      toast.info("Processing your underwater photo...");
       
-      for (let i = 0; i < selectedFiles.length; i += chunkSize) {
-        chunks.push(selectedFiles.slice(i, i + chunkSize));
-      }
+      await onUpload([selectedFile]);
       
-      let processedCount = 0;
-      
-      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
-        const chunk = chunks[chunkIndex];
-        
-        // Update progress for current chunk
-        chunk.forEach((file, index) => {
-          const fileIndex = chunkIndex * chunkSize + index;
-          setUploadProgress(prev => ({
-            ...prev,
-            [fileIndex]: { status: 'uploading', progress: 0 }
-          }));
-        });
-        
-        // Process chunk with progress updates
-        await onUpload(chunk, (progress) => {
-          progress.forEach((fileProgress, index) => {
-            const fileIndex = chunkIndex * chunkSize + index;
-            setUploadProgress(prev => ({
-              ...prev,
-              [fileIndex]: fileProgress
-            }));
-          });
-        });
-        
-        processedCount += chunk.length;
-        
-        // Show progress toast
-        toast.info(`Processed ${processedCount}/${selectedFiles.length} images`);
-        
-        // Small delay between chunks
-        if (chunkIndex < chunks.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-      }
-      
-      toast.success(`Successfully uploaded ${selectedFiles.length} images!`);
-      setSelectedFiles([]);
-      setUploadProgress({});
+      toast.success("Image uploaded successfully!");
+      setSelectedFile(null);
       onClose();
       
     } catch (error) {
       console.error("Upload error:", error);
-      const errorMessage = error.message?.includes('context limit') 
-        ? "Upload failed: Too much data processed at once. Try uploading fewer files."
-        : `Upload failed: ${error.message || "Unknown error"}`;
-      toast.error(errorMessage);
+      toast.error("Upload failed. Please try again.");
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const removeFile = (index) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const formatFileSize = (bytes) => {
@@ -165,12 +108,12 @@ const handleUpload = async () => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <Card className="w-full max-w-2xl">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
               <ApperIcon name="Upload" className="w-5 h-5 text-ocean-teal" />
-              <span>Batch Upload - Underwater Photos</span>
+              <span>Upload Underwater Photo</span>
             </CardTitle>
             <Button variant="ghost" size="small" onClick={onClose}>
               <ApperIcon name="X" className="w-4 h-4" />
@@ -204,13 +147,13 @@ const handleUpload = async () => {
               
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-white">
-                  {isDragActive ? "Drop your images here!" : "Drag & Drop Underwater Photos"}
+                  {isDragActive ? "Drop your photo here!" : "Upload Your Underwater Photo"}
                 </h3>
                 <p className="text-gray-400">
-                  Support for JPEG, PNG, RAW, DNG, CR2, NEF, ARW formats
+                  Supports JPEG, PNG, and RAW formats (DNG, CR2, NEF, ARW)
                 </p>
                 <p className="text-sm text-ocean-teal">
-                  Up to {maxFiles} images • Advanced processing included
+                  Single image upload for optimal editing performance
                 </p>
               </div>
 
@@ -224,7 +167,6 @@ const handleUpload = async () => {
                     ref={fileInputRef}
                     type="file"
                     className="absolute inset-0 opacity-0 cursor-pointer"
-                    multiple
                     accept="image/*,.raw,.dng,.cr2,.nef,.arw"
                     onChange={handleFileSelect}
                   />
@@ -232,106 +174,92 @@ const handleUpload = async () => {
                   Browse Files
                 </Button>
                 
-                <div className="text-xs text-gray-500 space-y-1">
-                  <p>Features included:</p>
-                  <ul className="list-disc list-inside space-y-1 text-left max-w-md mx-auto">
-                    <li>Smart grouping by dive session & conditions</li>
-                    <li>Automatic duplicate detection</li>
-                    <li>AI-powered underwater condition analysis</li>
-                    <li>Batch preset recommendations</li>
-                    <li>Background processing with resume capability</li>
-                  </ul>
+                <div className="text-xs text-gray-500">
+                  <p className="mb-2">Professional features for underwater photography:</p>
+                  <div className="grid grid-cols-2 gap-2 text-left max-w-md mx-auto">
+                    <div>• Advanced color correction</div>
+                    <div>• Underwater preset library</div>
+                    <div>• Professional masking tools</div>
+                    <div>• RAW format support</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Selected Files */}
-          {selectedFiles.length > 0 && (
+          {/* Selected File Preview */}
+          {selectedFile && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-lg font-medium text-white">
-                  Selected Files ({selectedFiles.length})
-                </h4>
-                <div className="text-sm text-gray-400">
-                  Total: {formatFileSize(selectedFiles.reduce((total, file) => total + file.size, 0))}
-                </div>
+                <h4 className="text-lg font-medium text-white">Selected Image</h4>
               </div>
 
-              <div className="max-h-64 overflow-y-auto space-y-2">
-                {selectedFiles.map((file, index) => (
-                  <div 
-                    key={`${file.name}_${index}`}
-                    className="flex items-center justify-between p-3 bg-slate-darker rounded-lg"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-slate-dark rounded flex items-center justify-center">
-                        <ApperIcon name="Image" className="w-4 h-4 text-ocean-teal" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-white truncate max-w-xs">
-                          {file.name}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {formatFileSize(file.size)} • {file.type}
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="small"
-                      onClick={() => removeFile(index)}
-                      className="text-red-400 hover:text-red-300"
-                    >
-                      <ApperIcon name="X" className="w-4 h-4" />
-                    </Button>
+              <div className="p-4 bg-slate-darker rounded-lg">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-slate-dark rounded-lg flex items-center justify-center">
+                    <ApperIcon name="Image" className="w-6 h-6 text-ocean-teal" />
                   </div>
-                ))}
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-white truncate">
+                      {selectedFile.name}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {formatFileSize(selectedFile.size)} • {selectedFile.type || 'RAW'}
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="small"
+                    onClick={() => setSelectedFile(null)}
+                    className="text-red-400 hover:text-red-300"
+                  >
+                    <ApperIcon name="X" className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
 
               <div className="flex space-x-3">
                 <Button
                   variant="secondary"
-                  onClick={() => setSelectedFiles([])}
+                  onClick={() => setSelectedFile(null)}
                   disabled={isUploading}
+                  className="flex-1"
                 >
-                  Clear All
+                  Choose Different Image
                 </Button>
-<Button
+                <Button
                   onClick={handleUpload}
-                  disabled={isUploading || selectedFiles.length === 0}
+                  disabled={isUploading}
                   className="flex-1"
                 >
                   {isUploading ? (
                     <>
                       <ApperIcon name="Loader2" className="w-4 h-4 mr-2 animate-spin" />
-                      Processing {Object.keys(uploadProgress).length}/{selectedFiles.length}...
+                      Uploading...
                     </>
                   ) : (
                     <>
                       <ApperIcon name="Upload" className="w-4 h-4 mr-2" />
-                      Start Upload ({selectedFiles.length} files)
-                      {selectedFiles.length > 20 && (
-                        <span className="ml-1 text-xs opacity-70">- Chunked Processing</span>
-                      )}
-</>
+                      Start Editing
+                    </>
                   )}
                 </Button>
               </div>
             </div>
           )}
-          {/* Upload Tips */}
+
+          {/* Performance Tips */}
           <Card>
             <CardContent className="p-4">
               <div className="flex items-start space-x-3">
-                <ApperIcon name="Info" className="w-5 h-5 text-ocean-teal mt-0.5" />
+                <ApperIcon name="Zap" className="w-5 h-5 text-ocean-teal mt-0.5" />
                 <div className="space-y-2">
-                  <h4 className="font-medium text-white">Pro Tips for Best Results</h4>
+                  <h4 className="font-medium text-white">Optimized for Performance</h4>
                   <ul className="text-sm text-gray-400 space-y-1">
-                    <li>• Group photos from same dive session for better analysis</li>
-                    <li>• Include EXIF data for accurate depth/lighting detection</li>
-                    <li>• RAW files provide more adjustment flexibility</li>
-                    <li>• Processing happens in background - you can continue editing</li>
+                    <li>• Single image processing for smooth editing experience</li>
+                    <li>• Full RAW support with professional-grade adjustments</li>
+                    <li>• Real-time preview with hardware acceleration</li>
+                    <li>• Underwater-specific color correction tools</li>
                   </ul>
                 </div>
               </div>
@@ -343,4 +271,4 @@ const handleUpload = async () => {
   );
 };
 
-export default BatchUploadModal;
+export default SingleUploadModal;
