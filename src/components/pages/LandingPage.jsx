@@ -1,14 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/Card';
 import Button from '@/components/atoms/Button';
 import ApperIcon from '@/components/ApperIcon';
-import SingleUploadModal from '@/components/molecules/SingleUploadModal';
+import UploadArea from '@/components/molecules/UploadArea';
 import { toast } from 'react-toastify';
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [showUploadModal, setShowUploadModal] = useState(false);
+
+  // Close modal on escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        setShowUploadModal(false);
+      }
+    };
+    
+    if (showUploadModal) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showUploadModal]);
 
   const handleFileUpload = async (files) => {
     if (files.length > 0) {
@@ -283,12 +304,44 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Upload Modal */}
-      <SingleUploadModal
-        isOpen={showUploadModal}
-        onClose={() => setShowUploadModal(false)}
-        onUpload={handleFileUpload}
-      />
+{/* Upload Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowUploadModal(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative w-full max-w-lg mx-auto">
+            <Card className="border-ocean-teal/20 shadow-2xl">
+              <CardHeader className="flex flex-row items-center justify-between pb-4">
+                <CardTitle className="text-xl font-semibold text-white">
+                  Upload Your Photo
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowUploadModal(false)}
+                  className="h-8 w-8 p-0 text-gray-400 hover:text-white"
+                >
+                  <ApperIcon name="X" className="w-4 h-4" />
+                </Button>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <UploadArea 
+                  onUpload={(files) => {
+                    handleFileUpload(files);
+                    setShowUploadModal(false);
+                  }}
+                  className="border-ocean-teal/20"
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
