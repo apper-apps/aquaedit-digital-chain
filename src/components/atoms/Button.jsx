@@ -5,10 +5,10 @@ const Button = forwardRef(({ className, variant = "primary", size = "medium", ch
   const baseClasses = "inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ocean-teal disabled:opacity-50 disabled:cursor-not-allowed";
   
   const variants = {
-    primary: "bg-ocean-gradient text-white hover:shadow-lg hover:scale-105 active:scale-95",
-    secondary: "bg-slate-dark text-white border border-ocean-teal hover:bg-ocean-teal/10 hover:border-ocean-teal/80",
-    ghost: "text-ocean-teal hover:bg-ocean-teal/10 hover:text-ocean-teal/80",
-    danger: "bg-red-600 text-white hover:bg-red-700 hover:shadow-lg",
+    primary: "bg-ocean-gradient text-white hover:shadow-lg hover:scale-105 active:scale-95 dark:bg-ocean-gradient",
+    secondary: "bg-slate-dark text-white border border-ocean-teal hover:bg-ocean-teal/10 hover:border-ocean-teal/80 dark:bg-slate-dark dark:border-ocean-teal",
+    ghost: "text-ocean-teal hover:bg-ocean-teal/10 hover:text-ocean-teal/80 dark:text-ocean-teal dark:hover:bg-ocean-teal/10",
+    danger: "bg-red-600 text-white hover:bg-red-700 hover:shadow-lg dark:bg-red-600 dark:hover:bg-red-700",
   };
   
   const sizes = {

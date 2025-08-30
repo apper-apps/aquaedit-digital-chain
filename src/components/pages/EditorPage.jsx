@@ -1,23 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import PresetPanel from "@/components/organisms/PresetPanel";
+import MobileNavigationTabs from "@/components/molecules/MobileNavigationTabs";
+import { useTheme } from "@/contexts/ThemeContext";
+import { toast } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
+import QuickAccessSidebar from "@/components/molecules/QuickAccessSidebar";
+import UploadArea from "@/components/molecules/UploadArea";
+import UploadArea from "@/components/molecules/UploadArea";
+import CommandPalette from "@/components/molecules/CommandPalette";
+import KeyboardShortcuts from "@/components/molecules/KeyboardShortcuts";
+import AdvancedExportModal from "@/components/molecules/AdvancedExportModal";
+import PerformanceIndicator from "@/components/molecules/PerformanceIndicator";
+import Button from "@/components/atoms/Button";
 import Toolbar from "@/components/organisms/Toolbar";
 import ImageCanvas from "@/components/organisms/ImageCanvas";
 import AdjustmentPanel from "@/components/organisms/AdjustmentPanel";
-import UploadArea from "@/components/molecules/UploadArea";
-import AdvancedExportModal from "@/components/molecules/AdvancedExportModal";
-import BreadcrumbNavigation from "@/components/molecules/BreadcrumbNavigation";
-import QuickAccessSidebar from "@/components/molecules/QuickAccessSidebar";
-import CommandPalette from "@/components/molecules/CommandPalette";
-import KeyboardShortcuts from "@/components/molecules/KeyboardShortcuts";
-import PerformanceIndicator from "@/components/molecules/PerformanceIndicator";
-import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
+import Loading from "@/components/ui/Loading";
 import { getImages, saveProject } from "@/services/api/projectService";
-import { toast } from "react-toastify";
-
 const EditorPage = () => {
   const location = useLocation();
-const [currentImage, setCurrentImage] = useState(null);
+  const [currentImage, setCurrentImage] = useState(null);
   const [adjustments, setAdjustments] = useState({
     // Basic adjustments
     exposure: 0,
@@ -552,8 +556,52 @@ const handleExport = async (exportSettings) => {
     );
   }
 
+const { isDarkMode } = useTheme();
+  const [activePanel, setActivePanel] = useState('develop');
+  const [activeTab, setActiveTab] = useState('develop');
+
+  // Load initial data from navigation state
+  useEffect(() => {
+    const { uploadedFiles, project, preset } = location.state || {};
+    
+    if (uploadedFiles && uploadedFiles.length > 0) {
+      handleFileUpload(uploadedFiles);
+    } else if (project) {
+      loadProject(project);
+    } else if (preset) {
+      applyPreset(preset);
+    }
+  }, [location.state]);
+
+  const handlePresetSelect = (preset) => {
+    const newAdjustments = { ...adjustments, ...preset.settings };
+    setAdjustments(newAdjustments);
+    addToHistory(newAdjustments);
+    toast.success(`Applied preset: ${preset.name}`);
+  };
+
+  const handlePresetCreate = () => {
+    toast.info('Preset creation coming soon!');
+  };
+
+  if (loading) {
+    return <Loading message="Loading editor..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-6 py-12">
+        <Error 
+          title="Editor Error"
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
+
   return (
-<div className="min-h-screen bg-slate-darker">
+    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-darker' : 'bg-gray-50'}`}>
       {/* Auto-save indicator */}
       {autoSaving && (
         <div className="fixed top-20 right-6 bg-ocean-teal text-white px-3 py-1 rounded text-sm z-50">
@@ -561,51 +609,86 @@ const handleExport = async (exportSettings) => {
         </div>
       )}
 
-      {/* Breadcrumb Navigation */}
-      <div className="sticky top-16 bg-slate-dark/95 backdrop-blur-sm border-b border-slate-dark z-20">
-        <div className="px-6 py-3">
-          <BreadcrumbNavigation />
-        </div>
-      </div>
-
-      {/* Quick Access Sidebar */}
-      <QuickAccessSidebar
-        isOpen={showQuickAccess}
-        onToggle={() => setShowQuickAccess(!showQuickAccess)}
+      {/* Mobile Navigation Tabs */}
+      <MobileNavigationTabs
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        tabs={['develop', 'presets', 'export']}
       />
 
-      {/* Editor Layout */}
-      <div className="flex flex-col lg:flex-row min-h-screen">
-        {/* Left Toolbar */}
-        <div className="lg:w-16 p-4">
-          <Toolbar
-            onExport={() => setShowAdvancedExport(true)}
-            onSave={handleSave}
-            onUndo={handleUndo}
-            onRedo={handleRedo}
-            canUndo={historyIndex > 0}
-            canRedo={historyIndex < history.length - 1}
-            onQuickAccess={() => setShowQuickAccess(!showQuickAccess)}
-            onCommandPalette={() => setShowCommandPalette(true)}
-          />
+      {/* Desktop Layout */}
+      <div className="hidden lg:flex h-screen">
+        {/* Left Panel - Presets/Tools */}
+        <div className="w-80 border-r border-slate-dark bg-slate-dark/50">
+          <div className="h-full flex flex-col">
+            {/* Panel Tabs */}
+            <div className="flex border-b border-slate-dark bg-slate-dark/30">
+              <button
+                onClick={() => setActivePanel('develop')}
+                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                  activePanel === 'develop' 
+                    ? 'text-ocean-teal border-b-2 border-ocean-teal bg-ocean-teal/10' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Tools
+              </button>
+              <button
+                onClick={() => setActivePanel('presets')}
+                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                  activePanel === 'presets' 
+                    ? 'text-ocean-teal border-b-2 border-ocean-teal bg-ocean-teal/10' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Presets
+              </button>
+            </div>
+
+            {/* Panel Content */}
+            <div className="flex-1 p-4">
+              {activePanel === 'develop' && (
+                <Toolbar
+                  onExport={() => setShowAdvancedExport(true)}
+                  onSave={handleSave}
+                  onUndo={handleUndo}
+                  onRedo={handleRedo}
+                  canUndo={historyIndex > 0}
+                  canRedo={historyIndex < history.length - 1}
+                  onQuickAccess={() => setShowQuickAccess(!showQuickAccess)}
+                  onCommandPalette={() => setShowCommandPalette(true)}
+                  className="w-full h-auto"
+                />
+              )}
+              
+              {activePanel === 'presets' && (
+                <PresetPanel
+                  onPresetSelect={handlePresetSelect}
+                  onPresetCreate={handlePresetCreate}
+                />
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Center Canvas Area */}
-        <div className="flex-1 p-4">
-          {currentImage ? (
-            <ImageCanvas 
-              image={currentImage}
-              adjustments={adjustments}
-            />
-          ) : (
-            <div className="h-full flex items-center justify-center">
-              <UploadArea onUpload={handleFileUpload} className="max-w-md" />
-            </div>
-          )}
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 p-4">
+            {currentImage ? (
+              <ImageCanvas 
+                image={currentImage}
+                adjustments={adjustments}
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center">
+                <UploadArea onUpload={handleFileUpload} className="max-w-md" />
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Right Adjustment Panel */}
-        <div className="lg:w-80 p-4">
+        {/* Right Panel - Adjustment Controls */}
+        <div className="w-80 border-l border-slate-dark bg-slate-dark/50 p-4">
           <AdjustmentPanel
             adjustments={adjustments}
             onAdjustmentChange={handleAdjustmentChange}
@@ -614,7 +697,56 @@ const handleExport = async (exportSettings) => {
         </div>
       </div>
 
-      {/* Advanced Export Modal */}
+      {/* Mobile Layout */}
+      <div className="lg:hidden">
+        {/* Content based on active tab */}
+        {activeTab === 'develop' && (
+          <div className="p-4">
+            {currentImage ? (
+              <ImageCanvas 
+                image={currentImage}
+                adjustments={adjustments}
+                className="mb-4"
+              />
+            ) : (
+              <div className="h-64 flex items-center justify-center mb-4">
+                <UploadArea onUpload={handleFileUpload} className="max-w-sm" />
+              </div>
+            )}
+            
+            <AdjustmentPanel
+              adjustments={adjustments}
+              onAdjustmentChange={handleAdjustmentChange}
+              onResetAll={handleResetAll}
+            />
+          </div>
+        )}
+
+        {activeTab === 'presets' && (
+          <div className="p-4">
+            <PresetPanel
+              onPresetSelect={handlePresetSelect}
+              onPresetCreate={handlePresetCreate}
+            />
+          </div>
+        )}
+
+        {activeTab === 'export' && (
+          <div className="p-4">
+            <div className="text-center py-8">
+              <Button 
+                onClick={() => setShowAdvancedExport(true)}
+                size="large"
+              >
+                <ApperIcon name="Download" className="w-5 h-5 mr-2" />
+                Export Image
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
       <AdvancedExportModal
         isOpen={showAdvancedExport}
         onClose={() => setShowAdvancedExport(false)}
@@ -622,19 +754,21 @@ const handleExport = async (exportSettings) => {
         image={currentImage}
       />
 
-      {/* Command Palette */}
       <CommandPalette
         isOpen={showCommandPalette}
         onClose={() => setShowCommandPalette(false)}
       />
 
-      {/* Keyboard Shortcuts */}
       <KeyboardShortcuts
         isOpen={showKeyboardShortcuts}
         onClose={() => setShowKeyboardShortcuts(false)}
       />
 
-      {/* Performance Indicator */}
+      <QuickAccessSidebar
+        isOpen={showQuickAccess}
+        onToggle={() => setShowQuickAccess(!showQuickAccess)}
+      />
+
       <PerformanceIndicator
         isProcessing={isProcessing}
         processingStatus={processingStatus}
