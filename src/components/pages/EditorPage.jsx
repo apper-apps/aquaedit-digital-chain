@@ -7,7 +7,6 @@ import { toast } from "react-toastify";
 import ApperIcon from "@/components/ApperIcon";
 import QuickAccessSidebar from "@/components/molecules/QuickAccessSidebar";
 import UploadArea from "@/components/molecules/UploadArea";
-import UploadArea from "@/components/molecules/UploadArea";
 import CommandPalette from "@/components/molecules/CommandPalette";
 import KeyboardShortcuts from "@/components/molecules/KeyboardShortcuts";
 import AdvancedExportModal from "@/components/molecules/AdvancedExportModal";
