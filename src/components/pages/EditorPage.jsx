@@ -157,8 +157,25 @@ const [history, setHistory] = useState([]);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingStatus, setProcessingStatus] = useState("");
+const [processingStatus, setProcessingStatus] = useState("");
+  
+  // Theme and component state hooks - must be at top level
+  const { isDarkMode } = useTheme();
+  const [activePanel, setActivePanel] = useState('develop');
+  const [activeTab, setActiveTab] = useState('develop');
 
+  // Load initial data from navigation state
+  useEffect(() => {
+    const { uploadedFiles, project, preset } = location.state || {};
+    
+    if (uploadedFiles && uploadedFiles.length > 0) {
+      handleFileUpload(uploadedFiles);
+    } else if (project) {
+      loadProject(project);
+    } else if (preset) {
+      applyPreset(preset);
+    }
+  }, [location.state]);
   // Load initial data from navigation state
   useEffect(() => {
     const { uploadedFiles, project, preset } = location.state || {};
@@ -555,22 +572,7 @@ const handleExport = async (exportSettings) => {
     );
   }
 
-const { isDarkMode } = useTheme();
-  const [activePanel, setActivePanel] = useState('develop');
-  const [activeTab, setActiveTab] = useState('develop');
-
-  // Load initial data from navigation state
-  useEffect(() => {
-    const { uploadedFiles, project, preset } = location.state || {};
-    
-    if (uploadedFiles && uploadedFiles.length > 0) {
-      handleFileUpload(uploadedFiles);
-    } else if (project) {
-      loadProject(project);
-    } else if (preset) {
-      applyPreset(preset);
-    }
-  }, [location.state]);
+// Early returns after hooks would be called here in render
 
   const handlePresetSelect = (preset) => {
     const newAdjustments = { ...adjustments, ...preset.settings };
