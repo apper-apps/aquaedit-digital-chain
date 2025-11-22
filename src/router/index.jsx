@@ -2,7 +2,6 @@ import { createBrowserRouter } from "react-router-dom";
 import React, { Suspense, lazy } from "react";
 import { getRouteConfig } from "./route.utils";
 import Root from "@/layouts/Root";
-import Layout from "@/components/organisms/Layout";
 
 // Lazy load all page components
 const LandingPage = lazy(() => import('@/components/pages/LandingPage'));
