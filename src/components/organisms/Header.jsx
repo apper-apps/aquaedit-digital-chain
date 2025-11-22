@@ -1,11 +1,15 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useAuth } from "@/layouts/Root";
 import Button from "@/components/atoms/Button";
 import ApperIcon from "@/components/ApperIcon";
 import { cn } from "@/utils/cn";
 
 const Header = ({ className }) => {
   const location = useLocation();
+  const { isAuthenticated } = useSelector(state => state.user);
+  const { logout } = useAuth();
 
 const navigationItems = [
     { name: "Develop", path: "/develop", icon: "Edit3" },
@@ -76,7 +80,25 @@ return (
             </div>
           </nav>
 
-          <div className="flex items-center space-x-2">
+<div className="flex items-center space-x-2">
+            {isAuthenticated ? (
+              <Button 
+                variant="ghost" 
+                size="small" 
+                onClick={logout}
+                className="text-ocean-teal hover:text-white"
+              >
+                <ApperIcon name="LogOut" className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            ) : (
+              <Link to="/login">
+                <Button variant="primary" size="small">
+                  <ApperIcon name="LogIn" className="w-4 h-4 mr-2" />
+                  Login
+                </Button>
+              </Link>
+            )}
             <Button variant="ghost" size="small" className="md:hidden">
               <ApperIcon name="Menu" className="w-5 h-5" />
             </Button>

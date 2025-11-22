@@ -7,19 +7,46 @@ import Footer from "@/components/organisms/Footer";
 import StatusBar from "@/components/molecules/StatusBar";
 import { cn } from "@/utils/cn";
 
-const Layout = () => {
+const LayoutContent = () => {
   const location = useLocation();
+  const { isDarkMode } = useTheme();
   
   // App-level state and methods that can be passed via outlet context
   const outletContext = {
     location
   };
   
+  // Show status bar on editor/develop pages
+  const showStatusBar = location.pathname.includes('/editor') || location.pathname.includes('/develop');
+
   return (
-    <ThemeProvider>
-      <LayoutContent outletContext={outletContext} />
+    <div className={cn(
+      "min-h-screen flex flex-col",
+      isDarkMode ? "dark" : ""
+    )}>
+      <Header />
+      
+      {/* Main Content */}
+      <main className="flex-1 relative">
+        <Outlet context={outletContext} />
+        
+        {/* Status Bar for specific pages */}
+        {showStatusBar && (
+          <StatusBar 
+            imageInfo={{
+              name: "underwater_photo.jpg",
+              width: 1920,
+              height: 1080,
+              size: 2048576,
+              format: "JPEG"
+            }}
+          />
+        )}
+      </main>
+      
+      <Footer />
       <ToastContainer
-        position="top-right"
+        position="bottom-right"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
@@ -28,34 +55,18 @@ const Layout = () => {
         pauseOnFocusLoss
         draggable
         pauseOnHover
+        theme="dark"
         style={{ zIndex: 9999 }}
       />
-    </ThemeProvider>
+    </div>
   );
 };
 
-const LayoutContent = ({ outletContext }) => {
-  const { isDarkMode } = useTheme();
-  const location = useLocation();
-  
-// Show status bar on editor/develop pages
-  const showStatusBar = ['/editor', '/develop'].includes(location.pathname);
-  
+const Layout = () => {
   return (
-    <div className={cn(
-      "min-h-screen flex flex-col transition-colors duration-300",
-      isDarkMode ? "bg-slate-darker" : "bg-gray-50"
-    )}>
-      <Header />
-      <main className={cn(
-        "flex-1",
-        showStatusBar ? "pb-8" : ""
-      )}>
-        <Outlet context={outletContext} />
-      </main>
-      {!showStatusBar && <Footer />}
-      {showStatusBar && <StatusBar />}
-    </div>
+    <ThemeProvider>
+      <LayoutContent />
+    </ThemeProvider>
   );
 };
 

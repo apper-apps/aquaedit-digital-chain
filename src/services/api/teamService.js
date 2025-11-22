@@ -1,543 +1,653 @@
-import { delay } from "./projectService";
+import { getApperClient } from '@/services/apperClient';
+import { toast } from 'react-toastify';
 
-// Mock data for team workspaces
-let teamWorkspaces = [
-  {
-    Id: 1,
-    name: "Coral Dive Center",
-    description: "Professional diving operation specializing in underwater photography tours and training.",
-    operationType: "dive-center",
-    teamSize: "medium",
-    status: "active",
-    createdAt: "2024-01-15T10:30:00Z",
-    ownerId: 1,
-    memberCount: 8,
-    projectCount: 23,
-    role: "owner",
-    icon: "Building2",
-    branding: {
-      primaryColor: "#0d9488",
-      secondaryColor: "#f59e0b",
-      logoUrl: null
-    },
-    settings: {
-      exportStandards: "high-quality",
-      qualityRequirements: "professional",
-      approvalWorkflow: true
-    }
-  },
-  {
-    Id: 2,
-    name: "Marine Photography Studio",
-    description: "Award-winning underwater photographers creating stunning marine life portfolios.",
-    operationType: "photography-business",
-    teamSize: "small",
-    status: "active",
-    createdAt: "2024-02-10T14:20:00Z",
-    ownerId: 1,
-    memberCount: 4,
-    projectCount: 15,
-    role: "admin",
-    icon: "Camera",
-    branding: {
-      primaryColor: "#1e3a8a",
-      secondaryColor: "#f59e0b",
-      logoUrl: null
-    },
-    settings: {
-      exportStandards: "print-ready",
-      qualityRequirements: "commercial",
-      approvalWorkflow: true
-    }
-  }
-];
-
-// Mock data for team members
-let teamMembers = [
-  {
-    Id: 1,
-    name: "Sarah Thompson",
-    email: "sarah@coraldive.com",
-    role: "owner",
-    workspaceId: 1,
-    workspaceName: "Coral Dive Center",
-    status: "online",
-    joinedAt: "2024-01-15T10:30:00Z",
-    lastActive: "2024-03-15T16:45:00Z",
-    permissions: {
-      projectAccess: "full",
-      imageAccess: "full",
-      presetAccess: "full",
-      exportAccess: "full",
-      adminAccess: "full"
-    },
-    profile: {
-      specialization: "Cave Diving Photography",
-      certification: "PADI Instructor",
-      avatar: null,
-      bio: "20+ years underwater photography experience"
-    }
-  },
-  {
-    Id: 2,
-    name: "Mike Rodriguez",
-    email: "mike@coraldive.com",
-    role: "admin",
-    workspaceId: 1,
-    workspaceName: "Coral Dive Center",
-    status: "offline",
-    joinedAt: "2024-01-20T09:15:00Z",
-    lastActive: "2024-03-14T18:20:00Z",
-    permissions: {
-      projectAccess: "full",
-      imageAccess: "full",
-      presetAccess: "modify",
-      exportAccess: "full",
-      adminAccess: "partial"
-    },
-    profile: {
-      specialization: "Macro Photography",
-      certification: "PADI Advanced Open Water",
-      avatar: null,
-      bio: "Specialized in marine life macro photography"
-    }
-  },
-  {
-    Id: 3,
-    name: "Emma Wilson",
-    email: "emma@marinestudio.com",
-    role: "editor",
-    workspaceId: 2,
-    workspaceName: "Marine Photography Studio",
-    status: "online",
-    joinedAt: "2024-02-12T11:30:00Z",
-    lastActive: "2024-03-15T15:10:00Z",
-    permissions: {
-      projectAccess: "assigned",
-      imageAccess: "assigned",
-      presetAccess: "apply",
-      exportAccess: "standard",
-      adminAccess: "none"
-    },
-    profile: {
-      specialization: "Color Correction",
-      certification: "Adobe Certified Expert",
-      avatar: null,
-      bio: "Expert in underwater color correction and enhancement"
-    }
-  }
-];
-
-// Mock data for team invitations
-let teamInvitations = [
-  {
-    Id: 1,
-    workspaceId: 1,
-    email: "newdiver@example.com",
-    role: "editor",
-    status: "pending",
-    invitedBy: 1,
-    invitedAt: "2024-03-10T10:00:00Z",
-    expiresAt: "2024-03-17T10:00:00Z",
-    token: "inv_abc123"
-  }
-];
-
-// Mock data for audit logs
-let auditLogs = [
-  {
-    Id: 1,
-    workspaceId: 1,
-    userId: 1,
-    userName: "Sarah Thompson",
-    action: "member_invited",
-    details: "Invited newdiver@example.com as Editor",
-    timestamp: "2024-03-10T10:00:00Z",
-    ipAddress: "192.168.1.1"
-  },
-  {
-    Id: 2,
-    workspaceId: 1,
-    userId: 2,
-    userName: "Mike Rodriguez",
-    action: "permission_changed",
-    details: "Updated Emma Wilson's preset permissions from 'view' to 'apply'",
-    timestamp: "2024-03-09T14:30:00Z",
-    ipAddress: "192.168.1.2"
-  }
-];
-
-// Workspace management functions
+// Team Workspaces Service - Uses team_workspaces_c table
 export const getTeamWorkspaces = async () => {
-  await delay(300);
-  return [...teamWorkspaces];
+  try {
+    const apperClient = getApperClient();
+    const response = await apperClient.fetchRecords('team_workspaces_c', {
+      fields: [
+        {"field": {"Name": "name_c"}},
+        {"field": {"Name": "description_c"}},
+        {"field": {"Name": "operation_type_c"}},
+        {"field": {"Name": "team_size_c"}},
+        {"field": {"Name": "status_c"}},
+        {"field": {"Name": "member_count_c"}},
+        {"field": {"Name": "project_count_c"}},
+        {"field": {"Name": "icon_c"}},
+        {"field": {"Name": "branding_primary_color_c"}},
+        {"field": {"Name": "branding_secondary_color_c"}},
+        {"field": {"Name": "branding_logo_url_c"}},
+        {"field": {"Name": "settings_export_standards_c"}},
+        {"field": {"Name": "settings_quality_requirements_c"}},
+        {"field": {"Name": "settings_approval_workflow_c"}}
+      ],
+      orderBy: [{"fieldName": "CreatedOn", "sorttype": "DESC"}]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to fetch team workspaces:`, response);
+      toast.error(response.message);
+      return [];
+    }
+
+    return response.data?.map(workspace => ({
+      Id: workspace.Id,
+      name: workspace.name_c,
+      description: workspace.description_c,
+      operationType: workspace.operation_type_c,
+      teamSize: workspace.team_size_c,
+      status: workspace.status_c,
+      createdAt: workspace.CreatedOn,
+      memberCount: workspace.member_count_c || 0,
+      projectCount: workspace.project_count_c || 0,
+      role: "owner", // Would be determined by current user
+      icon: workspace.icon_c || "Building2",
+      branding: {
+        primaryColor: workspace.branding_primary_color_c,
+        secondaryColor: workspace.branding_secondary_color_c,
+        logoUrl: workspace.branding_logo_url_c
+      },
+      settings: {
+        exportStandards: workspace.settings_export_standards_c,
+        qualityRequirements: workspace.settings_quality_requirements_c,
+        approvalWorkflow: workspace.settings_approval_workflow_c
+      }
+    })) || [];
+  } catch (error) {
+    console.error("Error fetching team workspaces:", error?.response?.data?.message || error);
+    return [];
+  }
 };
 
 export const getTeamWorkspaceById = async (id) => {
-  await delay(250);
-  const workspace = teamWorkspaces.find(w => w.Id === parseInt(id));
-  if (!workspace) {
-    throw new Error(`Workspace with Id ${id} not found`);
+  try {
+    const apperClient = getApperClient();
+    const response = await apperClient.getRecordById('team_workspaces_c', parseInt(id), {
+      fields: [
+        {"field": {"Name": "name_c"}},
+        {"field": {"Name": "description_c"}},
+        {"field": {"Name": "operation_type_c"}},
+        {"field": {"Name": "team_size_c"}},
+        {"field": {"Name": "status_c"}},
+        {"field": {"Name": "member_count_c"}},
+        {"field": {"Name": "project_count_c"}},
+        {"field": {"Name": "icon_c"}}
+      ]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to fetch workspace with Id: ${id}:`, response);
+      toast.error(response.message);
+      return null;
+    }
+
+    const workspace = response.data;
+    return {
+      Id: workspace.Id,
+      name: workspace.name_c,
+      description: workspace.description_c,
+      operationType: workspace.operation_type_c,
+      teamSize: workspace.team_size_c,
+      status: workspace.status_c,
+      memberCount: workspace.member_count_c || 0,
+      projectCount: workspace.project_count_c || 0,
+      icon: workspace.icon_c || "Building2"
+    };
+  } catch (error) {
+    console.error(`Error fetching workspace ${id}:`, error?.response?.data?.message || error);
+    return null;
   }
-  return { ...workspace };
 };
 
 export const createTeamWorkspace = async (workspaceData) => {
-  await delay(500);
-  const highestId = Math.max(...teamWorkspaces.map(w => w.Id), 0);
-  const newWorkspace = {
-    Id: highestId + 1,
-    ...workspaceData,
-    status: "active",
-    createdAt: new Date().toISOString(),
-    memberCount: 1,
-    projectCount: 0,
-    role: "owner",
-    icon: workspaceData.operationType === "dive-center" ? "Building2" : 
-          workspaceData.operationType === "photography-business" ? "Camera" :
-          workspaceData.operationType === "research-team" ? "Microscope" : "Users"
-  };
-  teamWorkspaces.push(newWorkspace);
-  
-  // Create owner as first member
-  const ownerId = Math.max(...teamMembers.map(m => m.Id), 0) + 1;
-  teamMembers.push({
-    Id: ownerId,
-    name: "Workspace Owner",
-    email: workspaceData.adminEmail,
-    role: "owner",
-    workspaceId: newWorkspace.Id,
-    workspaceName: newWorkspace.name,
-    status: "online",
-    joinedAt: new Date().toISOString(),
-    lastActive: new Date().toISOString(),
-    permissions: {
-      projectAccess: "full",
-      imageAccess: "full",
-      presetAccess: "full",
-      exportAccess: "full",
-      adminAccess: "full"
-    },
-    profile: {
-      specialization: "",
-      certification: "",
-      avatar: null,
-      bio: ""
+  try {
+    const apperClient = getApperClient();
+    const icon = workspaceData.operationType === "dive-center" ? "Building2" : 
+                 workspaceData.operationType === "photography-business" ? "Camera" :
+                 workspaceData.operationType === "research-team" ? "Microscope" : "Users";
+
+    const params = {
+      records: [{
+        name_c: workspaceData.name,
+        description_c: workspaceData.description || '',
+        operation_type_c: workspaceData.operationType,
+        team_size_c: workspaceData.teamSize,
+        status_c: "active",
+        member_count_c: 1,
+        project_count_c: 0,
+        icon_c: icon,
+        branding_primary_color_c: workspaceData.branding?.primaryColor || "#0d9488",
+        branding_secondary_color_c: workspaceData.branding?.secondaryColor || "#f59e0b",
+        settings_export_standards_c: workspaceData.settings?.exportStandards || "high-quality",
+        settings_quality_requirements_c: workspaceData.settings?.qualityRequirements || "professional",
+        settings_approval_workflow_c: workspaceData.settings?.approvalWorkflow || true
+      }]
+    };
+
+    const response = await apperClient.createRecord('team_workspaces_c', params);
+
+    if (!response.success) {
+      console.error(`Failed to create workspace:`, response);
+      toast.error(response.message);
+      return null;
     }
-  });
-  
-  return { ...newWorkspace };
+
+    if (response.results) {
+      const successful = response.results.filter(r => r.success);
+      if (successful.length > 0) {
+        const newWorkspace = successful[0].data;
+        toast.success(`Workspace "${newWorkspace.name_c}" created successfully!`);
+        return {
+          Id: newWorkspace.Id,
+          name: newWorkspace.name_c,
+          description: newWorkspace.description_c,
+          operationType: newWorkspace.operation_type_c,
+          teamSize: newWorkspace.team_size_c,
+          status: newWorkspace.status_c,
+          createdAt: newWorkspace.CreatedOn,
+          memberCount: 1,
+          projectCount: 0,
+          role: "owner",
+          icon: icon
+        };
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error creating workspace:", error?.response?.data?.message || error);
+    return null;
+  }
 };
 
 export const updateTeamWorkspace = async (id, workspaceData) => {
-  await delay(400);
-  const index = teamWorkspaces.findIndex(w => w.Id === parseInt(id));
-  if (index === -1) {
-    throw new Error(`Workspace with Id ${id} not found`);
+  try {
+    const apperClient = getApperClient();
+    const params = {
+      records: [{
+        Id: parseInt(id),
+        name_c: workspaceData.name,
+        description_c: workspaceData.description,
+        operation_type_c: workspaceData.operationType,
+        team_size_c: workspaceData.teamSize,
+        status_c: workspaceData.status
+      }]
+    };
+
+    const response = await apperClient.updateRecord('team_workspaces_c', params);
+
+    if (!response.success) {
+      console.error(`Failed to update workspace:`, response);
+      toast.error(response.message);
+      return null;
+    }
+
+    return response.results?.[0]?.data || null;
+  } catch (error) {
+    console.error("Error updating workspace:", error?.response?.data?.message || error);
+    return null;
   }
-  teamWorkspaces[index] = {
-    ...teamWorkspaces[index],
-    ...workspaceData,
-    updatedAt: new Date().toISOString()
-  };
-  return { ...teamWorkspaces[index] };
 };
 
 export const deleteTeamWorkspace = async (id) => {
-  await delay(300);
-  const index = teamWorkspaces.findIndex(w => w.Id === parseInt(id));
-  if (index === -1) {
-    throw new Error(`Workspace with Id ${id} not found`);
+  try {
+    const apperClient = getApperClient();
+    const response = await apperClient.deleteRecord('team_workspaces_c', {
+      RecordIds: [parseInt(id)]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to delete workspace:`, response);
+      toast.error(response.message);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting workspace:", error?.response?.data?.message || error);
+    return false;
   }
-  
-  // Remove workspace and associated data
-  teamWorkspaces.splice(index, 1);
-  teamMembers = teamMembers.filter(m => m.workspaceId !== parseInt(id));
-  teamInvitations = teamInvitations.filter(i => i.workspaceId !== parseInt(id));
-  auditLogs = auditLogs.filter(l => l.workspaceId !== parseInt(id));
-  
-  return true;
 };
 
-// Team member management functions
+// Team Members Service - Uses team_members_c table
 export const getTeamMembers = async (filters = {}) => {
-  await delay(300);
-  let filteredMembers = [...teamMembers];
-  
-  if (filters.workspaceId) {
-    filteredMembers = filteredMembers.filter(m => m.workspaceId === filters.workspaceId);
+  try {
+    const apperClient = getApperClient();
+    let where = [];
+    
+    if (filters.workspaceId) {
+      where.push({
+        "FieldName": "workspace_id_c",
+        "Operator": "EqualTo",
+        "Values": [filters.workspaceId],
+        "Include": true
+      });
+    }
+
+    if (filters.role) {
+      where.push({
+        "FieldName": "role_c",
+        "Operator": "EqualTo",
+        "Values": [filters.role],
+        "Include": true
+      });
+    }
+
+    const params = {
+      fields: [
+        {"field": {"Name": "name_c"}},
+        {"field": {"Name": "email_c"}},
+        {"field": {"Name": "role_c"}},
+        {"field": {"Name": "workspace_id_c"}},
+        {"field": {"Name": "workspace_name_c"}},
+        {"field": {"Name": "status_c"}},
+        {"field": {"Name": "joined_at_c"}},
+        {"field": {"Name": "last_active_c"}},
+        {"field": {"Name": "permissions_project_access_c"}},
+        {"field": {"Name": "permissions_image_access_c"}},
+        {"field": {"Name": "permissions_preset_access_c"}},
+        {"field": {"Name": "permissions_export_access_c"}},
+        {"field": {"Name": "permissions_admin_access_c"}},
+        {"field": {"Name": "profile_specialization_c"}},
+        {"field": {"Name": "profile_certification_c"}},
+        {"field": {"Name": "profile_bio_c"}}
+      ],
+      where,
+      pagingInfo: filters.limit ? {"limit": filters.limit, "offset": 0} : undefined
+    };
+
+    const response = await apperClient.fetchRecords('team_members_c', params);
+
+    if (!response.success) {
+      console.error(`Failed to fetch team members:`, response);
+      return [];
+    }
+
+    return response.data?.map(member => ({
+      Id: member.Id,
+      name: member.name_c,
+      email: member.email_c,
+      role: member.role_c,
+      workspaceId: member.workspace_id_c,
+      workspaceName: member.workspace_name_c,
+      status: member.status_c,
+      joinedAt: member.joined_at_c,
+      lastActive: member.last_active_c,
+      permissions: {
+        projectAccess: member.permissions_project_access_c,
+        imageAccess: member.permissions_image_access_c,
+        presetAccess: member.permissions_preset_access_c,
+        exportAccess: member.permissions_export_access_c,
+        adminAccess: member.permissions_admin_access_c
+      },
+      profile: {
+        specialization: member.profile_specialization_c,
+        certification: member.profile_certification_c,
+        avatar: member.profile_avatar_c,
+        bio: member.profile_bio_c
+      }
+    })) || [];
+  } catch (error) {
+    console.error("Error fetching team members:", error?.response?.data?.message || error);
+    return [];
   }
-  
-  if (filters.role) {
-    filteredMembers = filteredMembers.filter(m => m.role === filters.role);
-  }
-  
-  if (filters.limit) {
-    filteredMembers = filteredMembers.slice(0, filters.limit);
-  }
-  
-  return filteredMembers;
 };
 
 export const getTeamMemberById = async (id) => {
-  await delay(200);
-  const member = teamMembers.find(m => m.Id === parseInt(id));
-  if (!member) {
-    throw new Error(`Team member with Id ${id} not found`);
+  try {
+    const apperClient = getApperClient();
+    const response = await apperClient.getRecordById('team_members_c', parseInt(id), {
+      fields: [
+        {"field": {"Name": "name_c"}},
+        {"field": {"Name": "email_c"}},
+        {"field": {"Name": "role_c"}},
+        {"field": {"Name": "workspace_id_c"}},
+        {"field": {"Name": "permissions_project_access_c"}},
+        {"field": {"Name": "permissions_image_access_c"}},
+        {"field": {"Name": "permissions_preset_access_c"}},
+        {"field": {"Name": "permissions_export_access_c"}},
+        {"field": {"Name": "permissions_admin_access_c"}}
+      ]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to fetch team member with Id: ${id}:`, response);
+      toast.error(response.message);
+      return null;
+    }
+
+    const member = response.data;
+    return {
+      Id: member.Id,
+      name: member.name_c,
+      email: member.email_c,
+      role: member.role_c,
+      workspaceId: member.workspace_id_c,
+      permissions: {
+        projectAccess: member.permissions_project_access_c,
+        imageAccess: member.permissions_image_access_c,
+        presetAccess: member.permissions_preset_access_c,
+        exportAccess: member.permissions_export_access_c,
+        adminAccess: member.permissions_admin_access_c
+      }
+    };
+  } catch (error) {
+    console.error(`Error fetching team member ${id}:`, error?.response?.data?.message || error);
+    return null;
   }
-  return { ...member };
 };
 
 export const updateTeamMember = async (id, memberData) => {
-  await delay(350);
-  const index = teamMembers.findIndex(m => m.Id === parseInt(id));
-  if (index === -1) {
-    throw new Error(`Team member with Id ${id} not found`);
+  try {
+    const apperClient = getApperClient();
+    const updateData = {
+      Id: parseInt(id)
+    };
+
+    // Map permissions if provided
+    if (memberData.permissions) {
+      updateData.permissions_project_access_c = memberData.permissions.projectAccess;
+      updateData.permissions_image_access_c = memberData.permissions.imageAccess;
+      updateData.permissions_preset_access_c = memberData.permissions.presetAccess;
+      updateData.permissions_export_access_c = memberData.permissions.exportAccess;
+      updateData.permissions_admin_access_c = memberData.permissions.adminAccess;
+    }
+
+    // Map other fields
+    if (memberData.name) updateData.name_c = memberData.name;
+    if (memberData.email) updateData.email_c = memberData.email;
+    if (memberData.role) updateData.role_c = memberData.role;
+
+    const params = {
+      records: [updateData]
+    };
+
+    const response = await apperClient.updateRecord('team_members_c', params);
+
+    if (!response.success) {
+      console.error(`Failed to update team member:`, response);
+      toast.error(response.message);
+      return null;
+    }
+
+    if (response.results) {
+      const successful = response.results.filter(r => r.success);
+      if (successful.length > 0) {
+        toast.success("Permissions updated successfully");
+        return successful[0].data;
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error updating team member:", error?.response?.data?.message || error);
+    return null;
   }
-  
-  teamMembers[index] = {
-    ...teamMembers[index],
-    ...memberData,
-    updatedAt: new Date().toISOString()
-  };
-  
-  // Log permission changes
-  if (memberData.permissions) {
-    const logId = Math.max(...auditLogs.map(l => l.Id), 0) + 1;
-    auditLogs.push({
-      Id: logId,
-      workspaceId: teamMembers[index].workspaceId,
-      userId: 1, // Current user - would be from context
-      userName: "Current User",
-      action: "permission_changed",
-      details: `Updated ${teamMembers[index].name}'s permissions`,
-      timestamp: new Date().toISOString(),
-      ipAddress: "127.0.0.1"
-    });
-  }
-  
-  return { ...teamMembers[index] };
 };
 
 export const removeTeamMember = async (id) => {
-  await delay(300);
-  const index = teamMembers.findIndex(m => m.Id === parseInt(id));
-  if (index === -1) {
-    throw new Error(`Team member with Id ${id} not found`);
+  try {
+    const apperClient = getApperClient();
+    const response = await apperClient.deleteRecord('team_members_c', {
+      RecordIds: [parseInt(id)]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to remove team member:`, response);
+      toast.error(response.message);
+      return false;
+    }
+
+    toast.success("Team member removed");
+    return true;
+  } catch (error) {
+    console.error("Error removing team member:", error?.response?.data?.message || error);
+    return false;
   }
-  
-  const member = teamMembers[index];
-  if (member.role === "owner") {
-    throw new Error("Cannot remove workspace owner");
-  }
-  
-  teamMembers.splice(index, 1);
-  
-  // Log member removal
-  const logId = Math.max(...auditLogs.map(l => l.Id), 0) + 1;
-  auditLogs.push({
-    Id: logId,
-    workspaceId: member.workspaceId,
-    userId: 1, // Current user
-    userName: "Current User",
-    action: "member_removed",
-    details: `Removed ${member.name} from workspace`,
-    timestamp: new Date().toISOString(),
-    ipAddress: "127.0.0.1"
-  });
-  
-  return true;
 };
 
-// Team invitation functions
+// Team Invitations Service - Uses team_invitations_c table
 export const inviteTeamMember = async (invitationData) => {
-  await delay(400);
-  const invitationId = Math.max(...teamInvitations.map(i => i.Id), 0) + 1;
-  const invitation = {
-    Id: invitationId,
-    ...invitationData,
-    status: "pending",
-    invitedAt: new Date().toISOString(),
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
-    token: `inv_${Math.random().toString(36).substring(2)}`
-  };
-  
-  teamInvitations.push(invitation);
-  
-  // Log invitation
-  const logId = Math.max(...auditLogs.map(l => l.Id), 0) + 1;
-  auditLogs.push({
-    Id: logId,
-    workspaceId: invitation.workspaceId,
-    userId: invitation.invitedBy,
-    userName: "Current User",
-    action: "member_invited",
-    details: `Invited ${invitation.email} as ${invitation.role}`,
-    timestamp: new Date().toISOString(),
-    ipAddress: "127.0.0.1"
-  });
-  
-  return { ...invitation };
+  try {
+    const apperClient = getApperClient();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+
+    const params = {
+      records: [{
+        workspace_id_c: invitationData.workspaceId,
+        email_c: invitationData.email,
+        role_c: invitationData.role,
+        status_c: "pending",
+        invited_by_c: invitationData.invitedBy || 1,
+        invited_at_c: new Date().toISOString(),
+        expires_at_c: expiresAt.toISOString(),
+        token_c: `inv_${Math.random().toString(36).substring(2)}`
+      }]
+    };
+
+    const response = await apperClient.createRecord('team_invitations_c', params);
+
+    if (!response.success) {
+      console.error(`Failed to create invitation:`, response);
+      toast.error(response.message);
+      return null;
+    }
+
+    if (response.results) {
+      const successful = response.results.filter(r => r.success);
+      if (successful.length > 0) {
+        const invitation = successful[0].data;
+        toast.success(`Invitation sent to ${invitationData.email}`);
+        return {
+          Id: invitation.Id,
+          workspaceId: invitation.workspace_id_c,
+          email: invitation.email_c,
+          role: invitation.role_c,
+          status: invitation.status_c,
+          invitedBy: invitation.invited_by_c,
+          invitedAt: invitation.invited_at_c,
+          expiresAt: invitation.expires_at_c,
+          token: invitation.token_c
+        };
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error creating invitation:", error?.response?.data?.message || error);
+    return null;
+  }
 };
 
 export const getTeamInvitations = async (workspaceId) => {
-  await delay(250);
-  return teamInvitations.filter(i => i.workspaceId === workspaceId);
+  try {
+    const apperClient = getApperClient();
+    const response = await apperClient.fetchRecords('team_invitations_c', {
+      fields: [
+        {"field": {"Name": "workspace_id_c"}},
+        {"field": {"Name": "email_c"}},
+        {"field": {"Name": "role_c"}},
+        {"field": {"Name": "status_c"}},
+        {"field": {"Name": "invited_at_c"}},
+        {"field": {"Name": "expires_at_c"}}
+      ],
+      where: [{
+        "FieldName": "workspace_id_c",
+        "Operator": "EqualTo",
+        "Values": [workspaceId],
+        "Include": true
+      }]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to fetch invitations:`, response);
+      return [];
+    }
+
+    return response.data?.map(invitation => ({
+      Id: invitation.Id,
+      workspaceId: invitation.workspace_id_c,
+      email: invitation.email_c,
+      role: invitation.role_c,
+      status: invitation.status_c,
+      invitedAt: invitation.invited_at_c,
+      expiresAt: invitation.expires_at_c
+    })) || [];
+  } catch (error) {
+    console.error("Error fetching invitations:", error?.response?.data?.message || error);
+    return [];
+  }
 };
 
 export const acceptTeamInvitation = async (token) => {
-  await delay(300);
-  const invitation = teamInvitations.find(i => i.token === token);
-  if (!invitation) {
-    throw new Error("Invalid invitation token");
-  }
-  
-  if (invitation.status !== "pending") {
-    throw new Error("Invitation already processed");
-  }
-  
-  if (new Date(invitation.expiresAt) < new Date()) {
-    throw new Error("Invitation has expired");
-  }
-  
-  // Create new team member
-  const memberId = Math.max(...teamMembers.map(m => m.Id), 0) + 1;
-  const workspace = teamWorkspaces.find(w => w.Id === invitation.workspaceId);
-  
-  const newMember = {
-    Id: memberId,
-    name: "New Member", // Would be filled from user registration
-    email: invitation.email,
-    role: invitation.role,
-    workspaceId: invitation.workspaceId,
-    workspaceName: workspace?.name || "",
-    status: "online",
-    joinedAt: new Date().toISOString(),
-    lastActive: new Date().toISOString(),
-    permissions: getDefaultPermissions(invitation.role),
-    profile: {
-      specialization: "",
-      certification: "",
-      avatar: null,
-      bio: ""
+  try {
+    const apperClient = getApperClient();
+    
+    // First, find the invitation by token
+    const invitationResponse = await apperClient.fetchRecords('team_invitations_c', {
+      fields: [
+        {"field": {"Name": "workspace_id_c"}},
+        {"field": {"Name": "email_c"}},
+        {"field": {"Name": "role_c"}},
+        {"field": {"Name": "status_c"}},
+        {"field": {"Name": "expires_at_c"}}
+      ],
+      where: [{
+        "FieldName": "token_c",
+        "Operator": "EqualTo",
+        "Values": [token],
+        "Include": true
+      }]
+    });
+
+    if (!invitationResponse.success || !invitationResponse.data?.length) {
+      throw new Error("Invalid invitation token");
     }
-  };
-  
-  teamMembers.push(newMember);
-  
-  // Update invitation status
-  invitation.status = "accepted";
-  invitation.acceptedAt = new Date().toISOString();
-  
-  // Update workspace member count
-  if (workspace) {
-    workspace.memberCount = teamMembers.filter(m => m.workspaceId === workspace.Id).length;
+
+    const invitation = invitationResponse.data[0];
+    
+    if (invitation.status_c !== "pending") {
+      throw new Error("Invitation already processed");
+    }
+
+    if (new Date(invitation.expires_at_c) < new Date()) {
+      throw new Error("Invitation has expired");
+    }
+
+    // Update invitation status to accepted
+    const updateResponse = await apperClient.updateRecord('team_invitations_c', {
+      records: [{
+        Id: invitation.Id,
+        status_c: "accepted"
+      }]
+    });
+
+    if (!updateResponse.success) {
+      throw new Error("Failed to update invitation status");
+    }
+
+    toast.success("Invitation accepted successfully");
+    return {
+      email: invitation.email_c,
+      role: invitation.role_c,
+      workspaceId: invitation.workspace_id_c
+    };
+  } catch (error) {
+    console.error("Error accepting invitation:", error?.response?.data?.message || error);
+    throw error;
   }
-  
-  return { ...newMember };
 };
 
-// Statistics and analytics functions
+// Statistics and analytics
 export const getTeamStats = async () => {
-  await delay(200);
-  return {
-    totalWorkspaces: teamWorkspaces.length,
-    totalMembers: teamMembers.length,
-    sharedProjects: teamWorkspaces.reduce((total, w) => total + (w.projectCount || 0), 0),
-    activePermissions: teamMembers.filter(m => m.permissions).length
-  };
+  try {
+    const [workspacesData, membersData] = await Promise.all([
+      getTeamWorkspaces(),
+      getTeamMembers()
+    ]);
+
+    return {
+      totalWorkspaces: workspacesData.length,
+      totalMembers: membersData.length,
+      sharedProjects: workspacesData.reduce((total, w) => total + (w.projectCount || 0), 0),
+      activePermissions: membersData.filter(m => m.permissions).length
+    };
+  } catch (error) {
+    console.error("Error fetching team stats:", error);
+    return {
+      totalWorkspaces: 0,
+      totalMembers: 0,
+      sharedProjects: 0,
+      activePermissions: 0
+    };
+  }
 };
 
-export const getWorkspaceAnalytics = async (workspaceId) => {
-  await delay(300);
-  const workspace = teamWorkspaces.find(w => w.Id === parseInt(workspaceId));
-  const members = teamMembers.filter(m => m.workspaceId === parseInt(workspaceId));
-  
-  return {
-    memberActivity: members.map(m => ({
-      memberId: m.Id,
-      name: m.name,
-      role: m.role,
-      lastActive: m.lastActive,
-      status: m.status
-    })),
-    roleDistribution: {
-      owner: members.filter(m => m.role === "owner").length,
-      admin: members.filter(m => m.role === "admin").length,
-      editor: members.filter(m => m.role === "editor").length,
-      reviewer: members.filter(m => m.role === "reviewer").length,
-      viewer: members.filter(m => m.role === "viewer").length
-    },
-    projectCount: workspace?.projectCount || 0,
-    storageUsage: Math.floor(Math.random() * 1000), // Mock data
-    monthlyActivity: Array.from({ length: 30 }, (_, i) => ({
-      date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      edits: Math.floor(Math.random() * 50),
-      uploads: Math.floor(Math.random() * 20),
-      exports: Math.floor(Math.random() * 30)
-    })).reverse()
-  };
-};
-
-// Audit log functions
+// Audit logs - Uses audit_logs_c table
 export const getAuditLogs = async (workspaceId, filters = {}) => {
-  await delay(250);
-  let filteredLogs = auditLogs.filter(l => l.workspaceId === workspaceId);
-  
-  if (filters.action) {
-    filteredLogs = filteredLogs.filter(l => l.action === filters.action);
-  }
-  
-  if (filters.userId) {
-    filteredLogs = filteredLogs.filter(l => l.userId === filters.userId);
-  }
-  
-  if (filters.limit) {
-    filteredLogs = filteredLogs.slice(0, filters.limit);
-  }
-  
-  return filteredLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-};
+  try {
+    const apperClient = getApperClient();
+    let where = [{
+      "FieldName": "workspace_id_c",
+      "Operator": "EqualTo",
+      "Values": [workspaceId],
+      "Include": true
+    }];
 
-// Helper function for default permissions
-const getDefaultPermissions = (role) => {
-  const permissionSets = {
-    owner: {
-      projectAccess: "full",
-      imageAccess: "full",
-      presetAccess: "full",
-      exportAccess: "full",
-      adminAccess: "full"
-    },
-    admin: {
-      projectAccess: "full",
-      imageAccess: "full",
-      presetAccess: "modify",
-      exportAccess: "full",
-      adminAccess: "partial"
-    },
-    editor: {
-      projectAccess: "assigned",
-      imageAccess: "assigned",
-      presetAccess: "apply",
-      exportAccess: "standard",
-      adminAccess: "none"
-    },
-    reviewer: {
-      projectAccess: "view",
-      imageAccess: "view",
-      presetAccess: "view",
-      exportAccess: "none",
-      adminAccess: "none"
-    },
-    viewer: {
-      projectAccess: "limited",
-      imageAccess: "limited",
-      presetAccess: "view",
-      exportAccess: "none",
-      adminAccess: "none"
+    if (filters.action) {
+      where.push({
+        "FieldName": "action_c",
+        "Operator": "EqualTo",
+        "Values": [filters.action],
+        "Include": true
+      });
     }
-  };
-  
-  return permissionSets[role] || permissionSets.viewer;
+
+    if (filters.userId) {
+      where.push({
+        "FieldName": "user_id_c",
+        "Operator": "EqualTo",
+        "Values": [filters.userId],
+        "Include": true
+      });
+    }
+
+    const params = {
+      fields: [
+        {"field": {"Name": "workspace_id_c"}},
+        {"field": {"Name": "user_id_c"}},
+        {"field": {"Name": "user_name_c"}},
+        {"field": {"Name": "action_c"}},
+        {"field": {"Name": "details_c"}},
+        {"field": {"Name": "timestamp_c"}},
+        {"field": {"Name": "ip_address_c"}}
+      ],
+      where,
+      orderBy: [{"fieldName": "timestamp_c", "sorttype": "DESC"}],
+      pagingInfo: filters.limit ? {"limit": filters.limit, "offset": 0} : undefined
+    };
+
+    const response = await apperClient.fetchRecords('audit_logs_c', params);
+
+    if (!response.success) {
+      console.error(`Failed to fetch audit logs:`, response);
+      return [];
+    }
+
+    return response.data?.map(log => ({
+      Id: log.Id,
+      workspaceId: log.workspace_id_c,
+      userId: log.user_id_c,
+      userName: log.user_name_c,
+      action: log.action_c,
+      details: log.details_c,
+      timestamp: log.timestamp_c,
+      ipAddress: log.ip_address_c
+    })) || [];
+  } catch (error) {
+    console.error("Error fetching audit logs:", error?.response?.data?.message || error);
+    return [];
+  }
 };

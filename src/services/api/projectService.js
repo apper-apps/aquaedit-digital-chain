@@ -1,414 +1,453 @@
-import projectsData from "@/services/mockData/projects.json";
-import imagesData from "@/services/mockData/images.json";
-import presetsData from "@/services/mockData/presets.json";
+import { getApperClient } from '@/services/apperClient';
+import { toast } from 'react-toastify';
 
-// Mock API delay with context-aware throttling
-export const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Memory-efficient data stores with chunking support
-let projects = [...projectsData];
-let images = [...imagesData];
-let presets = [...presetsData];
-
-// Pagination configuration
-const DEFAULT_PAGE_SIZE = 20;
-const MAX_BATCH_SIZE = 10;
-
-// Memory cleanup utility
-const cleanupLargeObjects = (data) => {
-  return data.map(item => ({
-    ...item,
-    // Remove large fields for list operations
-    ...(item.adjustments && Object.keys(item.adjustments).length > 10 ? 
-      { adjustments: { summary: 'Full adjustments available on detail view' } } : {}),
-    ...(item.editHistory && item.editHistory.length > 5 ? 
-      { editHistory: item.editHistory.slice(-3) } : {})
-  }));
-};
-
-// Enhanced project service methods with pagination
-export const getProjects = async (page = 1, pageSize = DEFAULT_PAGE_SIZE, filters = {}) => {
-  await delay(200); // Reduced delay for better UX
-  
+// Projects Service - Uses projects_c table
+export const getProjects = async () => {
   try {
-    let filteredProjects = [...projects];
-    
-    // Apply filters if provided
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      filteredProjects = filteredProjects.filter(p => 
-        p.name.toLowerCase().includes(searchTerm)
-      );
+    const apperClient = getApperClient();
+    const response = await apperClient.fetchRecords('projects_c', {
+      fields: [
+        {"field": {"Name": "name_c"}},
+        {"field": {"Name": "image_id_c"}},
+        {"field": {"Name": "created_date_c"}},
+        {"field": {"Name": "last_modified_c"}},
+        {"field": {"Name": "adjustments_c"}}
+      ],
+      orderBy: [{"fieldName": "last_modified_c", "sorttype": "DESC"}]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to fetch projects:`, response);
+      toast.error(response.message);
+      return [];
     }
-    
-    if (filters.imageId) {
-      filteredProjects = filteredProjects.filter(p => p.imageId === filters.imageId);
-    }
-    
-    // Calculate pagination
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const totalItems = filteredProjects.length;
-    const totalPages = Math.ceil(totalItems / pageSize);
-    
-    // Return paginated results with metadata
-    const paginatedProjects = cleanupLargeObjects(
-      filteredProjects.slice(startIndex, endIndex)
-    );
-    
-    return {
-      data: paginatedProjects,
-      pagination: {
-        currentPage: page,
-        pageSize,
-        totalItems,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
-      }
-    };
+
+    return response.data || [];
   } catch (error) {
-    throw new Error(`Failed to fetch projects: ${error.message}`);
+    console.error("Error fetching projects:", error?.response?.data?.message || error);
+    return [];
   }
 };
 
 export const getRecentProjects = async (limit = 5) => {
-  await delay(150);
   try {
-    const recent = projects
-      .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified))
-      .slice(0, Math.min(limit, 10)); // Cap at 10 for memory efficiency
-    
-    return cleanupLargeObjects(recent);
+    const apperClient = getApperClient();
+    const response = await apperClient.fetchRecords('projects_c', {
+      fields: [
+        {"field": {"Name": "name_c"}},
+        {"field": {"Name": "image_id_c"}},
+        {"field": {"Name": "last_modified_c"}}
+      ],
+      orderBy: [{"fieldName": "last_modified_c", "sorttype": "DESC"}],
+      pagingInfo: {"limit": limit, "offset": 0}
+    });
+
+    if (!response.success) {
+      console.error(`Failed to fetch recent projects:`, response);
+      return [];
+    }
+
+    return response.data || [];
   } catch (error) {
-    throw new Error(`Failed to fetch recent projects: ${error.message}`);
+    console.error("Error fetching recent projects:", error?.response?.data?.message || error);
+    return [];
   }
 };
 
 export const getProjectById = async (id) => {
-  await delay(100); // Faster for individual items
   try {
-    const project = projects.find(p => p.Id === parseInt(id));
-    if (!project) {
-      throw new Error(`Project with Id ${id} not found`);
+    const apperClient = getApperClient();
+    const response = await apperClient.getRecordById('projects_c', parseInt(id), {
+      fields: [
+        {"field": {"Name": "name_c"}},
+        {"field": {"Name": "image_id_c"}},
+        {"field": {"Name": "created_date_c"}},
+        {"field": {"Name": "last_modified_c"}},
+        {"field": {"Name": "adjustments_c"}}
+      ]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to fetch project with Id: ${id}:`, response);
+      toast.error(response.message);
+      return null;
     }
-    return { ...project }; // Full object for detail view
+
+    return response.data;
   } catch (error) {
-    throw new Error(`Failed to fetch project ${id}: ${error.message}`);
+    console.error(`Error fetching project ${id}:`, error?.response?.data?.message || error);
+    return null;
   }
 };
 
 export const createProject = async (projectData) => {
-  await delay(400);
-  const highestId = Math.max(...projects.map(p => p.Id), 0);
-  const newProject = {
-    Id: highestId + 1,
-    ...projectData,
-    createdDate: new Date().toISOString(),
-    lastModified: new Date().toISOString()
-  };
-  projects.push(newProject);
-  return { ...newProject };
-};
+  try {
+    const apperClient = getApperClient();
+    const params = {
+      records: [{
+        name_c: projectData.name,
+        image_id_c: projectData.imageId,
+        created_date_c: new Date().toISOString(),
+        last_modified_c: new Date().toISOString(),
+        adjustments_c: JSON.stringify(projectData.adjustments || {})
+      }]
+    };
 
-export const updateProject = async (id, projectData) => {
-  await delay(350);
-  const index = projects.findIndex(p => p.Id === parseInt(id));
-  if (index === -1) {
-    throw new Error(`Project with Id ${id} not found`);
-  }
-  projects[index] = {
-    ...projects[index],
-    ...projectData,
-    lastModified: new Date().toISOString()
-  };
-  return { ...projects[index] };
-};
+    const response = await apperClient.createRecord('projects_c', params);
 
-export const deleteProject = async (id) => {
-  await delay(300);
-  const index = projects.findIndex(p => p.Id === parseInt(id));
-  if (index === -1) {
-    throw new Error(`Project with Id ${id} not found`);
+    if (!response.success) {
+      console.error(`Failed to create project:`, response);
+      toast.error(response.message);
+      return null;
+    }
+
+    if (response.results) {
+      const successful = response.results.filter(r => r.success);
+      const failed = response.results.filter(r => !r.success);
+      
+      if (failed.length > 0) {
+        console.error(`Failed to create ${failed.length} projects:`, failed);
+        failed.forEach(record => {
+          if (record.message) toast.error(record.message);
+        });
+      }
+      return successful.length > 0 ? successful[0].data : null;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error creating project:", error?.response?.data?.message || error);
+    return null;
   }
-  projects.splice(index, 1);
-  return true;
 };
 
 export const saveProject = async (projectData) => {
-  await delay(250);
-  
-  // Check if project already exists
-  const existingProject = projects.find(p => 
-    p.imageId === projectData.imageId && p.name === projectData.name
-  );
-  
-  if (existingProject) {
-    return updateProject(existingProject.Id, projectData);
-  } else {
-    return createProject(projectData);
-  }
+  return await createProject(projectData);
 };
 
-// Enhanced image service methods with chunking
-export const getImages = async (page = 1, pageSize = DEFAULT_PAGE_SIZE, filters = {}) => {
-  await delay(200);
-  
+export const updateProject = async (id, projectData) => {
   try {
-    let filteredImages = [...images];
-    
-    // Apply filters
-    if (filters.format) {
-      filteredImages = filteredImages.filter(img => img.format === filters.format);
-    }
-    
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      filteredImages = filteredImages.filter(img => 
-        img.filename.toLowerCase().includes(searchTerm)
-      );
-    }
-    
-    // Pagination
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const totalItems = filteredImages.length;
-    const totalPages = Math.ceil(totalItems / pageSize);
-    
-    // Clean up metadata for list view
-    const cleanImages = filteredImages.slice(startIndex, endIndex).map(img => ({
-      ...img,
-      metadata: {
-        size: img.metadata.size,
-        camera: img.metadata.camera,
-        // Remove extensive metadata for list view
-        ...(Object.keys(img.metadata).length > 5 ? { hasMore: true } : img.metadata)
-      }
-    }));
-    
-    return {
-      data: cleanImages,
-      pagination: {
-        currentPage: page,
-        pageSize,
-        totalItems,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
-      }
+    const apperClient = getApperClient();
+    const params = {
+      records: [{
+        Id: parseInt(id),
+        name_c: projectData.name,
+        image_id_c: projectData.imageId,
+        last_modified_c: new Date().toISOString(),
+        adjustments_c: JSON.stringify(projectData.adjustments || {})
+      }]
     };
-  } catch (error) {
-    throw new Error(`Failed to fetch images: ${error.message}`);
-  }
-};
 
-export const getImageById = async (id) => {
-  await delay(100);
-  try {
-    const image = images.find(img => img.Id === parseInt(id));
-    if (!image) {
-      throw new Error(`Image with Id ${id} not found`);
-    }
-    return { ...image }; // Full metadata for detail view
-  } catch (error) {
-    throw new Error(`Failed to fetch image ${id}: ${error.message}`);
-  }
-};
+    const response = await apperClient.updateRecord('projects_c', params);
 
-export const uploadImage = async (imageData) => {
-  await delay(500);
-  const highestId = Math.max(...images.map(img => img.Id), 0);
-  const newImage = {
-    Id: highestId + 1,
-    ...imageData,
-    uploadDate: new Date().toISOString(),
-    editHistory: []
-  };
-  images.push(newImage);
-  return { ...newImage };
-};
+    if (!response.success) {
+      console.error(`Failed to update project:`, response);
+      toast.error(response.message);
+      return null;
+    }
 
-// Enhanced preset service methods with efficient loading
-export const getPresets = async (page = 1, pageSize = DEFAULT_PAGE_SIZE, filters = {}) => {
-  await delay(150);
-  
-  try {
-    let filteredPresets = [...presets];
-    
-    // Apply category filter
-    if (filters.category && filters.category !== 'all') {
-      filteredPresets = filteredPresets.filter(p => p.category === filters.category);
-    }
-    
-    // Apply search filter
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      filteredPresets = filteredPresets.filter(p => 
-        p.name.toLowerCase().includes(searchTerm) ||
-        p.description.toLowerCase().includes(searchTerm)
-      );
-    }
-    
-    // Pagination
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const totalItems = filteredPresets.length;
-    const totalPages = Math.ceil(totalItems / pageSize);
-    
-    // Optimize for list view - reduce adjustment data
-    const optimizedPresets = filteredPresets.slice(startIndex, endIndex).map(preset => ({
-      ...preset,
-      adjustments: preset.adjustments ? {
-        // Keep only key adjustments for preview
-        exposure: preset.adjustments.exposure,
-        contrast: preset.adjustments.contrast,
-        saturation: preset.adjustments.saturation,
-        adjustmentCount: Object.keys(preset.adjustments).length
-      } : {}
-    }));
-    
-    return {
-      data: optimizedPresets,
-      pagination: {
-        currentPage: page,
-        pageSize,
-        totalItems,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
+    if (response.results) {
+      const successful = response.results.filter(r => r.success);
+      const failed = response.results.filter(r => !r.success);
+      
+      if (failed.length > 0) {
+        console.error(`Failed to update ${failed.length} projects:`, failed);
+        failed.forEach(record => {
+          if (record.message) toast.error(record.message);
+        });
       }
-    };
+      return successful.length > 0 ? successful[0].data : null;
+    }
+
+    return null;
   } catch (error) {
-    throw new Error(`Failed to fetch presets: ${error.message}`);
+    console.error("Error updating project:", error?.response?.data?.message || error);
+    return null;
+  }
+};
+
+export const deleteProject = async (id) => {
+  try {
+    const apperClient = getApperClient();
+    const response = await apperClient.deleteRecord('projects_c', {
+      RecordIds: [parseInt(id)]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to delete project:`, response);
+      toast.error(response.message);
+      return false;
+    }
+
+    if (response.results) {
+      const successful = response.results.filter(r => r.success);
+      const failed = response.results.filter(r => !r.success);
+      
+      if (failed.length > 0) {
+        console.error(`Failed to delete ${failed.length} projects:`, failed);
+        failed.forEach(record => {
+          if (record.message) toast.error(record.message);
+        });
+      }
+      return successful.length > 0;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Error deleting project:", error?.response?.data?.message || error);
+    return false;
+  }
+};
+
+// Presets Service - Uses presets_c table
+export const getPresets = async () => {
+  try {
+    const apperClient = getApperClient();
+    const response = await apperClient.fetchRecords('presets_c', {
+      fields: [
+        {"field": {"Name": "name_c"}},
+        {"field": {"Name": "description_c"}},
+        {"field": {"Name": "category_c"}},
+        {"field": {"Name": "thumbnail_c"}},
+        {"field": {"Name": "adjustments_c"}},
+        {"field": {"Name": "created_at_c"}},
+        {"field": {"Name": "usage_count_c"}},
+        {"field": {"Name": "tags_c"}},
+        {"field": {"Name": "process_version_c"}},
+        {"field": {"Name": "has_local_adjustments_c"}}
+      ],
+      orderBy: [{"fieldName": "created_at_c", "sorttype": "DESC"}]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to fetch presets:`, response);
+      toast.error(response.message);
+      return [];
+    }
+
+    return response.data?.map(preset => ({
+      Id: preset.Id,
+      name: preset.name_c,
+      description: preset.description_c,
+      category: preset.category_c,
+      thumbnail: preset.thumbnail_c,
+      adjustments: preset.adjustments_c ? JSON.parse(preset.adjustments_c) : {},
+      createdAt: preset.created_at_c,
+      usageCount: preset.usage_count_c || 0,
+      tags: preset.tags_c ? preset.tags_c.split(',') : [],
+      processVersion: preset.process_version_c,
+      hasLocalAdjustments: preset.has_local_adjustments_c
+    })) || [];
+  } catch (error) {
+    console.error("Error fetching presets:", error?.response?.data?.message || error);
+    return [];
   }
 };
 
 export const getPresetById = async (id) => {
-  await delay(100);
   try {
-    const preset = presets.find(p => p.Id === parseInt(id));
-    if (!preset) {
-      throw new Error(`Preset with Id ${id} not found`);
+    const apperClient = getApperClient();
+    const response = await apperClient.getRecordById('presets_c', parseInt(id), {
+      fields: [
+        {"field": {"Name": "name_c"}},
+        {"field": {"Name": "description_c"}},
+        {"field": {"Name": "category_c"}},
+        {"field": {"Name": "adjustments_c"}},
+        {"field": {"Name": "tags_c"}}
+      ]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to fetch preset with Id: ${id}:`, response);
+      toast.error(response.message);
+      return null;
     }
-    return { ...preset }; // Full adjustments for detail/application
+
+    const preset = response.data;
+    return {
+      Id: preset.Id,
+      name: preset.name_c,
+      description: preset.description_c,
+      category: preset.category_c,
+      adjustments: preset.adjustments_c ? JSON.parse(preset.adjustments_c) : {},
+      tags: preset.tags_c ? preset.tags_c.split(',') : []
+    };
   } catch (error) {
-    throw new Error(`Failed to fetch preset ${id}: ${error.message}`);
+    console.error(`Error fetching preset ${id}:`, error?.response?.data?.message || error);
+    return null;
   }
 };
 
 export const createPreset = async (presetData) => {
-  await delay(300);
-  const highestId = Math.max(...presets.map(p => p.Id), 0);
-  const newPreset = {
-    Id: highestId + 1,
-    category: "custom",
-    thumbnail: "custom_preset.jpg",
-    ...presetData
-  };
-  presets.push(newPreset);
-  return { ...newPreset };
+  try {
+    const apperClient = getApperClient();
+    const params = {
+      records: [{
+        name_c: presetData.name,
+        description_c: presetData.description || '',
+        category_c: presetData.category || 'custom',
+        thumbnail_c: presetData.thumbnail || '',
+        adjustments_c: JSON.stringify(presetData.adjustments || {}),
+        created_at_c: new Date().toISOString(),
+        usage_count_c: 0,
+        tags_c: Array.isArray(presetData.tags) ? presetData.tags.join(',') : '',
+        process_version_c: '1.0',
+        has_local_adjustments_c: false
+      }]
+    };
+
+    const response = await apperClient.createRecord('presets_c', params);
+
+    if (!response.success) {
+      console.error(`Failed to create preset:`, response);
+      toast.error(response.message);
+      return null;
+    }
+
+    if (response.results) {
+      const successful = response.results.filter(r => r.success);
+      if (successful.length > 0) {
+        toast.success("Preset created successfully");
+        return successful[0].data;
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error creating preset:", error?.response?.data?.message || error);
+    return null;
+  }
 };
 
 export const updatePreset = async (id, presetData) => {
-  await delay(250);
-  const index = presets.findIndex(p => p.Id === id);
-  if (index === -1) {
-    throw new Error("Preset not found");
-  }
-  presets[index] = { ...presets[index], ...presetData };
-  return { ...presets[index] };
-};
-
-// Context-aware preset import with batching
-export const importPresets = async (importedPresets, options = {}) => {
-  const { batchSize = MAX_BATCH_SIZE, onProgress } = options;
-  
-  if (importedPresets.length === 0) {
-    throw new Error("No presets to import");
-  }
-  
-  if (importedPresets.length > 100) {
-    throw new Error("Too many presets to import at once. Maximum 100 presets allowed.");
-  }
-  
-  const savedPresets = [];
-  const batches = [];
-  
-  // Split into manageable batches
-  for (let i = 0; i < importedPresets.length; i += batchSize) {
-    batches.push(importedPresets.slice(i, i + batchSize));
-  }
-  
   try {
-    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
-      await delay(300); // Prevent context overload
-      
-      const batch = batches[batchIndex];
-      const currentHighestId = Math.max(...presets.map(p => p.Id), 0);
-      
-      for (let i = 0; i < batch.length; i++) {
-        const preset = batch[i];
-        const newPreset = {
-          Id: currentHighestId + savedPresets.length + 1,
-          category: preset.category || "imported",
-          source: preset.source || "import",
-          thumbnail: preset.source === "dng" ? "dng_preset.jpg" : "imported_preset.jpg",
-          createdAt: new Date().toISOString(),
-          usageCount: 0,
-          tags: preset.tags || [],
-          processVersion: preset.metadata?.processVersion || "1.0",
-          hasLocalAdjustments: !!(preset.localAdjustments?.length),
-          ...preset
-        };
-        
-        presets.push(newPreset);
-        savedPresets.push({ ...newPreset });
-      }
-      
-      // Report progress
-      if (onProgress) {
-        onProgress({
-          completed: savedPresets.length,
-          total: importedPresets.length,
-          currentBatch: batchIndex + 1,
-          totalBatches: batches.length
-        });
-      }
-    }
-    
-    return savedPresets;
-  } catch (error) {
-    throw new Error(`Import failed: ${error.message}`);
-  }
-};
+    const apperClient = getApperClient();
+    const params = {
+      records: [{
+        Id: parseInt(id),
+        name_c: presetData.name,
+        description_c: presetData.description,
+        category_c: presetData.category,
+        adjustments_c: JSON.stringify(presetData.adjustments || {}),
+        tags_c: Array.isArray(presetData.tags) ? presetData.tags.join(',') : presetData.tags || ''
+      }]
+    };
 
-export const exportPresets = async (presetsToExport) => {
-  await delay(300);
-  return {
-    version: "1.0.0",
-    exportedAt: new Date().toISOString(),
-    totalPresets: presetsToExport.length,
-    appVersion: "1.0.0",
-    compatibility: {
-      lightroomSupport: true,
-      processVersions: ["4.0", "5.0"],
-      localAdjustments: true
-    },
-    presets: presetsToExport.map(preset => ({
-      ...preset,
-      exportedFrom: "AquaEdit Pro",
-      xmpCompatible: !!(preset.metadata?.processVersion),
-      preserveLocalAdjustments: !!(preset.localAdjustments?.length)
-    }))
-  };
+    const response = await apperClient.updateRecord('presets_c', params);
+
+    if (!response.success) {
+      console.error(`Failed to update preset:`, response);
+      toast.error(response.message);
+      return null;
+    }
+
+    return response.results?.[0]?.data || null;
+  } catch (error) {
+    console.error("Error updating preset:", error?.response?.data?.message || error);
+    return null;
+  }
 };
 
 export const deletePreset = async (id) => {
-  await delay(250);
-const index = presets.findIndex(p => p.Id === parseInt(id));
-  if (index === -1) {
-    throw new Error(`Preset with Id ${id} not found`);
+  try {
+    const apperClient = getApperClient();
+    const response = await apperClient.deleteRecord('presets_c', {
+      RecordIds: [parseInt(id)]
+    });
+
+    if (!response.success) {
+      console.error(`Failed to delete preset:`, response);
+      toast.error(response.message);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting preset:", error?.response?.data?.message || error);
+    return false;
   }
-  presets.splice(index, 1);
-  return true;
 };
+
+export const importPresets = async (presets) => {
+  try {
+    if (!Array.isArray(presets) || presets.length === 0) return [];
+    
+    const records = presets.map(preset => ({
+      name_c: preset.name,
+      description_c: preset.description || '',
+      category_c: preset.category || 'imported',
+      adjustments_c: JSON.stringify(preset.adjustments || {}),
+      created_at_c: new Date().toISOString(),
+      tags_c: Array.isArray(preset.tags) ? preset.tags.join(',') : '',
+      process_version_c: '1.0'
+    }));
+
+    const apperClient = getApperClient();
+    const response = await apperClient.createRecord('presets_c', { records });
+
+    if (!response.success) {
+      console.error(`Failed to import presets:`, response);
+      toast.error(response.message);
+      return [];
+    }
+
+    const successful = response.results?.filter(r => r.success) || [];
+    toast.success(`Successfully imported ${successful.length} presets`);
+    return successful.map(r => r.data);
+  } catch (error) {
+    console.error("Error importing presets:", error?.response?.data?.message || error);
+    return [];
+  }
+};
+
+export const exportPresets = async (presets) => {
+  try {
+    const exportData = presets.map(preset => ({
+      name: preset.name,
+      description: preset.description,
+      category: preset.category,
+      adjustments: preset.adjustments,
+      tags: preset.tags
+    }));
+
+    return {
+      version: "1.0",
+      exported: new Date().toISOString(),
+      presets: exportData
+    };
+  } catch (error) {
+    console.error("Error exporting presets:", error);
+    throw error;
+  }
+};
+
+// Images would be handled by a separate service
+export const uploadImage = async (imageFile, metadata = {}) => {
+  // This would integrate with file upload service
+  // For now, return a mock response
+  return {
+    Id: Date.now(),
+    filename: imageFile.name,
+    url: URL.createObjectURL(imageFile),
+    format: imageFile.type,
+    uploadDate: new Date(),
+    metadata: {
+      size: imageFile.size,
+      type: imageFile.type,
+      ...metadata
+    }
+  };
+};
+
+export const getImages = async () => {
+  // Mock implementation - in real app would fetch from images_c table
+  return [];
+};
+
+export const getImageById = async (id) => {
+  // Mock implementation - in real app would fetch from images_c table
+  return null;
+};
+
+// Utility function for delays (can be removed in production)
+export const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
