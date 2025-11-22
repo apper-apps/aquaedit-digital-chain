@@ -35,7 +35,7 @@ return (
             </div>
             <div>
               <h1 className="text-lg font-bold bg-gradient-to-r from-white to-ocean-teal bg-clip-text text-transparent">
-                AquaEdit Pro
+DepthRoom Studio
               </h1>
             </div>
           </Link>

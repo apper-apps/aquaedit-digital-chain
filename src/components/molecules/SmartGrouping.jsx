@@ -14,7 +14,7 @@ const ImageAnalysis = ({ image, analysis }) => {
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">No Image Loaded</h3>
           <p className="text-gray-400">
-            Upload an underwater photo to see AI-powered condition analysis.
+Upload a depth photo to see AI-powered condition analysis.
           </p>
         </CardContent>
       </Card>
@@ -63,13 +63,13 @@ const ImageAnalysis = ({ image, analysis }) => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <ApperIcon name="Brain" className="w-5 h-5 text-ocean-teal" />
-            <span>AI Underwater Analysis</span>
+<span>AI Depth Analysis</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h4 className="font-medium text-white">Underwater Conditions</h4>
+<h4 className="font-medium text-white">Depth Conditions</h4>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Water Clarity:</span>
@@ -151,9 +151,9 @@ const ImageAnalysis = ({ image, analysis }) => {
             <ApperIcon name="Lightbulb" className="w-5 h-5 text-ocean-teal mt-0.5" />
             <div className="space-y-2">
               <h4 className="font-medium text-white">Smart Editing Tips</h4>
-              <ul className="text-sm text-gray-400 space-y-1">
+<ul className="text-sm text-gray-400 space-y-1">
                 <li>• Apply these recommendations as starting points for your adjustments</li>
-                <li>• Use the underwater-specific presets for faster results</li>
+                <li>• Use the depth-specific presets for faster results</li>
                 <li>• Fine-tune based on your artistic vision and style preferences</li>
                 <li>• Consider the viewing conditions where your image will be displayed</li>
               </ul>

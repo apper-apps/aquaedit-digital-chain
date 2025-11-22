@@ -94,7 +94,7 @@ return (
         </div>
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-white to-ocean-teal bg-clip-text text-transparent">
-            Welcome to AquaEdit Pro
+Welcome to DepthRoom Studio
           </h1>
           <p className="text-gray-400 text-lg mt-2">
             Transform your underwater photography with professional editing tools and team collaboration

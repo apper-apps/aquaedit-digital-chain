@@ -27,11 +27,11 @@ const Footer = ({ className }) => {
               <div className="w-8 h-8 bg-ocean-gradient rounded-lg flex items-center justify-center">
                 <ApperIcon name="Waves" className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-white">AquaEdit Pro</h3>
+<h3 className="text-lg font-semibold text-white">DepthRoom Studio</h3>
             </div>
-            <p className="text-gray-400 text-sm">
-              Professional underwater photo editing tools designed specifically for diving photographers.
-              Transform your underwater shots into stunning marine masterpieces.
+<p className="text-gray-400 text-sm">
+              Professional depth-focused photo editing studio designed specifically for underwater photographers.
+              Transform your depth explorations into stunning aquatic masterpieces.
             </p>
           </div>
 
@@ -71,7 +71,7 @@ const Footer = ({ className }) => {
                 Made with ❤️ for the diving community
               </p>
               <p className="text-xs text-gray-500">
-                © 2024 AquaEdit Pro. All rights reserved.
+© 2024 DepthRoom Studio. All rights reserved.
               </p>
             </div>
           </div>

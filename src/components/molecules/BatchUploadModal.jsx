@@ -113,7 +113,7 @@ const SingleUploadModal = ({ isOpen, onClose, onUpload }) => {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
               <ApperIcon name="Upload" className="w-5 h-5 text-ocean-teal" />
-              <span>Upload Underwater Photo</span>
+<span>Upload Depth Photo</span>
             </CardTitle>
             <Button variant="ghost" size="small" onClick={onClose}>
               <ApperIcon name="X" className="w-4 h-4" />
@@ -147,7 +147,7 @@ const SingleUploadModal = ({ isOpen, onClose, onUpload }) => {
               
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-white">
-                  {isDragActive ? "Drop your photo here!" : "Upload Your Underwater Photo"}
+{isDragActive ? "Drop your photo here!" : "Upload Your Depth Photo"}
                 </h3>
                 <p className="text-gray-400">
                   Supports JPEG, PNG, and RAW formats (DNG, CR2, NEF, ARW)
@@ -175,10 +175,10 @@ const SingleUploadModal = ({ isOpen, onClose, onUpload }) => {
                 </Button>
                 
                 <div className="text-xs text-gray-500">
-                  <p className="mb-2">Professional features for underwater photography:</p>
+<p className="mb-2">Professional features for depth photography:</p>
                   <div className="grid grid-cols-2 gap-2 text-left max-w-md mx-auto">
                     <div>• Advanced color correction</div>
-                    <div>• Underwater preset library</div>
+                    <div>• Depth-focused preset library</div>
                     <div>• Professional masking tools</div>
                     <div>• RAW format support</div>
                   </div>
@@ -254,12 +254,12 @@ const SingleUploadModal = ({ isOpen, onClose, onUpload }) => {
               <div className="flex items-start space-x-3">
                 <ApperIcon name="Zap" className="w-5 h-5 text-ocean-teal mt-0.5" />
                 <div className="space-y-2">
-                  <h4 className="font-medium text-white">Optimized for Performance</h4>
+<h4 className="font-medium text-white">Optimized for Performance</h4>
                   <ul className="text-sm text-gray-400 space-y-1">
                     <li>• Single image processing for smooth editing experience</li>
                     <li>• Full RAW support with professional-grade adjustments</li>
                     <li>• Real-time preview with hardware acceleration</li>
-                    <li>• Underwater-specific color correction tools</li>
+                    <li>• Depth-specific color correction tools</li>
                   </ul>
                 </div>
               </div>

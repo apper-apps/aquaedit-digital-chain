@@ -112,7 +112,7 @@ const SingleImagePresetSelector = ({
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">No Image Loaded</h3>
           <p className="text-gray-400">
-            Upload an underwater photo to see preset recommendations.
+Upload a depth photo to see preset recommendations.
           </p>
         </CardContent>
       </Card>

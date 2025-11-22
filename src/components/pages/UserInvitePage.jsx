@@ -286,8 +286,8 @@ const UserInvitePage = () => {
             Invite Team Members
           </h1>
           <p className="text-gray-400 text-lg mt-2">
-            Add underwater photographers to your collaborative workspace
-          </p>
+Add depth photographers to your collaborative workspace
+290]          </p>
         </div>
 
         {/* Workspace Selection */}
@@ -414,7 +414,7 @@ const UserInvitePage = () => {
                     id="customMessage"
                     value={customMessage}
                     onChange={(e) => setCustomMessage(e.target.value)}
-                    placeholder="Join our underwater photography team! We're excited to collaborate with you..."
+placeholder="Join our depth photography team! We're excited to collaborate with you..."
                     rows="4"
                     className="w-full bg-slate-darker text-white px-3 py-2 rounded-lg border border-slate-dark focus:border-ocean-teal focus:ring-2 focus:ring-ocean-teal outline-none resize-none mt-1"
                   />

@@ -47,7 +47,7 @@ const PresetsPage = () => {
 
   const creators = [
     { id: "all", name: "All Creators" },
-    { id: "aquaedit", name: "AquaEdit Pro" },
+{ id: "depthroom", name: "DepthRoom Studio" },
     { id: "user", name: "My Presets" },
     { id: "imported", name: "Imported" }
   ];
@@ -212,7 +212,7 @@ if (searchQuery) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `aquaedit-presets-${new Date().toISOString().split('T')[0]}.json`;
+a.download = `depthroom-presets-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success("Presets exported successfully!");

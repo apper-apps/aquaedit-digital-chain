@@ -234,7 +234,7 @@ let preset = null;
                     <div className="mt-2 text-xs text-gray-500">
                       <div>• DNG: Camera RAW files with embedded Lightroom adjustments</div>
                       <div>• XMP: Lightroom sidecar files with develop module settings</div>
-                      <div>• JSON: AquaEdit Pro preset files</div>
+<div>• JSON: DepthRoom Studio preset files</div>
                     </div>
                   </div>
                   <div className="p-4 bg-slate-darker rounded-lg">
@@ -243,7 +243,7 @@ let preset = null;
                       <span className="font-medium text-white">JSON Presets</span>
                     </div>
                     <p className="text-sm text-gray-400">
-                      Universal preset format with full AquaEdit Pro compatibility
+Universal preset format with full DepthRoom Studio compatibility
                     </p>
                   </div>
                 </div>

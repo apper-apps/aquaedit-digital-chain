@@ -53,7 +53,7 @@ const KeyboardShortcuts = ({ isOpen, onClose }) => {
     {
 category: "Quick Presets",
       shortcuts: [
-        { keys: ["1"], description: "Apply Underwater Preset" },
+{ keys: ["1"], description: "Apply Depth Preset" },
         { keys: ["2"], description: "Apply Coral Boost" },
         { keys: ["3"], description: "Apply Blue Water" },
         { keys: ["4"], description: "Apply Surface Light" },

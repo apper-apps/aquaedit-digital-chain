@@ -132,8 +132,8 @@ const PerformanceIndicator = ({ className, isProcessing, processingStatus }) => 
                     <ApperIcon name="AlertTriangle" className="w-3 h-3 text-amber-400 mt-0.5 flex-shrink-0" />
                     <div>
                       <div className="text-xs font-medium text-amber-400">Optimization Tip</div>
-                      <div className="text-xs text-gray-300 mt-1">
-                        Consider reducing image resolution or closing unused browser tabs to improve performance.
+<div className="text-xs text-gray-300 mt-1">
+                        Consider reducing image resolution or closing unused browser tabs to improve depth editing performance.
                       </div>
                     </div>
                   </div>

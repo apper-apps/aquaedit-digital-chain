@@ -78,8 +78,8 @@ const LandingPage = () => {
   const testimonials = [
     {
       name: "Sarah Martinez",
-      role: "Marine Photographer",
-      content: "AquaEdit Pro transformed my underwater workflow. The specialized tools make color correction effortless.",
+role: "Marine Photographer",
+      content: "DepthRoom Studio transformed my underwater workflow. The specialized tools make color correction effortless.",
       image: "🤿"
     },
     {
@@ -109,7 +109,7 @@ const LandingPage = () => {
               </div>
             </div>
             <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-white via-ocean-teal to-coral bg-clip-text text-transparent">
-              AquaEdit Pro
+DepthRoom Studio
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
               Professional underwater photo editing tools designed for diving photographers who demand excellence
@@ -244,7 +244,7 @@ const LandingPage = () => {
               Trusted by Underwater Photographers
             </h2>
             <p className="text-lg text-gray-400">
-              See what professionals are saying about AquaEdit Pro
+See what professionals are saying about DepthRoom Studio
             </p>
           </div>
 
@@ -277,8 +277,8 @@ const LandingPage = () => {
               <h2 className="text-4xl font-bold text-white">
                 Ready to Transform Your Underwater Photos?
               </h2>
-              <p className="text-lg text-gray-300">
-                Join thousands of diving photographers who trust AquaEdit Pro for their editing needs
+<p className="text-lg text-gray-300">
+                Join thousands of diving photographers who trust DepthRoom Studio for their editing needs
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 

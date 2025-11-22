@@ -35,8 +35,8 @@ const UploadArea = ({ onUpload, className }) => {
 const files = Array.from(e.dataTransfer.files);
     
     // Single file validation for optimal performance
-    if (files.length > 1) {
-      toast.warning("Please upload one image at a time for optimal editing performance.");
+if (files.length > 1) {
+      toast.warning("Please upload one image at a time for optimal depth editing performance.");
       return;
     }
     
@@ -48,7 +48,7 @@ const files = Array.from(e.dataTransfer.files);
     const isValidImage = file.type.startsWith("image/") || supportedFormats.test(file.name);
     
     if (!isValidImage) {
-      toast.error("Please select a valid image file (JPEG, PNG, or RAW format).");
+toast.error("Please select a valid depth photo file (JPEG, PNG, or RAW format).");
       return;
     }
     
@@ -89,9 +89,9 @@ const files = Array.from(e.dataTransfer.files);
             </div>
             <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-white">
-                    {isDragActive ? "Drop your images here!" : "Upload Underwater Photos"}
+{isDragActive ? "Drop your images here!" : "Upload Depth Photos"}
                 </h3>
-                <p className="text-gray-400">Drag and drop your images, DNG presets, or JSON presets here
+<p className="text-gray-400">Drag and drop your depth photos, DNG presets, or JSON presets here
                                 </p>
             </div>
             <Button className="relative overflow-hidden">

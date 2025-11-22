@@ -427,8 +427,8 @@ const resetAdjustments = {
       // Professional Color Science
       colorSpace: 'sRGB',
       bitDepth: 8,
-      colorProfile: 'sRGB IEC61966-2.1',
-      underwaterProfile: 'Underwater Standard',
+colorProfile: 'sRGB IEC61966-2.1',
+      depthProfile: 'Depth Photography Standard',
       gamutMapping: 'perceptual'
     };
     setAdjustments(resetAdjustments);
