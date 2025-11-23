@@ -103,7 +103,7 @@ export const createProject = async (projectData) => {
     const apperClient = getApperClient();
     
     // Validate numeric fields to prevent integer overflow
-    const imageId = validateInteger(projectData.imageId, 'Image ID');
+const imageId = validateInteger(projectData.imageId, 'Image ID', Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
     
     const params = {
       records: [{
@@ -153,7 +153,7 @@ export const updateProject = async (id, projectData) => {
     
     // Validate numeric fields to prevent integer overflow
     const projectId = validateInteger(id, 'Project ID');
-    const imageId = validateInteger(projectData.imageId, 'Image ID');
+const imageId = validateInteger(projectData.imageId, 'Image ID', Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
     
     const params = {
       records: [{
