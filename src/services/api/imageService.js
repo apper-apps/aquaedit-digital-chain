@@ -95,18 +95,32 @@ export const uploadImage = async (imageFile, metadata = {}) => {
     img.src = imageUrl;
     await new Promise(resolve => { img.onload = resolve; });
     
+    // Validate dimensions to prevent integer overflow (PostgreSQL max integer: 2,147,483,647)
+    const maxIntegerValue = 2147483647;
+    const originalWidth = img.naturalWidth;
+    const originalHeight = img.naturalHeight;
+    
+    // Cap dimensions at safe integer values
+    const safeWidth = Math.min(originalWidth, maxIntegerValue);
+    const safeHeight = Math.min(originalHeight, maxIntegerValue);
+    
     const params = {
       records: [{
         filename_c: imageFile.name,
         format_c: imageFile.type.split('/')[1]?.toUpperCase() || 'JPEG',
         upload_date_c: new Date().toISOString(),
         url_c: imageUrl,
-        dimensions_width_c: img.naturalWidth,
-        dimensions_height_c: img.naturalHeight,
+        dimensions_width_c: safeWidth,
+        dimensions_height_c: safeHeight,
         metadata_c: JSON.stringify({
           size: imageFile.size,
           type: imageFile.type,
-          aspectRatio: img.naturalWidth / img.naturalHeight,
+          aspectRatio: originalWidth / originalHeight,
+          originalDimensions: {
+            width: originalWidth,
+            height: originalHeight
+          },
+          dimensionsCapped: originalWidth > maxIntegerValue || originalHeight > maxIntegerValue,
           ...metadata
         })
       }]
