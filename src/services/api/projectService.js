@@ -425,32 +425,6 @@ export const exportPresets = async (presets) => {
 
 // Images would be handled by a separate service
 // Images would be handled by a separate service
-export const uploadImage = async (imageFile, metadata = {}) => {
-  // This would integrate with file upload service
-  // For now, return a mock response
-  return {
-    Id: Math.floor(Math.random() * 1000000) + 1, // Safe integer range 1-1000000
-    filename: imageFile.name,
-    url: URL.createObjectURL(imageFile),
-    format: imageFile.type,
-    uploadDate: new Date(),
-    metadata: {
-      size: imageFile.size,
-      type: imageFile.type,
-...metadata
-    }
-  };
-};
-
-export const getImages = async () => {
-  // Mock implementation - in real app would fetch from images_c table
-  return [];
-};
-
-export const getImageById = async (id) => {
-  // Mock implementation - in real app would fetch from images_c table
-  return null;
-};
 
 // Utility function for delays (can be removed in production)
 export const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
