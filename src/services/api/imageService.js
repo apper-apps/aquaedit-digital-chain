@@ -142,11 +142,12 @@ export const uploadImage = async (imageFile, metadata = {}) => {
           Id: imageData.Id,
           filename: imageData.filename_c,
           format: imageData.format_c,
-          uploadDate: imageData.upload_date_c,
+uploadDate: imageData.upload_date_c,
           url: imageUrl, // Use the blob URL
           dimensions: {
-            width: img.naturalWidth,
-            height: img.naturalHeight
+            // Validate image dimensions to prevent integer overflow
+            width: Math.min(Math.max(img.naturalWidth, 0), 2147483647),
+            height: Math.min(Math.max(img.naturalHeight, 0), 2147483647)
           },
           metadata: {
             size: imageFile.size,

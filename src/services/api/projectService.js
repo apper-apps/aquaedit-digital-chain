@@ -3,6 +3,22 @@ import React from "react";
 import { getApperClient } from "@/services/apperClient";
 import { getImageById, getImages, uploadImage } from "@/services/api/imageService";
 
+// Helper function to validate and convert integers safely
+const validateInteger = (value, fieldName, min = -2147483648, max = 2147483647) => {
+  if (value === null || value === undefined || value === '') return null;
+  
+  const numValue = parseInt(value);
+  if (isNaN(numValue)) {
+    throw new Error(`${fieldName} must be a valid number`);
+  }
+  
+  if (numValue < min || numValue > max) {
+    throw new Error(`${fieldName} value ${numValue} is out of range (${min} to ${max})`);
+  }
+  
+  return numValue;
+};
+
 // Projects Service - Uses projects_c table
 export const getProjects = async () => {
   try {
@@ -85,10 +101,14 @@ export const getProjectById = async (id) => {
 export const createProject = async (projectData) => {
   try {
     const apperClient = getApperClient();
+    
+    // Validate numeric fields to prevent integer overflow
+    const imageId = validateInteger(projectData.imageId, 'Image ID');
+    
     const params = {
       records: [{
         name_c: projectData.name,
-        image_id_c: projectData.imageId,
+        image_id_c: imageId,
         created_date_c: new Date().toISOString(),
         last_modified_c: new Date().toISOString(),
         adjustments_c: JSON.stringify(projectData.adjustments || {})
@@ -130,11 +150,16 @@ export const saveProject = async (projectData) => {
 export const updateProject = async (id, projectData) => {
   try {
     const apperClient = getApperClient();
+    
+    // Validate numeric fields to prevent integer overflow
+    const projectId = validateInteger(id, 'Project ID');
+    const imageId = validateInteger(projectData.imageId, 'Image ID');
+    
     const params = {
       records: [{
-        Id: parseInt(id),
+        Id: projectId,
         name_c: projectData.name,
-        image_id_c: projectData.imageId,
+        image_id_c: imageId,
         last_modified_c: new Date().toISOString(),
         adjustments_c: JSON.stringify(projectData.adjustments || {})
       }]
@@ -171,8 +196,12 @@ export const updateProject = async (id, projectData) => {
 export const deleteProject = async (id) => {
   try {
     const apperClient = getApperClient();
+    
+    // Validate project ID
+    const projectId = validateInteger(id, 'Project ID');
+    
     const response = await apperClient.deleteRecord('projects_c', {
-      RecordIds: [parseInt(id)]
+      RecordIds: [projectId]
     });
 
     if (!response.success) {
@@ -283,6 +312,10 @@ export const getPresetById = async (id) => {
 export const createPreset = async (presetData) => {
   try {
     const apperClient = getApperClient();
+    
+    // Validate numeric fields to prevent integer overflow
+    const usageCount = validateInteger(presetData.usageCount || 0, 'Usage Count', 0);
+    
     const params = {
       records: [{
         name_c: presetData.name,
@@ -291,7 +324,7 @@ export const createPreset = async (presetData) => {
         thumbnail_c: presetData.thumbnail || '',
         adjustments_c: JSON.stringify(presetData.adjustments || {}),
         created_at_c: new Date().toISOString(),
-        usage_count_c: 0,
+        usage_count_c: usageCount,
         tags_c: Array.isArray(presetData.tags) ? presetData.tags.join(',') : '',
         process_version_c: '1.0',
         has_local_adjustments_c: false
@@ -324,13 +357,19 @@ export const createPreset = async (presetData) => {
 export const updatePreset = async (id, presetData) => {
   try {
     const apperClient = getApperClient();
+    
+    // Validate numeric fields to prevent integer overflow
+    const presetId = validateInteger(id, 'Preset ID');
+    const usageCount = validateInteger(presetData.usageCount, 'Usage Count', 0);
+    
     const params = {
       records: [{
-        Id: parseInt(id),
+        Id: presetId,
         name_c: presetData.name,
         description_c: presetData.description,
         category_c: presetData.category,
         adjustments_c: JSON.stringify(presetData.adjustments || {}),
+        usage_count_c: usageCount,
         tags_c: Array.isArray(presetData.tags) ? presetData.tags.join(',') : presetData.tags || ''
       }]
     };
@@ -353,8 +392,12 @@ export const updatePreset = async (id, presetData) => {
 export const deletePreset = async (id) => {
   try {
     const apperClient = getApperClient();
+    
+    // Validate preset ID
+    const presetId = validateInteger(id, 'Preset ID');
+    
     const response = await apperClient.deleteRecord('presets_c', {
-      RecordIds: [parseInt(id)]
+      RecordIds: [presetId]
     });
 
     if (!response.success) {
