@@ -17,7 +17,8 @@ import ImageCanvas from "@/components/organisms/ImageCanvas";
 import AdjustmentPanel from "@/components/organisms/AdjustmentPanel";
 import Error from "@/components/ui/Error";
 import Loading from "@/components/ui/Loading";
-import { getImages, saveProject } from "@/services/api/projectService";
+import { getImages } from "@/services/api/imageService";
+import { saveProject } from "@/services/api/projectService";
 const EditorPage = () => {
   const location = useLocation();
   const [currentImage, setCurrentImage] = useState(null);
