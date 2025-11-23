@@ -1,5 +1,7 @@
-import { getApperClient } from '@/services/apperClient';
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import React from "react";
+import { getApperClient } from "@/services/apperClient";
+import { getImageById, getImages, uploadImage } from "@/services/api/imageService";
 
 // Projects Service - Uses projects_c table
 export const getProjects = async () => {
@@ -422,11 +424,12 @@ export const exportPresets = async (presets) => {
 };
 
 // Images would be handled by a separate service
+// Images would be handled by a separate service
 export const uploadImage = async (imageFile, metadata = {}) => {
   // This would integrate with file upload service
   // For now, return a mock response
   return {
-    Id: Date.now(),
+    Id: Math.floor(Math.random() * 1000000) + 1, // Safe integer range 1-1000000
     filename: imageFile.name,
     url: URL.createObjectURL(imageFile),
     format: imageFile.type,
@@ -434,7 +437,7 @@ export const uploadImage = async (imageFile, metadata = {}) => {
     metadata: {
       size: imageFile.size,
       type: imageFile.type,
-      ...metadata
+...metadata
     }
   };
 };
