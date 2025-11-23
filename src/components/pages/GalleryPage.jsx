@@ -7,7 +7,8 @@ import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import ApperIcon from "@/components/ApperIcon";
-import { getProjects, getImages, deleteProject } from "@/services/api/projectService";
+import { getProjects, deleteProject } from "@/services/api/projectService";
+import { getImages } from "@/services/api/imageService";
 import { toast } from "react-toastify";
 
 const GalleryPage = () => {
